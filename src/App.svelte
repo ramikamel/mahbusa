@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import type { Component } from 'svelte';
   import Board from './components/Board.svelte';
   import { createGame, startRound, openingRoll, roll, applyMove, availableMoves, undo, endTurn, nextGame, randomDie } from './lib/engine';
   import type { Game, Move, Pair } from './lib/engine';
@@ -10,7 +11,7 @@
   let online = $state(true);
   let rulesDialog: HTMLDialogElement;
   let resetDialog: HTMLDialogElement;
-  let devScenarios: Record<string, () => Game> = $state({});
+  let DevTools = $state<Component<{ loadScenario: (game: Game) => void; setDice: (value: string) => void }> | null>(null);
   let forced = $state('');
   const names = ['Light', 'Dark'];
   const moves = $derived(availableMoves(game));
@@ -27,11 +28,7 @@
     const update = () => { online = navigator.onLine; };
     update(); window.addEventListener('online', update); window.addEventListener('offline', update);
     if (import.meta.env.DEV) {
-      import('./lib/scenarios').then(({ scenarios }) => {
-        devScenarios = scenarios;
-        const name = new URLSearchParams(location.search).get('scenario');
-        if (name && scenarios[name]) game = scenarios[name]();
-      });
+      import('./components/DevTools.svelte').then(({ default: panel }) => { DevTools = panel; });
     }
     return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
   });
@@ -113,8 +110,8 @@
       {#if moves.some(m => m.from === selected && m.to === -1)}<button class="bear-off-button" onclick={() => destination(-1)}>Bear off selected checker →</button>{/if}
     </section>
     <footer class="game-footer"><span>Two players. One board. No distractions.</span><button class="text-button" onclick={() => resetDialog.showModal()}>Reset round</button></footer>
-    {#if import.meta.env.DEV && Object.keys(devScenarios).length}
-      <details class="dev-tools"><summary>Development scenarios</summary><div><label>Board fixture <select aria-label="Board fixture" onchange={(event) => { const name = event.currentTarget.value; if (devScenarios[name]) { game = devScenarios[name](); clear(); } }}><option value="">Choose a scenario</option>{#each Object.keys(devScenarios) as name}<option>{name}</option>{/each}</select></label><label>Next dice <input aria-label="Next dice" placeholder="e.g. 2,3" bind:value={forced} /></label><small>Only included in development. Production dice are random.</small></div></details>
+    {#if DevTools}
+      <DevTools loadScenario={(fixture) => { game = fixture; clear(); }} setDice={(value) => forced = value} />
     {/if}
   </main>
 </div>
