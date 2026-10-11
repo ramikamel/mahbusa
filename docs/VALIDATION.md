@@ -70,6 +70,16 @@ viewport. Rechecked the affected behaviors.
 
 - Actual iPhone/Safari installation, standalone offline launch, touch, safe-area
   behavior and measured interaction latency.
-- Sites publication is the remaining delivery step. The registered project is
-  recorded in `.openai/hosting.json`; publication status will be added once the
-  deployment returns success.
+
+
+## Published release
+
+- Sites deployment succeeded: https://mahbusa.bubblyspice4.chatgpt.site
+- Deployed application commit: `20990d73b6bd86a106afa60bbb02fadeedda426c`.
+- Deployment ID: `appgdep_6acc2219475c819186e8c58bbf791548`.
+- Version ID: `appgprj_6acc1863a36c81918a6a5fe3f6c39346~appgver_2e2fc73f827881919fe8b2a762746759`.
+- Source synchronized through the Sites workflow helper; GitHub remains canonical.
+- GitHub Actions passed for the offline fix and final browser validation commits.
+- Publication created an owner-only preview; public audience selection is tracked
+  separately from the app code and deployment.
+- This documentation update does not change the served app assets.

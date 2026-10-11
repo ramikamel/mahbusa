@@ -3,6 +3,9 @@
 A lightweight Mahbusa board for two people sharing one device. Svelte 5,
 TypeScript, Vite and SVG. No accounts, server, saved games or tracking.
 
+- Hosted app: https://mahbusa.bubblyspice4.chatgpt.site
+- Public source: https://github.com/ramikamel/mahbusa
+
 ## Run
 
 Install Node.js 22.18+ and pnpm, then:
@@ -59,8 +62,9 @@ The app may survive backgrounding while the OS keeps it alive.
 ## Repository and delivery
 
 Commit coherent changes after checks and push each validated checkpoint.
-The intended GitHub remote is the user's personal public `mahbusa` repository.
-Do not guess the account name. Authenticate first, then use:
+The canonical remote is the public `ramikamel/mahbusa` repository. For a new
+checkout or a different account, authenticate and verify the owner before creating
+a repository:
 
 ```sh
 gh auth login
