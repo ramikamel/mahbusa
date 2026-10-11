@@ -39,6 +39,7 @@ Passed using the development server started by the user:
   control bottom: **380 px**, within the 390 px viewport.
 - 390×844 portrait shows score and rotate prompt. Returning to landscape preserves
   the board and selected checker.
+- Refresh returns to initial checkers and zero scores; no game state is saved.
 - No browser error/warning logs observed during these checks.
 
 Found and fixed: opening-contest dice persisted across later turns; development
@@ -47,12 +48,15 @@ viewport. Rechecked the affected behaviors.
 
 ## Pending — do not treat as complete release acceptance
 
-- Browser verification of production offline caching and reload state reset.
+- Browser verification of production offline caching.
 - Actual iPhone/Safari installation, standalone offline launch, touch, safe-area
   behavior and measured interaction latency.
-- GitHub authenticated owner verification, public repo creation and source push.
+- GitHub CLI is installed and has an account entry, but sandbox network restrictions
+  prevent API verification, public repo creation and source push.
 - Sites source synchronization and deployment. Registered identity is recorded in
-  `.openai/hosting.json`; registration alone does not mean the site is live.
+  `.openai/hosting.json`; registration alone does not mean the site is live. Source
+  helper push failed with DNS resolution blocked for `git.chatgpt-team.site`.
+  A deployment archive is prepared at `/private/tmp/mahbusa-release.tar.gz`.
 
 The local server cannot be started inside the restricted execution sandbox; the
 user started it in Terminal, after which Chrome extension testing worked.
