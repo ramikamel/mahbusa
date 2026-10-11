@@ -8,9 +8,9 @@
 - Node engine suite: **16 tests passed**, including complete simulated round and
   piece conservation, movement, dice sequencing, pinning, mother-piece wins,
   bearing off, scoring, blocked handover and undo.
-- Offline generation/worker suite: **4 tests passed**, covering content versioning,
+- Offline generation/worker suite: **5 tests passed**, covering content versioning,
   production fixture exclusion, asset caching, old-cache cleanup, deferred updates,
-  cached navigation and request filtering.
+  cached navigation, request filtering and Origin-header variance.
 - Production Vite build and offline-shell generation succeeded. JavaScript:
   **56.11 KB uncompressed / 21.82 KB gzip**; CSS **11.03 KB / 3.35 KB gzip**.
   Production JavaScript contains no development fixture strings or panel.
@@ -46,17 +46,30 @@ Found and fixed: opening-contest dice persisted across later turns; development
 panel text remained in production; initial mobile layout placed controls below
 viewport. Rechecked the affected behaviors.
 
+## Production browser validation
+
+- Production page loads with development fixtures absent.
+- Chrome DevTools Offline enabled: reload renders the full board.
+- Opening contest, dice roll, checker movement and undo work while offline.
+- New service worker waits while the old app is open, then activates after the
+  old client closes. This was observed in DevTools, not forced with skipWaiting.
+- Cached HTML, JavaScript, CSS, manifest and icons inspected in Cache Storage.
+- Local Storage table contains no entries. App source never writes game state
+  to Local Storage, Session Storage or IndexedDB.
+- Browser network simulation restored to online after testing.
+- Found and fixed `Vary: Origin` cache mismatch for known static app assets.
+
+## Delivery
+
+- Public repository verified: https://github.com/ramikamel/mahbusa
+- Initial GitHub Actions validation passed; offline fix pushed as a separate commit.
+- Approval-enabled tool session now runs the production preview independently of
+  the user’s Terminal.
+
 ## Pending — do not treat as complete release acceptance
 
-- Browser verification of production offline caching.
 - Actual iPhone/Safari installation, standalone offline launch, touch, safe-area
   behavior and measured interaction latency.
-- GitHub CLI is installed and has an account entry, but sandbox network restrictions
-  prevent API verification, public repo creation and source push.
-- Sites source synchronization and deployment. Registered identity is recorded in
-  `.openai/hosting.json`; registration alone does not mean the site is live. Source
-  helper push failed with DNS resolution blocked for `git.chatgpt-team.site`.
-  A deployment archive is prepared at `/private/tmp/mahbusa-release.tar.gz`.
-
-The local server cannot be started inside the restricted execution sandbox; the
-user started it in Terminal, after which Chrome extension testing worked.
+- Sites publication is the remaining delivery step. The registered project is
+  recorded in `.openai/hosting.json`; publication status will be added once the
+  deployment returns success.
