@@ -40,7 +40,7 @@ export function openingRoll(game: Game, dice: Pair): Game {
 export function roll(game: Game, dice: Pair): Game {
   if (game.phase !== 'roll') throw new Error('Finish the current turn before rolling.');
   validDice(dice);
-  return { ...game, dice: [...dice], remaining: dice[0] === dice[1] ? Array(4).fill(dice[0]) : [...dice],
+  return { ...game, opening: null, dice: [...dice], remaining: dice[0] === dice[1] ? Array(4).fill(dice[0]) : [...dice],
     phase: 'moving', history: [] };
 }
 function clone(position: Position): Position {

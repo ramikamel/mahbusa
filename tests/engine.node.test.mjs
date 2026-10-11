@@ -18,6 +18,7 @@ test('starts with 15 pieces each and fresh opening dice', () => {
   let g = E.openingRoll(E.startRound(), [3, 3]); assert.equal(g.phase, 'opening');
   g = E.openingRoll(g, [2, 5]); assert.equal(g.active, 1); assert.equal(g.phase, 'roll');
   assert.deepEqual(E.roll(g, [4, 4]).remaining, [4, 4, 4, 4]);
+  assert.equal(E.roll(g, [4, 4]).opening, null);
   assert.throws(() => E.roll(g, [0, 7]));
 });
 test('players move in opposite directions', () => {
