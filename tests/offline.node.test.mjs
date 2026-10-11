@@ -18,11 +18,14 @@ async function fixture(fn) {
 }
 function generate(cwd) { return spawnSync(process.execPath, [generator], { cwd, encoding: 'utf8' }); }
 function runtime(source) {
-  const handlers = {}; const added = []; const deleted = []; const fetched = [];
-  const cache = { addAll: async urls => added.push(...urls), match: async request => ({ cached: typeof request === 'string' ? request : request.url }) };
+  const handlers = {}; const added = []; const deleted = []; const fetched = []; const matches = [];
+  const cache = { addAll: async urls => added.push(...urls), match: async (request, options) => {
+    matches.push({ request, options });
+    return { cached: typeof request === 'string' ? request : request.url };
+  } };
   const self = { location: { origin: 'https://mahbusa.example' }, clients: { claim: async () => {} }, addEventListener: (name, fn) => handlers[name] = fn };
   runInNewContext(source, { self, URL, caches: { open: async () => cache, keys: async () => ['mahbusa-old', 'another-app'], delete: async key => deleted.push(key) }, fetch: async req => fetched.push(req) });
-  return { handlers, added, deleted, fetched };
+  return { handlers, added, deleted, fetched, matches };
 }
 test('offline build fingerprints content and excludes service worker itself', async () => fixture(async cwd => {
   assert.equal(generate(cwd).status, 0);
@@ -32,6 +35,14 @@ test('offline build fingerprints content and excludes service worker itself', as
   await writeFile(join(cwd, 'dist/assets/app.js'), 'console.log("updated")');
   assert.equal(generate(cwd).status, 0);
   assert.notEqual(await readFile(join(cwd, 'dist/sw.js'), 'utf8'), first);
+}));
+test('immutable app assets match despite Origin header variance and query strings', async () => fixture(async cwd => {
+  assert.equal(generate(cwd).status, 0);
+  const { handlers, matches } = runtime(await readFile(join(cwd, 'dist/sw.js'), 'utf8'));
+  let response;
+  handlers.fetch({ request: { method: 'GET', url: 'https://mahbusa.example/assets/app.js?v=1', mode: 'cors' }, respondWith: p => response = p });
+  assert.equal((await response).cached, '/assets/app.js');
+  assert.equal(matches[0].options.ignoreVary, true);
 }));
 test('production build refuses development fixtures', async () => fixture(async cwd => {
   await writeFile(join(cwd, 'dist/assets/app.js'), 'const fixture = "mother-win"');
