@@ -1,30 +1,58 @@
 # Validation record
 
-## Completed locally
+## Completed locally — October 11, 2026
 
-- Git repository initialized on `main`; incremental source commits recorded.
-- Full pure-engine suite: 16 tests passed using the bundled Node 24 runtime.
-- Tests include mother wins in both directions, pin/release, blocking, forced
-  dice ordering, higher-die priority, partial doubles, bearing off, score,
-  undo, blocked handover, a complete simulated round and piece conservation.
-- Spread-board double-1 legal sequence search: approximately 6 ms on this Mac.
+- Git repository on `main` with incremental source commits and a pnpm lockfile.
+- Svelte/TypeScript check: **0 errors, 0 warnings**.
+- Vitest: **2 tests passed**.
+- Node engine suite: **16 tests passed**, including complete simulated round and
+  piece conservation, movement, dice sequencing, pinning, mother-piece wins,
+  bearing off, scoring, blocked handover and undo.
+- Offline generation/worker suite: **4 tests passed**, covering content versioning,
+  production fixture exclusion, asset caching, old-cache cleanup, deferred updates,
+  cached navigation and request filtering.
+- Production Vite build and offline-shell generation succeeded. JavaScript:
+  **56.11 KB uncompressed / 21.82 KB gzip**; CSS **11.03 KB / 3.35 KB gzip**.
+  Production JavaScript contains no development fixture strings or panel.
+- Spread-board double-1 legal sequence search: about **6 ms** on this Mac.
   This is not an iPhone responsiveness measurement.
-- Engine and scenario modules passed strict TypeScript checking using a locally
-  available TypeScript compiler.
-- Home Screen PNG icons generated from the SVG source.
+- Home Screen icons generated as SVG and 180/192/512 px PNGs.
 
-## Pending — do not treat as release acceptance
+## Chrome extension checks — actual interface interactions
 
-- Dependency installation: terminal DNS cannot resolve `registry.npmjs.org`.
-- Svelte component checks, Vitest execution and Vite production build.
-- Lockfile generation and switching CI installation to frozen-lockfile mode.
-- Chrome gameplay/visual scenarios. Chrome extension is now connected, but the
-  app cannot be built or served with Vite until dependencies are available.
-- iPhone/Safari installation, standalone offline launch, touch and performance.
-- GitHub owner verification, public repository creation and pushes. GitHub is
-  not connected through a plugin and Chrome currently shows its sign-in screen.
-- Sites source synchronization and deployment. Site identity is registered in
-  `.openai/hosting.json`, but there is no deployed version.
+Passed using the development server started by the user:
 
-After dependency installation, run all commands in README, execute the browser
-checklist and update this record with observed outcomes, not inferred passes.
+- Opening contest tie/reroll, winner selection and fresh two-dice roll.
+- Source selection, legal destination highlights, die consumption and disabled
+  premature End Turn; explicit handover to the other player.
+- Undo restores checkers, pins and dice; winning moves disable undo.
+- Pinning and moving the final covering checker to release the pinned checker.
+- Immediate mother-piece victory awards 2 points.
+- Bearing-off wins award 1 or 2 points correctly; reaching 3 ends the round.
+- New round clears both scores and restarts the opening contest.
+- Fully blocked turns can be handed over without moving checkers.
+- Forced move order and higher-die priority highlight only the allowed destination.
+- Ambiguous bearing off offers a die choice; chosen die is consumed; undo restores.
+- Rules dialog opens/closes; reset cancellation preserves the board; confirmed
+  reset clears the board and scores.
+- Desktop and 844×390 landscape layouts inspected visually. Landscape End Turn
+  control bottom: **380 px**, within the 390 px viewport.
+- 390×844 portrait shows score and rotate prompt. Returning to landscape preserves
+  the board and selected checker.
+- No browser error/warning logs observed during these checks.
+
+Found and fixed: opening-contest dice persisted across later turns; development
+panel text remained in production; initial mobile layout placed controls below
+viewport. Rechecked the affected behaviors.
+
+## Pending — do not treat as complete release acceptance
+
+- Browser verification of production offline caching and reload state reset.
+- Actual iPhone/Safari installation, standalone offline launch, touch, safe-area
+  behavior and measured interaction latency.
+- GitHub authenticated owner verification, public repo creation and source push.
+- Sites source synchronization and deployment. Registered identity is recorded in
+  `.openai/hosting.json`; registration alone does not mean the site is live.
+
+The local server cannot be started inside the restricted execution sandbox; the
+user started it in Terminal, after which Chrome extension testing worked.

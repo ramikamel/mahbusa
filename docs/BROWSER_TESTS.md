@@ -15,9 +15,9 @@ Start fixtures through the development selector or `?scenario=NAME`.
 | forced-order | Select 6 | Only point 5 highlighted; 6→4 would strand the other die and must not be offered |
 | higher-die | Select 6 | Only point 4 highlighted; die 2 required |
 | mother-win | Select 2; move to 1 | Immediate +2; Light score 2; Undo disabled; Next game preserves score and Light opens |
-| normal-win | Select 1; Bear off | +1; Light score 1; game complete |
-| double-win | Select 1; Bear off | +2 because Dark has none off |
-| round-win | Select 1; Bear off; New round | Score reaches 3; round ends; new round resets scores and starts opening contest |
+| normal-win | Select 1; Bear off; choose Use 1 if offered | +1; Light score 1; game complete |
+| double-win | Select 1; Bear off; choose Use 1 if offered | +2 because Dark has none off |
+| round-win | Select 1; Bear off; choose Use 1; New round | Score reaches 3; round ends; new round resets scores and starts opening contest |
 | ambiguous-bear-off | Select 1; Bear off; choose Use 1; Undo | Die-choice controls appear; chosen value consumed; undo restores dice and board |
 | Reset | Reset round; Keep playing; Reset round; confirm | Cancellation preserves game; confirmation clears both scores and restarts opening |
 | Rules | How to play; Back to the board | Rules and install instructions visible; modal closes and board preserved |

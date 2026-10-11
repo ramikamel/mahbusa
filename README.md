@@ -18,6 +18,7 @@ Open the printed localhost URL in Chrome. Play in landscape on phones.
 pnpm check
 pnpm test
 pnpm test:engine
+pnpm test:offline
 pnpm build
 pnpm preview
 ```
