@@ -80,6 +80,8 @@ viewport. Rechecked the affected behaviors.
 - Version ID: `appgprj_6acc1863a36c81918a6a5fe3f6c39346~appgver_2e2fc73f827881919fe8b2a762746759`.
 - Source synchronized through the Sites workflow helper; GitHub remains canonical.
 - GitHub Actions passed for the offline fix and final browser validation commits.
-- Publication created an owner-only preview; public audience selection is tracked
-  separately from the app code and deployment.
-- This documentation update does not change the served app assets.
+- The owner selected public access. The app opens without ChatGPT sign-in.
+- Live smoke test passed opening rolls, dice and checker movement. It exposed
+  the host’s 307 redirect from `/index.html` to `/`, which caused cached
+  navigation to fail. The worker now caches the canonical root URL; the final
+  deployment will verify the correction.

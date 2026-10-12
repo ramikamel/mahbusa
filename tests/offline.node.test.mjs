@@ -54,7 +54,7 @@ test('worker caches app assets, cleans own old caches, defers updates', async ()
   const { handlers, added, deleted } = runtime(source);
   let pending;
   handlers.install({ waitUntil: p => pending = p }); await pending;
-  assert.deepEqual([...added], ['/assets/app.js', '/index.html']);
+  assert.deepEqual([...added], ['/assets/app.js', '/']);
   handlers.activate({ waitUntil: p => pending = p }); await pending;
   assert.deepEqual(deleted, ['mahbusa-old']);
   assert.ok(!source.includes('self.skipWaiting('));
@@ -65,7 +65,7 @@ test('worker serves cached shell but does not cache foreign or arbitrary request
   let response;
   const respondWith = p => response = p;
   handlers.fetch({ request: { method: 'GET', url: 'https://mahbusa.example/game', mode: 'navigate' }, respondWith });
-  assert.equal((await response).cached, '/index.html');
+  assert.equal((await response).cached, '/');
   response = undefined;
   handlers.fetch({ request: { method: 'GET', url: 'https://elsewhere.example/index.html' }, respondWith });
   assert.equal(response, undefined);
