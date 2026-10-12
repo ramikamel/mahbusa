@@ -75,13 +75,18 @@ viewport. Rechecked the affected behaviors.
 ## Published release
 
 - Sites deployment succeeded: https://mahbusa.bubblyspice4.chatgpt.site
-- Deployed application commit: `20990d73b6bd86a106afa60bbb02fadeedda426c`.
-- Deployment ID: `appgdep_6acc2219475c819186e8c58bbf791548`.
-- Version ID: `appgprj_6acc1863a36c81918a6a5fe3f6c39346~appgver_2e2fc73f827881919fe8b2a762746759`.
+- Deployed application commit: `24ab000421b587357115f382cb5792f4daef4190`.
+- Deployment ID: `appgdep_6acc23f57f7c8191acaf533d320c4ec5`.
+- Version ID: `appgprj_6acc1863a36c81918a6a5fe3f6c39346~appgver_2de76b8be798819197c88e707a14940b`.
 - Source synchronized through the Sites workflow helper; GitHub remains canonical.
 - GitHub Actions passed for the offline fix and final browser validation commits.
 - The owner selected public access. The app opens without ChatGPT sign-in.
 - Live smoke test passed opening rolls, dice and checker movement. It exposed
   the host’s 307 redirect from `/index.html` to `/`, which caused cached
-  navigation to fail. The worker now caches the canonical root URL; the final
-  deployment will verify the correction.
+  navigation to fail. The worker now caches the canonical root URL.
+- Final public deployment: online reload succeeds with no login prompt.
+- On the hosted site, Chrome DevTools Offline mode: reload, opening roll, dice,
+  checker movement and undo all passed. Network simulation restored to online.
+- The corrected worker activated after closing the old preview client.
+- Final app left open in Chrome; the temporary local preview was stopped.
+- All 23 automated tests and GitHub CI passed for the hosting compatibility fix.

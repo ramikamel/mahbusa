@@ -3,7 +3,7 @@
 A lightweight Mahbusa board for two people sharing one device. Svelte 5,
 TypeScript, Vite and SVG. No accounts, server, saved games or tracking.
 
-- Hosted app: https://mahbusa.bubblyspice4.chatgpt.site
+- Play now, no sign-in: https://mahbusa.bubblyspice4.chatgpt.site
 - Public source: https://github.com/ramikamel/mahbusa
 
 ## Run
