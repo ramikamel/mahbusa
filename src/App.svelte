@@ -98,7 +98,7 @@
           <div class="welcome-note"><span class="eyebrow">WELCOME TO THE BOARD</span><h2>Good company.<br />A good game.</h2><p>No sign-up. Just sit down and play.</p></div>
         {/if}
         {#if finished}
-          <div class="result-card" role="status"><div class="eyebrow">{game.phase === 'roundOver' ? 'ROUND COMPLETE' : 'GAME COMPLETE'}</div><h2>{names[game.outcome!.winner]} wins<span>.</span></h2><p>{game.outcome!.reason === 'mother' ? 'Mother piece pinned' : game.outcome!.points === 2 ? 'All checkers off. Opponent has none off.' : 'All checkers borne off.'}</p><div class="points-award">+{game.outcome!.points} {game.outcome!.points === 1 ? 'point' : 'points'}</div></div>
+          <div class="result-card" aria-label="Game result"><div role="status"><div class="eyebrow">{game.phase === 'roundOver' ? 'ROUND COMPLETE' : 'GAME COMPLETE'}</div><h2>{names[game.outcome!.winner]} wins<span>.</span></h2><p>{game.outcome!.reason === 'mother' ? 'Mother piece pinned' : game.outcome!.points === 2 ? 'All checkers off. Opponent has none off.' : 'All checkers borne off.'}</p><div class="points-award">+{game.outcome!.points} {game.outcome!.points === 1 ? 'point' : 'points'}</div></div><button class="primary-button result-action" onclick={primary}>{game.phase === 'roundOver' ? 'New round' : 'Next game'}</button></div>
         {/if}
       </div>
       <div class="turn-panel">
@@ -123,7 +123,7 @@
             <span class="dice-caption">{game.phase === 'moving' ? `${game.remaining.length} ${game.remaining.length === 1 ? 'MOVE' : 'MOVES'} LEFT` : 'LET IT ROLL'}</span>
           </div>
           <button class="undo-button" aria-label="Undo last move" disabled={game.phase !== 'moving' || !game.history.length} onclick={() => { game = undo(game); clear(); }}><span aria-hidden="true">↶</span> Undo</button>
-          <button class="primary-button" disabled={game.phase === 'moving' && moves.length > 0} onclick={primary}>{primaryLabel}<span aria-hidden="true">→</span></button>
+          {#if !finished}<button class="primary-button" disabled={game.phase === 'moving' && moves.length > 0} onclick={primary}>{primaryLabel}<span aria-hidden="true">→</span></button>{/if}
           {/if}
         </div>
       </div>

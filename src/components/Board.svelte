@@ -20,7 +20,6 @@
     const visible = Math.min(count, compact ? 4 : 6);
     return Array.from({ length: visible }, (_, i) => ({
       player: (mixed && i === 0 ? (p.top === 0 ? 1 : 0) : p.top) as Player,
-      pinned: mixed && i === 0,
       label: count > visible && i === visible - 1 ? String(count) : '',
       offset: i * (compact ? 16 : 27),
     }));
@@ -51,14 +50,10 @@
           <rect x={cx - 28} y={row.upper ? 26 : boardHeight / 2 + 9} width="56" height={boardHeight / 2 - 37} rx="8" class="point-hit" />
           <path d={row.upper ? `M${cx - 25} 43H${cx + 25}L${cx} ${boardHeight / 2 - 26}Z` : `M${cx - 25} ${boardHeight - 43}H${cx + 25}L${cx} ${boardHeight / 2 + 26}Z`}
             class="triangle" class:triangle-alt={slot % 2 === 0} />
-          <text x={cx} y={row.upper ? 38 : boardHeight - 28} class="point-number">{point + 1}</text>
           {#each tokens(point) as token, i}
             {@const inset = compact ? 56 : 68}
             {@const cy = row.upper ? inset + token.offset : boardHeight - inset - token.offset}
             <circle cx={cx} {cy} r={compact ? 18 : 23} class="checker" class:checker-light={token.player === 0} class:checker-dark={token.player === 1} />
-            {#if token.pinned}
-              <path d={`M${cx - 7} ${cy - 4}v-3a7 7 0 0 1 14 0v3M${cx - 9} ${cy - 4}h18v13h-18z`} class="pin-symbol" />
-            {/if}
             {#if token.label}<text x={cx} y={cy + 5} class="stack-count" class:count-dark={token.player === 1}>{token.label}</text>{/if}
           {/each}
           {#if targets.has(point)}<circle cx={cx} cy={row.upper ? boardHeight / 2 - 12 : boardHeight / 2 + 12} r="6" class="destination-dot" />{/if}

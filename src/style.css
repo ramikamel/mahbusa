@@ -7,3 +7,4 @@
 @media(prefers-reduced-motion:no-preference){button{transition:background-color .12s,opacity .12s}.destination-dot{animation:appear .12s ease-out}@keyframes appear{from{opacity:0}to{opacity:1}}}
 .opening-rolls{display:flex;align-items:center;gap:20px}.opening-player{display:flex;align-items:center;gap:9px}.opening-button{min-width:112px;justify-content:center;white-space:nowrap}.opening-button:disabled{opacity:.55}
 @media(max-height:600px) and (orientation:landscape){.opening-rolls{gap:12px}.opening-player{gap:6px}.opening-button{min-width:96px;padding:10px}}
+.result-card{pointer-events:auto}.result-action{display:flex;margin:14px auto 0;justify-content:center}
