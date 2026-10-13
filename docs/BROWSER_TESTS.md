@@ -14,7 +14,7 @@ Start fixtures through the development selector or `?scenario=NAME`.
 | combined-one-route | Select 9; tap 3 | Targets 5 and 3; blocked point 7 forces the 4-then-2 order; both dice consumed |
 | combined-blocked | Inspect controls | Both intermediate points blocked; combined destination 3 absent; no moves |
 | combined-doubles | Select 24; tap 16 using Enter; Undo | Targets 22, 20, 18 and 16; four steps consumed; one Undo restores all four |
-| Turn / undo | Move 24→22 using 2; header Undo; repeat and use 3; set next dice `3,5`; center End turn | Undo restores board and both dice; after both dice are used a center End turn message appears; Dark immediately has wall dice 3,5; Undo disabled |
+| Turn / undo | Move 24→22 using 2; tray Undo; repeat and use 3; set next dice `3,5`; center End turn | Undo restores board and both dice; after both dice are used a center End turn message appears; Dark immediately has wall dice 3,5 and the scoreboard highlight; Undo disabled |
 | pin-and-release | Select 9; move to 7; try an unhighlighted point; Undo; pin again; move 7→6 | Pin visible; illegal destination does not move; undo removes pin and restores die; final covering checker leaving releases Dark |
 | blocked-turn | Inspect controls; set next dice `2,4`; End turn | No legal moves; board unchanged; Dark immediately has dice 2,4 |
 | blocked-handover | Set next dice `1,1`; End turn | Dark gets four moves from double 1 but all blocked; stays on Dark until explicit End turn |
@@ -26,10 +26,10 @@ Start fixtures through the development selector or `?scenario=NAME`.
 | round-win | Select 1; Bear off; choose Use 1 if offered; New round via Enter | Score reaches 3; one New round button inside result card; new round resets scores and starts opening contest |
 | ambiguous-bear-off | Select 1; Bear off; choose Use 1; Undo | Die-choice controls appear; chosen value consumed; undo restores dice and board |
 | Reset | Reset round; Keep playing; Reset round; confirm | Cancellation preserves game; confirmation clears both scores and restarts opening |
-| Rules | How to play; Back to the board | Rules and install instructions visible; modal closes and board preserved |
-| Board / header | Inspect board and header | No bottom panel, travel captions, footer slogan or First to 3 scoreboard label; no visual point numbers or locks; header holds centered scores and Undo/Reset/How to play; active player highlighted |
-| Center messages | Start round; roll each opening die; Start game; finish moves; Undo | Welcome/start, opening dice/buttons, Start game, and End turn are in center messages; contest dice stay fixed; header Undo hides completion message and restores moves |
-| Wall dice | During moving phase inspect dice at desktop and both landscape sizes; rotate portrait and back | Dice center matches SVG center-wall center, stays within wall, preserves values and spent states; no ongoing visible turn-status panel |
+| Rules | Click Mahbusa wordmark (also test Enter); Back to the board | Rules and install instructions visible; modal closes and board preserved; separate How to play button absent |
+| Board / header | Inspect board and header | Original narrow wall and point spacing; no bottom panel, captions, slogan, scoreboard target, visual numbers or locks; header has wordmark help and centered scores; active player highlighted; Undo/Reset in right-hand tray |
+| Center messages | Start round; roll each opening die; Start game; finish moves; Undo | Welcome/start, opening dice/buttons, Start game, and End turn are in center messages; contest dice stay fixed; tray Undo hides completion message and restores moves |
+| Wall dice / tray | During moving phase inspect dice and tray at desktop and both landscape sizes; rotate portrait and back | Dice center matches original narrow wall and overlays it; tray controls/counts are separate, in view and 44 px targets; values and spent states preserved |
 | Responsive | Test desktop, 844×390 and 667×375 landscape, 390×844 portrait | 52 px desktop/44 px landscape dice; 14 px status and controls; landscape actions in viewport; portrait rotate prompt and centered header scores; orientation preserves game |
 | Refresh | Move, refresh tab | Fresh board and zero scores; no local saved state |
 

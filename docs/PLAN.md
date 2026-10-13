@@ -15,8 +15,10 @@ positions until then. Previous winner opens subsequent games with dice rolled au
 
 ## UX
 Minimal theme, centered Light/Dark scores in the header without the round-target
-label. Header toolbar contains Undo, Reset and outlined How to play controls;
-compact screens stack the toolbar to avoid collisions. No separate game heading,
+label. The Mahbusa wordmark opens How to play. Borderless Undo/Reset icons sit
+in the right-hand bear-off strip, with color-coded counts between them. The
+counts become a 44 px bear-off target when a selected checker can leave.
+No separate game heading,
 bottom turn panel, travel captions or footer slogan. Board point numbers and pin lock icons are hidden;
 stack counts, pin stacking and accessible point labels remain. Larger dice (52 px
 desktop, 44 px compact landscape) and readable text; controls at least 44 px tall.
@@ -27,8 +29,9 @@ dice orders use one destination; distinct dice choices prompt the player. A sing
 Undo reverses the entire destination tap. Explicit End Turn immediately rolls for
 the opponent and closes Undo history; blocked rolls wait for explicit End Turn.
 Welcome, opening rolls, Start game, End turn when no moves remain, dice choices,
-and winning actions appear in center messages. During play, dice sit vertically
-on a wider center wall, with the active player shown in the header. The wall
+and winning actions appear in center messages. During play, dice float vertically
+over the original 24-unit center wall; original point spacing and compact board
+height are retained. The active player stays highlighted in the header. The wall
 overlay follows actual SVG scale, including letterboxing and orientation changes.
 Next game/New round actions live in the winning message. Confirmed reset.
 Immediate wins cannot be undone. Portrait phones prompt rotation. English only.

@@ -219,3 +219,22 @@ viewport. Rechecked the affected behaviors.
 - Updated cached assets activated after closing the old client. Local server
   stopped; live app left open showing wall dice and the header toolbar.
 - Screenshot saved at `/private/tmp/mahbusa-center-controls.jpg` for handoff.
+
+## Original board and tray controls — October 13, 2026
+
+- Restored the original center wall (x=391, width=24 SVG units), original point
+  spacing and compact board height of 250. Dice float over the narrow wall.
+- Moved Undo/Reset from header boxes into borderless right-tray icons. Both
+  icons and the count area have separate 44×44 px targets. Color-coded off
+  counts remain visible and become the bear-off button when legal.
+- Mahbusa wordmark now opens the rules with mouse or Enter; separate How to
+  play button removed. Active-player scoreboard highlighting retained.
+- Chrome checked combined movement and tray Undo, count-area bear-off and
+  die choice, reset cancellation/confirmation, compact opening message,
+  automatic next-player roll and Dark highlight. No console errors observed.
+- At 667×375, tray target heights were 44 px with no overlap and the opening
+  message remained in view. At 844×390, tray controls were inside the viewport.
+  Portrait retains the scoreboard, rotate prompt and wordmark rules access.
+- All 36 automated tests passed; Svelte checking reported zero errors/warnings.
+  Production build and offline fixture/cache checks passed.
+- Real iPhone/Safari checks and repeated network-offline UI testing remain pending.
