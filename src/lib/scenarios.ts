@@ -6,6 +6,10 @@ function setup(stacks: [number, number, number, Player?][], off: Pair, dice: Pai
   return roll({ ...createGame(), position, active, score, phase: 'roll' }, dice);
 }
 export const scenarios: Record<string, () => Game> = {
+  'combined-dice': () => setup([[23, 15, 0], [0, 0, 15]], [0, 0], [2, 4]),
+  'combined-one-route': () => setup([[8, 15, 0], [6, 0, 2], [12, 0, 13]], [0, 0], [2, 4]),
+  'combined-blocked': () => setup([[8, 15, 0], [6, 0, 2], [4, 0, 2], [12, 0, 11]], [0, 0], [2, 4]),
+  'combined-doubles': () => setup([[23, 15, 0], [0, 0, 15]], [0, 0], [2, 2]),
   'pin-and-release': () => setup([[8, 15, 0], [6, 0, 1], [12, 0, 14]], [0, 0], [2, 1]),
   'blocked-turn': () => setup([[8, 15, 0], [7, 0, 2], [6, 0, 2]], [0, 11], [1, 2]),
   'forced-order': () => setup([[5, 1, 0], [3, 0, 2], [0, 0, 2]], [14, 11], [1, 2]),

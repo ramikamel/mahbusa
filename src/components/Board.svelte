@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Game, Move, Player } from '../lib/engine';
-  let { game, selected, moves, choosePoint, bearOff }: {
-    game: Game; selected: number | null; moves: Move[];
+  let { game, selected, moves, destinations, choosePoint, bearOff }: {
+    game: Game; selected: number | null; moves: Move[]; destinations: number[];
     choosePoint: (point: number) => void; bearOff: () => void;
   } = $props();
   const top = Array.from({ length: 12 }, (_, i) => i + 12);
@@ -11,7 +11,7 @@
   const compact = $derived(height <= 600 && width > height);
   const boardHeight = $derived(compact ? 250 : 462);
   function x(slot: number) { return 64 + slot * 58 + (slot >= 6 ? 36 : 0); }
-  const targets = $derived(new Set(moves.filter(m => m.from === selected).map(m => m.to)));
+  const targets = $derived(new Set(destinations));
   const canBear = $derived(targets.has(-1));
   function tokens(point: number) {
     const p = game.position.points[point];

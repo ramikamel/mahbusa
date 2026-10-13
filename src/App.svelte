@@ -2,11 +2,11 @@
   import { onMount } from 'svelte';
   import type { Component } from 'svelte';
   import Board from './components/Board.svelte';
-  import { createGame, startRound, openingRoll, roll, applyMove, availableMoves, undo, endTurn, nextGame, randomDie } from './lib/engine';
-  import type { Game, Move, Pair, Player } from './lib/engine';
+  import { createGame, startRound, openingRoll, roll, applyMovePath, availableMoves, availableMovePaths, undo, endTurn, nextGame, randomDie } from './lib/engine';
+  import type { Game, MovePath, Pair, Player } from './lib/engine';
   let game: Game = $state(createGame());
   let selected: number | null = $state(null);
-  let choices: Move[] = $state([]);
+  let choices: MovePath[] = $state([]);
   let notice = $state('');
   let online = $state(true);
   let rulesDialog: HTMLDialogElement;
@@ -15,6 +15,8 @@
   let forced = $state('');
   const names = ['Light', 'Dark'];
   const moves = $derived(availableMoves(game));
+  const paths = $derived(selected === null ? [] : availableMovePaths(game, selected));
+  const destinations = $derived([...new Set(paths.map(path => path.to))]);
   const finished = $derived(game.phase === 'gameOver' || game.phase === 'roundOver');
   const shownDice = $derived(game.dice ?? (game.phase === 'opening' || game.phase === 'roll' ? game.opening : null));
   const openingTied = $derived(game.opening?.[0] != null && game.opening[0] === game.opening[1]);
@@ -46,16 +48,16 @@
     game = openingRoll(game, player, fixed ? Number(forced.split(',')[player]) : randomDie());
     if (game.opening?.every(value => value !== null)) forced = '';
   }
-  function commit(move: Move) { game = applyMove(game, move); clear(); }
+  function commit(path: MovePath) { game = applyMovePath(game, path); clear(); }
   function destination(to: number) {
-    const possibilities = moves.filter(m => m.from === selected && m.to === to);
+    const possibilities = paths.filter(path => path.to === to);
     if (possibilities.length === 1) commit(possibilities[0]);
     else if (possibilities.length > 1) choices = possibilities;
   }
   function choosePoint(point: number) {
     if (game.phase !== 'moving') return;
     notice = ''; choices = [];
-    if (moves.some(m => m.from === selected && m.to === point)) { destination(point); return; }
+    if (destinations.includes(point)) { destination(point); return; }
     if (moves.some(m => m.from === point)) { selected = selected === point ? null : point; return; }
     const p = game.position.points[point];
     notice = p.count[game.active] && p.top !== game.active ? 'That checker is pinned until its cover moves away.' : 'That point has no legal move. Choose a highlighted destination.';
@@ -91,7 +93,7 @@
     <div class="portrait-prompt"><span aria-hidden="true">↻</span><h2>A little more room to play.</h2><p>Turn your phone sideways for the board.</p><small>Your current game stays right here.</small></div>
     <section class="play-area" aria-label="Game">
       <div class="board-region">
-        <Board {game} {selected} {moves} {choosePoint} bearOff={() => destination(-1)} />
+        <Board {game} {selected} {moves} {destinations} {choosePoint} bearOff={() => destination(-1)} />
         {#if game.phase === 'ready'}
           <div class="welcome-note"><span class="eyebrow">WELCOME TO THE BOARD</span><h2>Good company.<br />A good game.</h2><p>No sign-up. Just sit down and play.</p></div>
         {/if}
@@ -125,9 +127,9 @@
         </div>
       </div>
       {#if choices.length}
-        <div class="die-choice" role="group" aria-label="Choose die for move"><span>Use which die?</span>{#each choices as move}<button onclick={() => commit(move)}>Use {move.die}</button>{/each}<button class="text-button" onclick={() => choices = []}>Cancel</button></div>
+        <div class="die-choice" role="group" aria-label="Choose dice for move"><span>Use which dice?</span>{#each choices as path}<button onclick={() => commit(path)}>Use {path.steps.map(step => step.die).join(' + ')}</button>{/each}<button class="text-button" onclick={() => choices = []}>Cancel</button></div>
       {/if}
-      {#if moves.some(m => m.from === selected && m.to === -1)}<button class="bear-off-button" onclick={() => destination(-1)}>Bear off selected checker →</button>{/if}
+      {#if destinations.includes(-1)}<button class="bear-off-button" onclick={() => destination(-1)}>Bear off selected checker →</button>{/if}
     </section>
     <footer class="game-footer"><span>Two players. One board. No distractions.</span><button class="text-button" onclick={() => resetDialog.showModal()}>Reset round</button></footer>
     {#if DevTools}
@@ -140,7 +142,8 @@
   <p>Race your 15 checkers around the board and bear them off. Light moves from point 24 toward 1; Dark moves from 1 toward 24.</p>
   <p><strong>Who starts?</strong> Each player taps their own button to roll one die. Higher roll starts; ties mean both roll again. The starter then rolls two fresh dice for their first turn.</p>
   <ol><li><strong>Roll & move.</strong> Tap your checker, then a highlighted destination. Each move uses one die. Doubles give four moves. Use as many dice as possible; if only one can be used and either is playable, use the higher die.</li><li><strong>Pin, don't hit.</strong> Land on one opposing checker to pin it. It cannot move until your final covering checker leaves. Two opposing checkers, or an opposing checker covering yours, block a point.</li><li><strong>Protect your mother.</strong> The last checker on your starting point is your mother. If it is pinned, your opponent immediately wins 2 points.</li><li><strong>Bring them home.</strong> When all your remaining checkers are in your last six points, bear off with matching dice. An oversize die can take the farthest checker only when no checker is farther away.</li><li><strong>First to 3.</strong> A game wins 1 point, or 2 if the opponent has borne off none. First to 3 or more wins the round. The previous winner starts the next game.</li></ol>
-  <p><strong>Take your time.</strong> Undo moves before End Turn. Dice rolls and winning moves cannot be undone.</p>
+  <p><strong>Use the total.</strong> Highlighted destinations include combined dice moves when every step is legal. Tap a farther destination to use multiple dice on one checker. With doubles, you can combine up to four steps.</p>
+  <p><strong>Take your time.</strong> Undo moves before End Turn. One Undo reverses an entire combined move. Dice rolls and winning moves cannot be undone.</p>
   <div class="install-note"><strong>Take the board with you.</strong><p>On iPhone, open in Safari, choose Share → Add to Home Screen. Load the app once online before playing offline. Only app files are cached; refreshing or reopening starts fresh.</p></div>
   <button class="primary-button" onclick={() => rulesDialog.close()}>Back to the board →</button>
 </dialog>

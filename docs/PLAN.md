@@ -14,7 +14,10 @@ winner takes a fresh roll. Previous winner opens subsequent games.
 
 ## UX
 Minimal theme, light/dark players side by side. Tap source then highlighted point,
-one die at a time. Roll, undo moves within turn, explicit End Turn, confirmed reset.
+using one die or a legal total of multiple dice on the same checker. Each intermediate
+landing follows normal rules; doubles can combine up to four steps. Equivalent
+dice orders use one destination; distinct dice choices prompt the player. A single
+Undo reverses the entire destination tap. Roll, undo within turn, explicit End Turn, confirmed reset.
 Immediate wins cannot be undone. Portrait phones prompt rotation. English only.
 
 ## Checkpoints

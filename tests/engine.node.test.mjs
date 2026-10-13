@@ -66,6 +66,82 @@ test('players move in opposite directions', () => {
   assert.deepEqual(E.rawMoves(E.initialPosition(), 0, 3), [{ from: 23, to: 20, die: 3 }]);
   assert.deepEqual(E.rawMoves(E.initialPosition(), 1, 3), [{ from: 0, to: 3, die: 3 }]);
 });
+test('combined destinations include 2, 4 and 6 for either player and undo as one action', () => {
+  for (const active of [0, 1]) {
+    const from = active === 0 ? 23 : 0;
+    const sign = active === 0 ? -1 : 1;
+    const original = game(E.initialPosition(), [2, 4], active);
+    const paths = E.availableMovePaths(original, from);
+    assert.deepEqual(new Set(paths.map(p => p.to)), new Set([2, 4, 6].map(n => from + sign * n)));
+    const combined = paths.filter(p => p.to === from + sign * 6);
+    assert.equal(combined.length, 1); // Equivalent legal dice orders need no prompt.
+    const moved = E.applyMovePath(original, combined[0]);
+    assert.equal(moved.position.points[from].count[active], 14);
+    assert.equal(moved.position.points[from + sign * 6].count[active], 1);
+    assert.deepEqual(moved.remaining, []);
+    assert.deepEqual(totals(moved.position), [15, 15]);
+    assert.deepEqual(E.undo(moved), original);
+    assert.equal(E.endTurn(moved).active, 1 - active);
+  }
+});
+test('combined routes cannot jump blocks and can use the only legal dice order', () => {
+  const oneRoute = game(position([[8, 15, 0], [6, 0, 2], [12, 0, 13]]), [2, 4]);
+  const path = E.availableMovePaths(oneRoute, 8).find(p => p.to === 2);
+  assert.deepEqual(path.steps.map(m => m.die), [4, 2]);
+  const bothBlocked = game(position([[8, 15, 0], [6, 0, 2], [4, 0, 2], [12, 0, 11]]), [2, 4]);
+  assert.deepEqual(E.availableMovePaths(bothBlocked, 8), []);
+  const finalBlocked = game(position([[8, 15, 0], [2, 0, 2], [12, 0, 13]]), [2, 4]);
+  assert.ok(!E.availableMovePaths(finalBlocked, 8).some(p => p.to === 2));
+});
+test('combined routes obey forced dice use, pins and immediate wins', () => {
+  const forced = game(position([[5, 1, 0], [3, 0, 2], [0, 0, 2]], [14, 11]), [1, 2]);
+  const route = E.availableMovePaths(forced, 5).find(p => p.to === 2);
+  assert.deepEqual(route.steps.map(m => m.die), [1, 2]);
+  const higher = game(position([[5, 1, 0], [2, 0, 2]], [14, 13]), [1, 2]);
+  assert.deepEqual(E.availableMovePaths(higher, 5).map(p => p.steps.map(m => m.die)), [[2]]);
+  const pinned = game(position([[8, 15, 0], [6, 0, 1], [12, 0, 14]]), [2, 4]);
+  const pinRoute = E.availableMovePaths(pinned, 8).find(p => p.to === 2);
+  const moved = E.applyMovePath(pinned, pinRoute);
+  assert.deepEqual(moved.position.points[6], { count: [0, 1], top: 1 });
+  assert.deepEqual(E.undo(moved), pinned);
+  const mother = game(position([[5, 1, 0], [23, 14, 0], [0, 0, 1], [12, 0, 14]]), [2, 3]);
+  const winning = E.availableMovePaths(mother, 5).find(p => p.to === 0);
+  const won = E.applyMovePath(mother, winning);
+  assert.equal(won.outcome.reason, 'mother');
+  assert.deepEqual(won.score, [2, 0]);
+  assert.throws(() => E.undo(won));
+});
+test('doubles offer two, three and four-step totals while preserving earlier undo history', () => {
+  const original = game(E.initialPosition(), [2, 2]);
+  const paths = E.availableMovePaths(original, 23);
+  assert.deepEqual(paths.map(p => p.to), [21, 19, 17, 15]);
+  const first = E.applyMovePath(original, paths.find(p => p.to === 19));
+  assert.deepEqual(first.remaining, [2, 2]);
+  const second = E.applyMovePath(first, E.availableMovePaths(first, 19).find(p => p.to === 15));
+  assert.deepEqual(second.remaining, []);
+  assert.deepEqual(E.undo(second), first);
+  assert.deepEqual(E.undo(E.undo(second)), original);
+});
+test('combined bear-off keeps distinct dice choices and never follows a checker off the board', () => {
+  const original = game(position([[5, 1, 0], [12, 0, 15]], [14, 0]), [2, 4]);
+  const paths = E.availableMovePaths(original, 5).filter(p => p.to === -1);
+  assert.equal(paths.length, 1);
+  assert.equal(paths[0].steps.length, 2);
+  assert.equal(E.applyMovePath(original, paths[0]).outcome.reason, 'bear-off');
+  const ambiguous = game(position([[0, 2, 0], [12, 0, 15]], [13, 0]), [1, 6]);
+  assert.deepEqual(E.availableMovePaths(ambiguous, 0).map(p => p.steps.map(m => m.die)), [[1], [6]]);
+});
+test('invalid combined routes cannot consume dice or move another checker', () => {
+  const original = game(E.initialPosition(), [2, 4]);
+  const before = JSON.stringify(original);
+  for (const path of [
+    { from: 23, to: 17, steps: [] },
+    { from: 23, to: 17, steps: [{ from: 23, to: 17, die: 6 }] },
+    { from: 23, to: 19, steps: [{ from: 23, to: 21, die: 2 }, { from: 23, to: 19, die: 4 }] },
+    { from: 23, to: 17, steps: [{ from: 23, to: 21, die: 2 }] },
+  ]) assert.throws(() => E.applyMovePath(original, path));
+  assert.equal(JSON.stringify(original), before);
+});
 test('blocked destinations and illegal actions preserve state', () => {
   const g = game(position([[8, 15, 0], [6, 0, 2], [12, 0, 13]]), [2, 3]);
   const before = JSON.stringify(g);
@@ -170,4 +246,9 @@ test('worst-case doubles performance is recorded', () => {
   const duration = performance.now() - before;
   console.log(`Spread-board double-1 evaluation: ${duration.toFixed(1)} ms (${moves.length} first moves)`);
   assert.ok(moves.length > 0); assert.ok(duration < 2000);
+  const pathsStart = performance.now();
+  const paths = E.availableMovePaths(game(p, [1, 1]), 14);
+  const pathsDuration = performance.now() - pathsStart;
+  console.log(`Spread-board combined destinations: ${pathsDuration.toFixed(1)} ms (${paths.length} routes)`);
+  assert.ok(paths.length > 0); assert.ok(pathsDuration < 2000);
 });

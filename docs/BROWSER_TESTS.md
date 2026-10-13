@@ -9,11 +9,15 @@ Start fixtures through the development selector or `?scenario=NAME`.
 | --- | --- | --- |
 | Separate opening rolls | Start round; set next dice `6,1`; Dark: roll die; Light: roll die | Dark's die alone appears first; Dark button disabled; no turn roll until Light rolls; Light wins and takes a fresh pair |
 | Opening ties | Start/reset round; set next dice `3,3`; Light: roll die; Dark: roll die; set `2,5`; Dark: reroll; Light: roll die | Tie enables both rerolls; Dark reroll clears old Light die and waits for Light; Dark wins and takes a fresh pair |
-| Fresh turn | Set dice `2,3`; Roll dice; select point 24 | Legal targets 22 and 21; End turn disabled |
+| Fresh turn | Set dice `2,3`; Roll dice; select point 24 | Legal targets 22, 21 and combined 19; End turn disabled |
+| combined-dice | Select 24; tap 18; Undo | Targets 22, 20 and 18 (2, 4 and 6 spaces); one checker moves to 18, both dice consumed; one Undo restores checker and both dice |
+| combined-one-route | Select 9; tap 3 | Targets 5 and 3; blocked point 7 forces the 4-then-2 order; both dice consumed |
+| combined-blocked | Inspect controls | Both intermediate points blocked; combined destination 3 absent; no moves |
+| combined-doubles | Select 24; tap 16 using Enter; Undo | Targets 22, 20, 18 and 16; four steps consumed; one Undo restores all four |
 | Turn / undo | Move 24→22 using 2; Undo; repeat and use 3 | Undo restores board and both dice; after both dice are used End turn enabled; Dark to roll |
 | pin-and-release | Select 9; move to 7; try an unhighlighted point; Undo; pin again; move 7→6 | Pin visible; illegal destination does not move; undo removes pin and restores die; final covering checker leaving releases Dark |
 | blocked-turn | Inspect controls; End turn | No legal moves; board unchanged; Dark to roll |
-| forced-order | Select 6 | Only point 5 highlighted; 6→4 would strand the other die and must not be offered |
+| forced-order | Select 6 | Points 5 and combined 3 highlighted; 6→4 would strand the other die and must not be offered |
 | higher-die | Select 6 | Only point 4 highlighted; die 2 required |
 | mother-win | Select 2; move to 1 | Immediate +2; Light score 2; Undo disabled; Next game preserves score and Light opens |
 | normal-win | Select 1; Bear off; choose Use 1 if offered | +1; Light score 1; game complete |

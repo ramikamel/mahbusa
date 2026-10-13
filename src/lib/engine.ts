@@ -4,6 +4,7 @@ export type OpeningDice = [number | null, number | null];
 export type Point = { count: Pair; top: Player | null };
 export type Position = { points: Point[]; off: Pair };
 export type Move = { from: number; to: number; die: number };
+export type MovePath = { from: number; to: number; steps: Move[] };
 export type Outcome = { winner: Player; points: 1 | 2; reason: 'mother' | 'bear-off' };
 export type Snapshot = { position: Position; remaining: number[] };
 export type Game = {
@@ -127,6 +128,39 @@ export function legalMoves(position: Position, player: Player, remaining: number
 }
 export function availableMoves(game: Game): Move[] {
   return game.phase === 'moving' ? legalMoves(game.position, game.active, game.remaining) : [];
+}
+// Offer every legal prefix of a route followed by the same checker. Each step
+// uses the normal rules, including maximum dice usage and intermediate pins.
+export function availableMovePaths(game: Game, from: number): MovePath[] {
+  const result: MovePath[] = [];
+  const seen = new Set<string>();
+  function visit(current: Game, point: number, steps: Move[]) {
+    for (const move of availableMoves(current).filter(m => m.from === point)) {
+      const next = applyMove(current, move);
+      const route = [...steps, move];
+      const stateKey = `${move.to}|${key(next.position, next.remaining)}|${next.phase}`;
+      if (seen.has(stateKey)) continue;
+      seen.add(stateKey);
+      result.push({ from, to: move.to, steps: route });
+      if (move.to !== -1 && next.phase === 'moving') visit(next, move.to, route);
+    }
+  }
+  visit(game, from, []);
+  return result;
+}
+export function applyMovePath(game: Game, path: MovePath): Game {
+  if (!path.steps.length || path.steps[0].from !== path.from || path.steps.at(-1)!.to !== path.to) {
+    throw new Error('Invalid checker route.');
+  }
+  let next = game;
+  let point = path.from;
+  for (const move of path.steps) {
+    if (point === -1 || move.from !== point) throw new Error('Follow the same checker.');
+    next = applyMove(next, move);
+    point = move.to;
+  }
+  // A destination tap is one action, so Undo restores its full route.
+  return next.outcome ? next : { ...next, history: [...game.history, { position: game.position, remaining: game.remaining }] };
 }
 export function applyMove(game: Game, move: Move): Game {
   if (!availableMoves(game).some(m => m.from === move.from && m.to === move.to && m.die === move.die)) throw new Error('Illegal move.');
