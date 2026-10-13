@@ -341,3 +341,7 @@ viewport. Rechecked the affected behaviors.
 - Checker-wall alignment, mobile title styling and right-bar End turn retained.
   Svelte checks, production build and offline packaging passed; console errors:
   none. Preview screenshot: `/private/tmp/mahbusa-restored-limit.jpg`.
+- GitHub CI passed for `6b0be0c756a99a2801341034abb715503ca64080`.
+  Public version 11 deployed successfully; deployment
+  `appgdep_6acec1115be48191b440bc394cf6efcc`. Existing hosted game preserved;
+  its cached assets will update after old app clients close.
