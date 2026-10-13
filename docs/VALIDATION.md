@@ -248,3 +248,21 @@ viewport. Rechecked the affected behaviors.
   Reset cancellation passed with no console errors.
 - Cached update activated after closing the old client; local server stopped.
   Public app left open. Screenshot: `/private/tmp/mahbusa-original-board.jpg`.
+
+## Unframed board and compact opening — October 13, 2026
+
+- Removed the gray frame and mapped the playing field, wall, points and right
+  tray into its former footprint. Checker positions scale with the layout;
+  circular checker geometry is preserved. Relative narrow-wall proportions remain.
+- Opening card has no waiting button slot. Start game expands downward only:
+  desktop height grows 212→268 px (+56), compact 120→172 px (+52), with identical
+  top/dice coordinates before and after the winner is decided.
+- Reset confirmation background verified as rgb(179,58,50); cancellation and
+  confirmation behavior remain unchanged.
+- Restored original vertical counter arrangement with larger color discs,
+  center divider and numbers above Dark/below Light. Compact spacing avoids
+  Undo/Reset icons. Bear-off changed Light count 13→14; Undo restored 13.
+- Chrome checked combined movement, tray Undo, reset cancellation/confirmation,
+  both landscape sizes, portrait prompt, wall alignment and round checker bounds.
+  At 844×390, checker width/height both measured 35.869 px. Console errors: none.
+- Actual iPhone/Safari and repeated network-offline UI testing remain pending.

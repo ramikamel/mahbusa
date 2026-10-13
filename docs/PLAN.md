@@ -17,7 +17,9 @@ positions until then. Previous winner opens subsequent games with dice rolled au
 Minimal theme, centered Light/Dark scores in the header without the round-target
 label. The Mahbusa wordmark opens How to play. Borderless Undo/Reset icons sit
 in the right-hand bear-off strip, with color-coded counts between them. The
-counts become a 44 px bear-off target when a selected checker can leave.
+counts use the original vertical arrangement: Dark number above its disc,
+center divider, Light disc above its number. A 44 px bear-off target overlays
+the middle of the tray when a selected checker can leave.
 No separate game heading,
 bottom turn panel, travel captions or footer slogan. Board point numbers and pin lock icons are hidden;
 stack counts, pin stacking and accessible point labels remain. Larger dice (52 px
@@ -29,9 +31,11 @@ dice orders use one destination; distinct dice choices prompt the player. A sing
 Undo reverses the entire destination tap. Explicit End Turn immediately rolls for
 the opponent and closes Undo history; blocked rolls wait for explicit End Turn.
 Welcome, opening rolls, Start game, End turn when no moves remain, dice choices,
-and winning actions appear in center messages. During play, dice float vertically
-over the original 24-unit center wall; original point spacing and compact board
-height are retained. The active player stays highlighted in the header. The wall
+and winning actions appear in center messages. Opening messages have no reserved
+button slot; Start game expands only their bottom edge. Reset confirmation is red.
+The gray outer frame is removed; board and tray geometry fill the old footprint
+with circular checkers and the same relative arrangement. During play, dice float
+over the narrow center wall. The active player stays highlighted in the header. The wall
 overlay follows actual SVG scale, including letterboxing and orientation changes.
 Next game/New round actions live in the winning message. Confirmed reset.
 Immediate wins cannot be undone. Portrait phones prompt rotation. English only.
