@@ -23,8 +23,8 @@
   const dots: Record<number, number[]> = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
   const primaryLabel = $derived(game.phase === 'ready' ? 'Start round' : game.phase === 'roll' ? 'Start game' : game.phase === 'moving' ? 'End turn' : game.phase === 'gameOver' ? 'Next game' : 'New round');
   const status = $derived(notice || (game.phase === 'ready' ? 'Two players. One device. First to 3.' :
-    game.phase === 'opening' ? (openingTied ? 'A tie! Each player rolls again.' : game.opening ? `${names[game.opening[0] === null ? 0 : 1]} still needs to roll. Higher roll starts.` : 'Each player rolls one die. Higher roll starts.') :
-    game.phase === 'roll' ? `${names[game.active]} starts. Tap Start game for fresh dice.` :
+    game.phase === 'opening' ? (openingTied ? 'A tie! Both players reroll.' : game.opening ? `${names[game.opening[0] === null ? 0 : 1]}, roll your die.` : 'Roll one die each. Higher starts.') :
+    game.phase === 'roll' ? `${names[game.active]} starts. Ready to play?` :
     game.phase === 'moving' ? (moves.length ? (selected === null ? 'Choose a checker. Legal moves will light up.' : 'Choose a highlighted destination.') : 'No moves remaining. End your turn when ready.') :
     game.phase === 'roundOver' ? `${names[game.outcome!.winner]} wins the round.` : `${names[game.outcome!.winner]} wins this game.`));
   onMount(() => {
@@ -76,12 +76,7 @@
 <div class="app-wrap">
   <header class="site-header">
     <a class="wordmark" href="/" onclick={(event) => event.preventDefault()} aria-label="Mahbusa home"><span class="brand-icon" aria-hidden="true"><i></i><i></i></span>mahbusa<span class="wordmark-dot">.</span></a>
-    <div class="header-right"><span class="local-label"><span class="status-dot"></span>{online ? 'LOCAL PLAY' : 'OFFLINE PLAY'}</span><button class="text-button" onclick={() => rulesDialog.showModal()}>How to play <span aria-hidden="true">↗</span></button></div>
-  </header>
-  <main>
-    <section class="game-heading" aria-label="Round scoreboard">
-      <div class="heading-copy"><div class="eyebrow">A LITTLE STRATEGY. A LITTLE LUCK.</div><h1>Make your move.</h1></div>
-      <div class="scoreboard">
+      <div class="scoreboard" role="region" aria-label="Round scoreboard">
         {#each names as name, player}
           <div class="player-score" class:active-player={game.active === player && !finished && game.phase !== 'ready' && game.phase !== 'opening'}>
             <span class="player-disc" class:dark-disc={player === 1}></span><span>{name}</span><strong>{game.score[player]}</strong>
@@ -89,7 +84,9 @@
         {/each}
         <div class="round-target">FIRST TO <strong>3</strong></div>
       </div>
-    </section>
+    <div class="header-right"><span class="local-label"><span class="status-dot"></span>{online ? 'LOCAL PLAY' : 'OFFLINE PLAY'}</span><button class="rules-button" onclick={() => rulesDialog.showModal()}>How to play</button></div>
+  </header>
+  <main>
     <div class="portrait-prompt"><span aria-hidden="true">↻</span><h2>A little more room to play.</h2><p>Turn your phone sideways for the board.</p><small>Your current game stays right here.</small></div>
     <section class="play-area" aria-label="Game">
       <div class="board-region">
@@ -101,8 +98,8 @@
           <div class="result-card" aria-label="Game result"><div role="status"><div class="eyebrow">{game.phase === 'roundOver' ? 'ROUND COMPLETE' : 'GAME COMPLETE'}</div><h2>{names[game.outcome!.winner]} wins<span>.</span></h2><p>{game.outcome!.reason === 'mother' ? 'Mother piece pinned' : game.outcome!.points === 2 ? 'All checkers off. Opponent has none off.' : 'All checkers borne off.'}</p><div class="points-award">+{game.outcome!.points} {game.outcome!.points === 1 ? 'point' : 'points'}</div></div><button class="primary-button result-action" onclick={primary}>{game.phase === 'roundOver' ? 'New round' : 'Next game'}</button></div>
         {/if}
       </div>
-      <div class="turn-panel">
-        <div class="turn-info"><span class="turn-marker" class:dark-marker={game.active === 1}></span><div><div class="eyebrow">{game.phase === 'opening' ? 'WHO GOES FIRST?' : finished ? 'WELL PLAYED' : game.phase === 'ready' ? 'READY WHEN YOU ARE' : `${names[game.active].toUpperCase()}'S TURN`}</div><p aria-live="polite">{status}</p></div></div>
+      <div class="turn-panel" class:opening-panel={game.phase === 'opening' || game.phase === 'roll'}>
+        <div class="turn-info"><span class="turn-marker" class:dark-marker={game.active === 1}></span><div><div class="eyebrow">{game.phase === 'opening' ? 'WHO GOES FIRST?' : game.phase === 'roll' ? `${names[game.active].toUpperCase()} STARTS` : finished ? 'WELL PLAYED' : game.phase === 'ready' ? 'READY WHEN YOU ARE' : `${names[game.active].toUpperCase()}'S TURN`}</div><p aria-live="polite">{status}</p></div></div>
         <div class="turn-actions">
           {#if game.phase === 'opening' || game.phase === 'roll'}
             <div class="opening-rolls" role="group" aria-label="Opening rolls">
@@ -116,7 +113,7 @@
                 </div>
               {/each}
             </div>
-            {#if game.phase === 'roll'}<button class="primary-button" onclick={primary}>Start game</button>{/if}
+            <div class="opening-start">{#if game.phase === 'roll'}<button class="primary-button" onclick={primary}>Start game</button>{/if}</div>
           {:else}
           <div class="dice-area" aria-label={shownDice ? `Dice ${shownDice.join(' and ')}` : 'Dice not rolled'}>
             <div class="dice-pair">{#each [0, 1] as index}{@const value = shownDice?.[index]}<div class="die" class:die-spent={game.phase === 'moving' && value != null && !game.remaining.includes(value)} aria-hidden="true">{#if value != null}{#each Array(9) as _, cell}<span class:visible-pip={dots[value].includes(cell)}></span>{/each}{:else}<span class="die-dash">—</span>{/if}</div>{/each}</div>
@@ -140,7 +137,7 @@
 </div>
 <dialog bind:this={rulesDialog} aria-labelledby="rules-title">
   <div class="dialog-heading"><span class="eyebrow">THE RULES OF THE BOARD</span><button class="close-button" aria-label="Close rules" onclick={() => rulesDialog.close()}>×</button></div><h2 id="rules-title">How to play.</h2>
-  <p>Race your 15 checkers around the board and bear them off. Light moves from point 24 toward 1; Dark moves from 1 toward 24.</p>
+  <p>Race your 15 checkers around the board and bear them off. Light moves counterclockwise from the upper-right starting point; Dark moves clockwise from the lower-right starting point.</p>
   <p><strong>Who starts?</strong> Each player taps their own button to roll one die. Higher roll starts; ties mean both roll again. Tap Start game to roll two fresh dice for the winner.</p>
   <p><strong>Pass the turn.</strong> After using your legal moves, tap End turn. The next player's dice roll automatically. If no moves are possible, tap End turn to pass.</p>
   <ol><li><strong>Roll & move.</strong> Tap your checker, then a highlighted destination. Each move uses one die. Doubles give four moves. Use as many dice as possible; if only one can be used and either is playable, use the higher die.</li><li><strong>Pin, don't hit.</strong> Land on one opposing checker to pin it. It cannot move until your final covering checker leaves. Two opposing checkers, or an opposing checker covering yours, block a point.</li><li><strong>Protect your mother.</strong> The last checker on your starting point is your mother. If it is pinned, your opponent immediately wins 2 points.</li><li><strong>Bring them home.</strong> When all your remaining checkers are in your last six points, bear off with matching dice. An oversize die can take the farthest checker only when no checker is farther away.</li><li><strong>First to 3.</strong> A game wins 1 point, or 2 if the opponent has borne off none. First to 3 or more wins the round. The previous winner starts the next game.</li></ol>
