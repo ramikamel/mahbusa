@@ -320,3 +320,13 @@ viewport. Rechecked the affected behaviors.
 - All 36 tests passed; Svelte checking has zero errors/warnings; production build
   and offline packaging passed. Chrome console errors: none. Actual iPhone/Safari
   testing and repeated network-offline UI testing remain pending.
+- GitHub CI passed for deployed commit `154414e7ce34a56494d1b38309f607389f201f8b`.
+  Public version 10 deployed successfully; deployment
+  `appgdep_6acebf8da1508191829acab424506636`.
+- Hosted Chrome initially loaded old cached assets, then activated the update
+  after that tab closed. Confirmed 314 px board height at 844×390, dark wordmark,
+  separate opening rolls/ties, combined moves and right-bar End turn with no
+  center overlay. End turn switched highlight to Light and rolled real dice 5,1.
+- No hosted user game was open during this update activation. Temporary local
+  servers/tabs stopped; viewport override reset; public app left open. Screenshot:
+  `/private/tmp/mahbusa-viewport-board.jpg`.
