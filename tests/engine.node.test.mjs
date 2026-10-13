@@ -66,6 +66,56 @@ test('players move in opposite directions', () => {
   assert.deepEqual(E.rawMoves(E.initialPosition(), 0, 3), [{ from: 23, to: 20, die: 3 }]);
   assert.deepEqual(E.rawMoves(E.initialPosition(), 1, 3), [{ from: 0, to: 3, die: 3 }]);
 });
+test('Start game waits for a decided contest and rolls fresh dice once', () => {
+  const opening = E.startRound();
+  const partial = E.openingRoll(opening, 0, 6);
+  const tied = E.openingRoll(partial, 1, 6);
+  for (const g of [E.createGame(), opening, partial, tied]) assert.throws(() => E.startGame(g, [2, 4]));
+  const decided = E.openingRoll(partial, 1, 1);
+  assert.deepEqual(decided.opening, [6, 1]);
+  assert.deepEqual(E.availableMoves(decided), []);
+  const started = E.startGame(decided, [2, 4]);
+  assert.equal(started.phase, 'moving'); assert.equal(started.active, 0);
+  assert.deepEqual(started.dice, [2, 4]); assert.equal(started.opening, null);
+  assert.throws(() => E.startGame(started, [1, 1]));
+  assert.throws(() => E.startGame(decided, [0, 7]));
+  assert.deepEqual(decided.opening, [6, 1]);
+});
+test('End turn rolls for the opponent atomically and closes the undo boundary', () => {
+  const original = game(E.initialPosition(), [2, 4]);
+  assert.throws(() => E.endTurnAndRoll(original, [3, 3]));
+  const moved = E.applyMovePath(original, E.availableMovePaths(original, 23).find(p => p.to === 17));
+  assert.deepEqual(E.undo(moved), original);
+  const next = E.endTurnAndRoll(moved, [3, 3]);
+  assert.equal(next.phase, 'moving'); assert.equal(next.active, 1);
+  assert.deepEqual(next.dice, [3, 3]); assert.deepEqual(next.remaining, [3, 3, 3, 3]);
+  assert.deepEqual(next.position, moved.position); assert.deepEqual(next.history, []);
+  assert.throws(() => E.undo(next)); assert.throws(() => E.endTurnAndRoll(next, [2, 4]));
+  assert.throws(() => E.endTurnAndRoll(moved, [0, 7]));
+  assert.equal(moved.active, 0);
+});
+test('a blocked automatic roll stays on that player until explicit End turn', () => {
+  const p = position([[8, 13, 0], [10, 2, 0], [9, 0, 13], [7, 0, 2]]);
+  const waiting = game(p, [1, 1], 1);
+  assert.deepEqual(E.availableMoves(waiting), []);
+  const passed = E.endTurnAndRoll(waiting, [1, 1]);
+  assert.equal(passed.active, 0); assert.equal(passed.phase, 'moving');
+  assert.deepEqual(passed.dice, [1, 1]);
+  assert.deepEqual(E.availableMoves(passed), []);
+  assert.equal(E.endTurnAndRoll(passed, [1, 1]).active, 1);
+});
+test('Next game preserves scores and rolls immediately for the previous winner', () => {
+  const won = move(game(position([[0, 1, 0], [12, 0, 14]], [14, 1]), [1, 6]), 0, -1, 1);
+  const next = E.nextGameAndRoll(won, [2, 4]);
+  assert.equal(next.phase, 'moving'); assert.equal(next.active, won.outcome.winner);
+  assert.deepEqual(next.score, [1, 0]); assert.deepEqual(next.position, E.initialPosition());
+  assert.deepEqual(next.remaining, [2, 4]); assert.deepEqual(next.history, []);
+  assert.throws(() => E.nextGameAndRoll(next, [1, 1]));
+  const roundWon = { ...won, phase: 'roundOver', score: [3, 0] };
+  assert.throws(() => E.nextGameAndRoll(roundWon, [1, 1]));
+  const newRound = E.startRound();
+  assert.deepEqual(newRound.score, [0, 0]); assert.equal(newRound.phase, 'opening');
+});
 test('combined destinations include 2, 4 and 6 for either player and undo as one action', () => {
   for (const active of [0, 1]) {
     const from = active === 0 ? 23 : 0;

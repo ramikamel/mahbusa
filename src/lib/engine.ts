@@ -52,6 +52,18 @@ export function roll(game: Game, dice: Pair): Game {
   return { ...game, opening: null, dice: [...dice], remaining: dice[0] === dice[1] ? Array(4).fill(dice[0]) : [...dice],
     phase: 'moving', history: [] };
 }
+export function startGame(game: Game, dice: Pair): Game {
+  if (game.phase !== 'roll' || game.opening?.[0] == null || game.opening[1] == null || game.opening[0] === game.opening[1]) {
+    throw new Error('Finish the opening contest before starting.');
+  }
+  return roll(game, dice);
+}
+export function endTurnAndRoll(game: Game, dice: Pair): Game {
+  return roll(endTurn(game), dice);
+}
+export function nextGameAndRoll(game: Game, dice: Pair): Game {
+  return roll(nextGame(game), dice);
+}
 function clone(position: Position): Position {
   return { off: [...position.off], points: position.points.map(p => ({ count: [...p.count], top: p.top })) };
 }
