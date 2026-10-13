@@ -171,3 +171,16 @@ viewport. Rechecked the affected behaviors.
   scoreboard centered in the header's second row and the rotate prompt.
 - No browser console errors were observed. Actual iPhone/Safari checks remain
   pending; network-offline UI testing was not repeated in this checkpoint.
+- GitHub CI passed for deployed commit
+  `9f6b39f436ae78f67d96311ee470a0fe2278e057`.
+- Public version 5 deployed successfully at
+  https://mahbusa.bubblyspice4.chatgpt.site; deployment
+  `appgdep_6aceab006bb8819188e786fc4982f841`.
+- Hosted Chrome test confirmed the updated header and Start game. Dark's real
+  fresh roll of 2,1 moved one checker from point 1 to 4; End turn immediately
+  rolled 2,3 for Light, with Undo disabled and no Roll dice button.
+- Updated cached assets activated after closing the old client. Development
+  controls are absent, no console errors were observed, and the local server
+  was stopped. Public app left open at the opening contest.
+- Published board screenshot saved locally at
+  `/private/tmp/mahbusa-board-refresh.jpg` for the user handoff.
