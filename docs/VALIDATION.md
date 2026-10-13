@@ -142,3 +142,32 @@ viewport. Rechecked the affected behaviors.
 - Development controls are absent from the hosted release. Local server stopped;
   public board left open showing combined destinations.
 - Actual iPhone checks remain pending; manual network-offline QA was not repeated.
+
+## Board and turn-flow refresh — October 13, 2026
+
+- Completed the approved layout/flow tasks: stable separate contest dice with
+  Start game, fresh opening pair, automatic rolls after End turn and Next game,
+  continuation actions inside results, no visual board numbering or lock icons,
+  centered header scoreboard, outlined How to play, larger dice and small text.
+- All 36 automated tests passed (29 engine, 5 offline, 2 Vitest). New engine
+  cases cover starting guards, fresh dice, automatic handover, Undo boundaries,
+  blocked explicit passes, next-game scoring and new-round reset.
+- Svelte checking reported zero errors/warnings. Production build and fixture
+  exclusion passed; offline worker checks passed.
+- Chrome extension checked opening rolls in Dark-first order, ties and rerolls,
+  fixed dice coordinates before/after deciding the starter, disabled rerolls,
+  fresh first-turn dice and combined destinations. No Roll dice button is present.
+- Ending a completed 2+4 move immediately gave Dark fixed dice 3,5 with Undo
+  disabled. A blocked double-1 handover stayed on Dark until explicit End turn.
+- Mother win awarded +2; exactly one Next game button was inside the result
+  card, clickable and preserved score while immediately rolling 2,4 for Light.
+- Round win offered exactly one New round button inside the result card;
+  pressing Enter reset scores and returned to the opening contest.
+- Pin stacking, release, Undo and updated rules dialogue passed. Numbered point
+  accessibility labels remain; visible numbers and lock graphics are absent.
+- Responsive checks passed at 667×375 and 844×390: dice measure 44 px, controls
+  at least 44 px tall, Start game remains in view, and scoreboard center matches
+  the header center. Desktop dice measure 52 px. Portrait 390×844 shows the
+  scoreboard centered in the header's second row and the rotate prompt.
+- No browser console errors were observed. Actual iPhone/Safari checks remain
+  pending; network-offline UI testing was not repeated in this checkpoint.

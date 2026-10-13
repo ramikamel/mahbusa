@@ -10,14 +10,21 @@ higher die if only one can be used, four moves for doubles. Bear off only with
 all remaining pieces home. Normal win: 1 point; opponent has none off: 2 points.
 First to 3 or more wins the round. Each player rolls their opening die separately
 using their own button, in either order. Both must roll before deciding; ties reroll both dice,
-winner takes a fresh roll. Previous winner opens subsequent games.
+the winner taps Start game to take a fresh roll. Contest dice stay in their player
+positions until then. Previous winner opens subsequent games with dice rolled automatically.
 
 ## UX
-Minimal theme, light/dark players side by side. Tap source then highlighted point,
+Minimal theme, centered scoreboard in the header, outlined How to play button,
+and no separate game heading. Board point numbers and pin lock icons are hidden;
+stack counts, pin stacking and accessible point labels remain. Larger dice (52 px
+desktop, 44 px compact landscape) and readable text; controls at least 44 px tall.
+Tap source then highlighted point,
 using one die or a legal total of multiple dice on the same checker. Each intermediate
 landing follows normal rules; doubles can combine up to four steps. Equivalent
 dice orders use one destination; distinct dice choices prompt the player. A single
-Undo reverses the entire destination tap. Roll, undo within turn, explicit End Turn, confirmed reset.
+Undo reverses the entire destination tap. Explicit End Turn immediately rolls for
+the opponent and closes Undo history; blocked rolls wait for explicit End Turn.
+Next game/New round actions live in the winning message. Confirmed reset.
 Immediate wins cannot be undone. Portrait phones prompt rotation. English only.
 
 ## Checkpoints
