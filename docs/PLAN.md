@@ -14,8 +14,10 @@ the winner taps Start game to take a fresh roll. Contest dice stay in their play
 positions until then. Previous winner opens subsequent games with dice rolled automatically.
 
 ## UX
-Minimal theme, centered scoreboard in the header, outlined How to play button,
-and no separate game heading. Board point numbers and pin lock icons are hidden;
+Minimal theme, centered Light/Dark scores in the header without the round-target
+label. Header toolbar contains Undo, Reset and outlined How to play controls;
+compact screens stack the toolbar to avoid collisions. No separate game heading,
+bottom turn panel, travel captions or footer slogan. Board point numbers and pin lock icons are hidden;
 stack counts, pin stacking and accessible point labels remain. Larger dice (52 px
 desktop, 44 px compact landscape) and readable text; controls at least 44 px tall.
 Tap source then highlighted point,
@@ -24,6 +26,10 @@ landing follows normal rules; doubles can combine up to four steps. Equivalent
 dice orders use one destination; distinct dice choices prompt the player. A single
 Undo reverses the entire destination tap. Explicit End Turn immediately rolls for
 the opponent and closes Undo history; blocked rolls wait for explicit End Turn.
+Welcome, opening rolls, Start game, End turn when no moves remain, dice choices,
+and winning actions appear in center messages. During play, dice sit vertically
+on a wider center wall, with the active player shown in the header. The wall
+overlay follows actual SVG scale, including letterboxing and orientation changes.
 Next game/New round actions live in the winning message. Confirmed reset.
 Immediate wins cannot be undone. Portrait phones prompt rotation. English only.
 

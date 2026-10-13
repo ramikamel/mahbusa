@@ -184,3 +184,27 @@ viewport. Rechecked the affected behaviors.
   was stopped. Public app left open at the opening contest.
 - Published board screenshot saved locally at
   `/private/tmp/mahbusa-board-refresh.jpg` for the user handoff.
+
+## Center controls and wall dice — October 13, 2026
+
+- Replaced the bottom turn panel with center welcome/opening/turn-complete
+  messages. Opening rolls and Start game stay together; End turn appears when
+  no legal moves remain. Dice-choice and winning actions use center messages.
+- Gameplay dice appear vertically on a widened board wall. The overlay tracks
+  the SVG's rendered scale, including letterboxing. Current-turn indication is
+  in the scoreboard; screen-reader status and error notices remain available.
+- Undo and confirmed Reset are in the header toolbar alongside How to play.
+  Removed travel captions, footer slogan and the scoreboard's First to 3 label;
+  scoring and movement rules are unchanged.
+- All 36 existing automated tests passed. Svelte checking reported zero errors
+  and warnings. Chrome checked opening ties/rerolls and fixed die positions,
+  Start game, combined movement, center End turn, header Undo and automatic
+  next-player rolls. Undo from turn completion restored play and hid the message.
+- Reset cancellation preserved dice; confirmation cleared scores and returned
+  to opening. Dice-choice bear-off, Next game and New round passed.
+- At 667×375 and 844×390, wall-dice centers matched SVG-wall centers within
+  0.02 px, and dice remained within the wall. Controls stayed within the viewport
+  with 44 px button heights. Portrait 390×844 retained the header toolbar,
+  scoreboard and rotate prompt; returning to landscape retained the dice.
+- Browser console errors: none observed. Actual iPhone/Safari checks and repeated
+  network-offline UI testing remain pending.

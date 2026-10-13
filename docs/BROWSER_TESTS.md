@@ -9,12 +9,12 @@ Start fixtures through the development selector or `?scenario=NAME`.
 | --- | --- | --- |
 | Separate opening rolls | Start round; set next dice `6,1`; Dark: roll die; Light: roll die | Dice remain in the same player positions; both roll buttons disabled after Light wins; Start game appears; board not playable yet |
 | Opening ties | Start/reset round; set next dice `3,3`; Light: roll die; Dark: roll die; set `2,5`; Dark: reroll; Light: roll die | Tie enables both rerolls and no Start game; Dark reroll clears old Light die; Dark wins and Start game appears |
-| Fresh turn | After Light wins contest, set dice `2,3`; Start game; select point 24 | Fresh dice 2,3; legal targets 22, 21 and combined 19; End turn disabled; no Roll dice button |
+| Fresh turn | After Light wins contest, set dice `2,3`; Start game; select point 24 | Fresh dice 2,3 on the center wall; legal targets 22, 21 and combined 19; End turn absent while moves remain; no Roll dice button |
 | combined-dice | Select 24; tap 18; Undo | Targets 22, 20 and 18 (2, 4 and 6 spaces); one checker moves to 18, both dice consumed; one Undo restores checker and both dice |
 | combined-one-route | Select 9; tap 3 | Targets 5 and 3; blocked point 7 forces the 4-then-2 order; both dice consumed |
 | combined-blocked | Inspect controls | Both intermediate points blocked; combined destination 3 absent; no moves |
 | combined-doubles | Select 24; tap 16 using Enter; Undo | Targets 22, 20, 18 and 16; four steps consumed; one Undo restores all four |
-| Turn / undo | Move 24→22 using 2; Undo; repeat and use 3; set next dice `3,5`; End turn | Undo restores board and both dice; after both dice are used End turn enabled; Dark immediately has dice 3,5; Undo disabled |
+| Turn / undo | Move 24→22 using 2; header Undo; repeat and use 3; set next dice `3,5`; center End turn | Undo restores board and both dice; after both dice are used a center End turn message appears; Dark immediately has wall dice 3,5; Undo disabled |
 | pin-and-release | Select 9; move to 7; try an unhighlighted point; Undo; pin again; move 7→6 | Pin visible; illegal destination does not move; undo removes pin and restores die; final covering checker leaving releases Dark |
 | blocked-turn | Inspect controls; set next dice `2,4`; End turn | No legal moves; board unchanged; Dark immediately has dice 2,4 |
 | blocked-handover | Set next dice `1,1`; End turn | Dark gets four moves from double 1 but all blocked; stays on Dark until explicit End turn |
@@ -27,7 +27,9 @@ Start fixtures through the development selector or `?scenario=NAME`.
 | ambiguous-bear-off | Select 1; Bear off; choose Use 1; Undo | Die-choice controls appear; chosen value consumed; undo restores dice and board |
 | Reset | Reset round; Keep playing; Reset round; confirm | Cancellation preserves game; confirmation clears both scores and restarts opening |
 | Rules | How to play; Back to the board | Rules and install instructions visible; modal closes and board preserved |
-| Board / header | Inspect board and header | No visual point numbers or lock symbols; stack counts and accessible point labels remain; scoreboard centered in header; old heading/slogan absent; How to play outlined with no arrow |
+| Board / header | Inspect board and header | No bottom panel, travel captions, footer slogan or First to 3 scoreboard label; no visual point numbers or locks; header holds centered scores and Undo/Reset/How to play; active player highlighted |
+| Center messages | Start round; roll each opening die; Start game; finish moves; Undo | Welcome/start, opening dice/buttons, Start game, and End turn are in center messages; contest dice stay fixed; header Undo hides completion message and restores moves |
+| Wall dice | During moving phase inspect dice at desktop and both landscape sizes; rotate portrait and back | Dice center matches SVG center-wall center, stays within wall, preserves values and spent states; no ongoing visible turn-status panel |
 | Responsive | Test desktop, 844×390 and 667×375 landscape, 390×844 portrait | 52 px desktop/44 px landscape dice; 14 px status and controls; landscape actions in viewport; portrait rotate prompt and centered header scores; orientation preserves game |
 | Refresh | Move, refresh tab | Fresh board and zero scores; no local saved state |
 
