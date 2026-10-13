@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createGame, startRound, openingRoll, roll, availableMoves, applyMove, endTurn, undo, emptyPosition, legalMoves } from '../src/lib/engine';
 describe('framework test runner integration', () => {
   it('runs a complete legal turn and undo without mutation', () => {
-    const initial = roll(openingRoll(startRound(), [6, 1]), [2, 3]);
+    const initial = roll(openingRoll(openingRoll(startRound(), 0, 6), 1, 1), [2, 3]);
     const moved = applyMove(initial, availableMoves(initial)[0]);
     expect(undo(moved)).toEqual(initial);
     let game = moved;

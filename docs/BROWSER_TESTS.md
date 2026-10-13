@@ -7,7 +7,8 @@ Start fixtures through the development selector or `?scenario=NAME`.
 
 | Scenario | Actions | Expected result |
 | --- | --- | --- |
-| Fresh round | Start round; set next dice `3,3`; Roll to start; set `6,1`; Reroll tie | Tie remains opening; Light wins contest; Roll dice requires a fresh roll |
+| Separate opening rolls | Start round; set next dice `6,1`; Dark: roll die; Light: roll die | Dark's die alone appears first; Dark button disabled; no turn roll until Light rolls; Light wins and takes a fresh pair |
+| Opening ties | Start/reset round; set next dice `3,3`; Light: roll die; Dark: roll die; set `2,5`; Dark: reroll; Light: roll die | Tie enables both rerolls; Dark reroll clears old Light die and waits for Light; Dark wins and takes a fresh pair |
 | Fresh turn | Set dice `2,3`; Roll dice; select point 24 | Legal targets 22 and 21; End turn disabled |
 | Turn / undo | Move 24→22 using 2; Undo; repeat and use 3 | Undo restores board and both dice; after both dice are used End turn enabled; Dark to roll |
 | pin-and-release | Select 9; move to 7; try an unhighlighted point; Undo; pin again; move 7→6 | Pin visible; illegal destination does not move; undo removes pin and restores die; final covering checker leaving releases Dark |

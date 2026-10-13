@@ -15,11 +15,52 @@ function totals(p) { return [0, 1].map(player => p.off[player] + p.points.reduce
 
 test('starts with 15 pieces each and fresh opening dice', () => {
   assert.deepEqual(totals(E.createGame().position), [15, 15]);
-  let g = E.openingRoll(E.startRound(), [3, 3]); assert.equal(g.phase, 'opening');
-  g = E.openingRoll(g, [2, 5]); assert.equal(g.active, 1); assert.equal(g.phase, 'roll');
+  let g = E.openingRoll(E.openingRoll(E.startRound(), 0, 3), 1, 3); assert.equal(g.phase, 'opening');
+  g = E.openingRoll(E.openingRoll(g, 0, 2), 1, 5); assert.equal(g.active, 1); assert.equal(g.phase, 'roll');
   assert.deepEqual(E.roll(g, [4, 4]).remaining, [4, 4, 4, 4]);
   assert.equal(E.roll(g, [4, 4]).opening, null);
   assert.throws(() => E.roll(g, [0, 7]));
+});
+test('opening waits for both players, in either order, and prevents repeated rolls', () => {
+  for (const first of [0, 1]) {
+    const initial = E.startRound();
+    const partial = E.openingRoll(initial, first, first === 0 ? 6 : 1);
+    assert.equal(partial.phase, 'opening');
+    assert.equal(partial.opening[1 - first], null);
+    assert.deepEqual(E.availableMoves(partial), []);
+    assert.throws(() => E.roll(partial, [2, 3]));
+    assert.throws(() => E.openingRoll(partial, first, 4));
+    const decided = E.openingRoll(partial, 1 - first, first === 0 ? 1 : 6);
+    assert.equal(decided.phase, 'roll');
+    assert.equal(decided.active, 0);
+    assert.deepEqual(decided.opening, [6, 1]);
+    assert.equal(decided.dice, null);
+    assert.throws(() => E.openingRoll(decided, 1, 6));
+    assert.equal(initial.opening, null);
+  }
+});
+test('ties discard both old dice before either player rerolls', () => {
+  const tied = E.openingRoll(E.openingRoll(E.startRound(), 0, 3), 1, 3);
+  for (const first of [0, 1]) {
+    const partial = E.openingRoll(tied, first, 5);
+    assert.equal(partial.phase, 'opening');
+    assert.equal(partial.opening[1 - first], null);
+    assert.deepEqual(tied.opening, [3, 3]);
+    const tiedAgain = E.openingRoll(partial, 1 - first, 5);
+    assert.equal(tiedAgain.phase, 'opening');
+    const final = E.openingRoll(E.openingRoll(tiedAgain, 1, 6), 0, 2);
+    assert.equal(final.phase, 'roll');
+    assert.equal(final.active, 1);
+    assert.deepEqual(E.roll(final, [1, 4]).remaining, [1, 4]);
+  }
+});
+test('invalid opening rolls are rejected without changing the board', () => {
+  const initial = E.startRound();
+  for (const die of [0, 7, 1.5, NaN]) assert.throws(() => E.openingRoll(initial, 0, die));
+  assert.throws(() => E.openingRoll(initial, 2, 3));
+  assert.throws(() => E.openingRoll(E.createGame(), 0, 3));
+  assert.equal(initial.opening, null);
+  assert.deepEqual(totals(initial.position), [15, 15]);
 });
 test('players move in opposite directions', () => {
   assert.deepEqual(E.rawMoves(E.initialPosition(), 0, 3), [{ from: 23, to: 20, die: 3 }]);
@@ -103,7 +144,7 @@ test('normal win earns one, mars earns two, score awards exactly once', () => {
   }
 });
 test('complete deterministic games conserve pieces and terminate', () => {
-  let g = E.openingRoll(E.startRound(), [6, 1]);
+  let g = E.openingRoll(E.openingRoll(E.startRound(), 0, 6), 1, 1);
   let seed = 42; const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed; };
   let turns = 0;
   while (g.phase !== 'roundOver' && turns < 2000) {

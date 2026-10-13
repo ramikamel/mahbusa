@@ -8,7 +8,8 @@ independent pure rules engine, static hosting, offline assets, no saved game sta
 Mother-piece pin wins immediately for 2 without exceptions. Use maximum dice,
 higher die if only one can be used, four moves for doubles. Bear off only with
 all remaining pieces home. Normal win: 1 point; opponent has none off: 2 points.
-First to 3 or more wins the round. Opening single-die contest, ties reroll,
+First to 3 or more wins the round. Each player rolls their opening die separately
+using their own button, in either order. Both must roll before deciding; ties reroll both dice,
 winner takes a fresh roll. Previous winner opens subsequent games.
 
 ## UX

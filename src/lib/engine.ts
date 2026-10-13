@@ -1,5 +1,6 @@
 export type Player = 0 | 1;
 export type Pair = [number, number];
+export type OpeningDice = [number | null, number | null];
 export type Point = { count: Pair; top: Player | null };
 export type Position = { points: Point[]; off: Pair };
 export type Move = { from: number; to: number; die: number };
@@ -8,7 +9,7 @@ export type Snapshot = { position: Position; remaining: number[] };
 export type Game = {
   position: Position; active: Player; score: Pair;
   phase: 'ready' | 'opening' | 'roll' | 'moving' | 'gameOver' | 'roundOver';
-  dice: Pair | null; opening: Pair | null; remaining: number[];
+  dice: Pair | null; opening: OpeningDice | null; remaining: number[];
   history: Snapshot[]; outcome: Outcome | null;
 };
 export const other = (p: Player): Player => p === 0 ? 1 : 0;
@@ -31,11 +32,18 @@ export function startRound(): Game { return { ...createGame(), phase: 'opening' 
 function validDice(dice: Pair) {
   if (!dice.every(n => Number.isInteger(n) && n >= 1 && n <= 6)) throw new Error('Dice must be 1–6.');
 }
-export function openingRoll(game: Game, dice: Pair): Game {
+export function openingRoll(game: Game, player: Player, die: number): Game {
   if (game.phase !== 'opening') throw new Error('Not the opening contest.');
-  validDice(dice);
-  return { ...game, opening: [...dice], active: dice[0] > dice[1] ? 0 : 1,
-    phase: dice[0] === dice[1] ? 'opening' : 'roll' };
+  if (player !== 0 && player !== 1) throw new Error('Unknown player.');
+  validDice([die, die]);
+  const tied = game.opening?.[0] != null && game.opening[0] === game.opening[1];
+  const opening: OpeningDice = tied || !game.opening ? [null, null] : [...game.opening];
+  if (opening[player] !== null) throw new Error('This player has already rolled.');
+  opening[player] = die;
+  if (opening[0] === null || opening[1] === null || opening[0] === opening[1]) {
+    return { ...game, opening };
+  }
+  return { ...game, opening, active: opening[0] > opening[1] ? 0 : 1, phase: 'roll' };
 }
 export function roll(game: Game, dice: Pair): Game {
   if (game.phase !== 'roll') throw new Error('Finish the current turn before rolling.');

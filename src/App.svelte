@@ -3,7 +3,7 @@
   import type { Component } from 'svelte';
   import Board from './components/Board.svelte';
   import { createGame, startRound, openingRoll, roll, applyMove, availableMoves, undo, endTurn, nextGame, randomDie } from './lib/engine';
-  import type { Game, Move, Pair } from './lib/engine';
+  import type { Game, Move, Pair, Player } from './lib/engine';
   let game: Game = $state(createGame());
   let selected: number | null = $state(null);
   let choices: Move[] = $state([]);
@@ -17,10 +17,11 @@
   const moves = $derived(availableMoves(game));
   const finished = $derived(game.phase === 'gameOver' || game.phase === 'roundOver');
   const shownDice = $derived(game.dice ?? (game.phase === 'opening' || game.phase === 'roll' ? game.opening : null));
+  const openingTied = $derived(game.opening?.[0] != null && game.opening[0] === game.opening[1]);
   const dots: Record<number, number[]> = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
-  const primaryLabel = $derived(game.phase === 'ready' ? 'Start round' : game.phase === 'opening' ? (game.opening ? 'Reroll tie' : 'Roll to start') : game.phase === 'roll' ? 'Roll dice' : game.phase === 'moving' ? 'End turn' : game.phase === 'gameOver' ? 'Next game' : 'New round');
+  const primaryLabel = $derived(game.phase === 'ready' ? 'Start round' : game.phase === 'roll' ? 'Roll dice' : game.phase === 'moving' ? 'End turn' : game.phase === 'gameOver' ? 'Next game' : 'New round');
   const status = $derived(notice || (game.phase === 'ready' ? 'Two players. One device. First to 3.' :
-    game.phase === 'opening' ? (game.opening ? 'A tie! Roll again to decide who starts.' : 'Each player rolls one die. Higher roll starts.') :
+    game.phase === 'opening' ? (openingTied ? 'A tie! Each player rolls again.' : game.opening ? `${names[game.opening[0] === null ? 0 : 1]} still needs to roll. Higher roll starts.` : 'Each player rolls one die. Higher roll starts.') :
     game.phase === 'roll' ? `${names[game.active]} to roll${game.opening ? ' — take a fresh roll to begin' : ''}.` :
     game.phase === 'moving' ? (moves.length ? (selected === null ? 'Choose a checker. Legal moves will light up.' : 'Choose a highlighted destination.') : 'No moves remaining. End your turn when ready.') :
     game.phase === 'roundOver' ? `${names[game.outcome!.winner]} wins the round.` : `${names[game.outcome!.winner]} wins this game.`));
@@ -39,6 +40,12 @@
     }
     return [randomDie(), randomDie()];
   }
+  function openingDie(player: Player) {
+    clear();
+    const fixed = import.meta.env.DEV && /^[1-6],[1-6]$/.test(forced);
+    game = openingRoll(game, player, fixed ? Number(forced.split(',')[player]) : randomDie());
+    if (game.opening?.every(value => value !== null)) forced = '';
+  }
   function commit(move: Move) { game = applyMove(game, move); clear(); }
   function destination(to: number) {
     const possibilities = moves.filter(m => m.from === selected && m.to === to);
@@ -56,7 +63,6 @@
   function primary() {
     clear();
     if (game.phase === 'ready' || game.phase === 'roundOver') game = startRound();
-    else if (game.phase === 'opening') game = openingRoll(game, dice());
     else if (game.phase === 'roll') game = roll(game, dice());
     else if (game.phase === 'moving' && !moves.length) game = endTurn(game);
     else if (game.phase === 'gameOver') game = nextGame(game);
@@ -96,12 +102,26 @@
       <div class="turn-panel">
         <div class="turn-info"><span class="turn-marker" class:dark-marker={game.active === 1}></span><div><div class="eyebrow">{game.phase === 'opening' ? 'WHO GOES FIRST?' : finished ? 'WELL PLAYED' : game.phase === 'ready' ? 'READY WHEN YOU ARE' : `${names[game.active].toUpperCase()}'S TURN`}</div><p aria-live="polite">{status}</p></div></div>
         <div class="turn-actions">
+          {#if game.phase === 'opening'}
+            <div class="opening-rolls" role="group" aria-label="Opening rolls">
+              {#each [0, 1] as player}
+                {@const value = game.opening?.[player]}
+                <div class="opening-player">
+                  <div class="die" role="img" aria-label={value == null ? `${names[player]} has not rolled` : `${names[player]} rolled ${value}`}>
+                    {#if value != null}{#each Array(9) as _, cell}<span class:visible-pip={dots[value].includes(cell)}></span>{/each}{:else}<span class="die-dash">—</span>{/if}
+                  </div>
+                  <button class="primary-button opening-button" disabled={!openingTied && value != null} onclick={() => openingDie(player as Player)}>{names[player]}: {openingTied ? 'reroll' : value != null ? 'rolled' : 'roll die'}</button>
+                </div>
+              {/each}
+            </div>
+          {:else}
           <div class="dice-area" aria-label={shownDice ? `Dice ${shownDice.join(' and ')}` : 'Dice not rolled'}>
-            <div class="dice-pair">{#each [0, 1] as index}<div class="die" class:die-spent={game.phase === 'moving' && shownDice && !game.remaining.includes(shownDice[index])} aria-hidden="true">{#if shownDice}{#each Array(9) as _, cell}<span class:visible-pip={dots[shownDice[index]].includes(cell)}></span>{/each}{:else}<span class="die-dash">—</span>{/if}</div>{/each}</div>
-            <span class="dice-caption">{game.phase === 'opening' ? 'LIGHT / DARK' : game.phase === 'moving' ? `${game.remaining.length} ${game.remaining.length === 1 ? 'MOVE' : 'MOVES'} LEFT` : 'LET IT ROLL'}</span>
+            <div class="dice-pair">{#each [0, 1] as index}{@const value = shownDice?.[index]}<div class="die" class:die-spent={game.phase === 'moving' && value != null && !game.remaining.includes(value)} aria-hidden="true">{#if value != null}{#each Array(9) as _, cell}<span class:visible-pip={dots[value].includes(cell)}></span>{/each}{:else}<span class="die-dash">—</span>{/if}</div>{/each}</div>
+            <span class="dice-caption">{game.phase === 'roll' && game.opening ? 'LIGHT / DARK' : game.phase === 'moving' ? `${game.remaining.length} ${game.remaining.length === 1 ? 'MOVE' : 'MOVES'} LEFT` : 'LET IT ROLL'}</span>
           </div>
           <button class="undo-button" aria-label="Undo last move" disabled={game.phase !== 'moving' || !game.history.length} onclick={() => { game = undo(game); clear(); }}><span aria-hidden="true">↶</span> Undo</button>
           <button class="primary-button" disabled={game.phase === 'moving' && moves.length > 0} onclick={primary}>{primaryLabel}<span aria-hidden="true">→</span></button>
+          {/if}
         </div>
       </div>
       {#if choices.length}
@@ -118,6 +138,7 @@
 <dialog bind:this={rulesDialog} aria-labelledby="rules-title">
   <div class="dialog-heading"><span class="eyebrow">THE RULES OF THE BOARD</span><button class="close-button" aria-label="Close rules" onclick={() => rulesDialog.close()}>×</button></div><h2 id="rules-title">How to play.</h2>
   <p>Race your 15 checkers around the board and bear them off. Light moves from point 24 toward 1; Dark moves from 1 toward 24.</p>
+  <p><strong>Who starts?</strong> Each player taps their own button to roll one die. Higher roll starts; ties mean both roll again. The starter then rolls two fresh dice for their first turn.</p>
   <ol><li><strong>Roll & move.</strong> Tap your checker, then a highlighted destination. Each move uses one die. Doubles give four moves. Use as many dice as possible; if only one can be used and either is playable, use the higher die.</li><li><strong>Pin, don't hit.</strong> Land on one opposing checker to pin it. It cannot move until your final covering checker leaves. Two opposing checkers, or an opposing checker covering yours, block a point.</li><li><strong>Protect your mother.</strong> The last checker on your starting point is your mother. If it is pinned, your opponent immediately wins 2 points.</li><li><strong>Bring them home.</strong> When all your remaining checkers are in your last six points, bear off with matching dice. An oversize die can take the farthest checker only when no checker is farther away.</li><li><strong>First to 3.</strong> A game wins 1 point, or 2 if the opponent has borne off none. First to 3 or more wins the round. The previous winner starts the next game.</li></ol>
   <p><strong>Take your time.</strong> Undo moves before End Turn. Dice rolls and winning moves cannot be undone.</p>
   <div class="install-note"><strong>Take the board with you.</strong><p>On iPhone, open in Safari, choose Share → Add to Home Screen. Load the app once online before playing offline. Only app files are cached; refreshing or reopening starts fresh.</p></div>
