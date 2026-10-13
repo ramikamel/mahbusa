@@ -238,3 +238,13 @@ viewport. Rechecked the affected behaviors.
 - All 36 automated tests passed; Svelte checking reported zero errors/warnings.
   Production build and offline fixture/cache checks passed.
 - Real iPhone/Safari checks and repeated network-offline UI testing remain pending.
+- GitHub CI passed for deployed commit
+  `a950dc5279993314eb67dc8398d3634a2460fc1a`.
+- Public version 7 deployed successfully at
+  https://mahbusa.bubblyspice4.chatgpt.site; deployment
+  `appgdep_6aceb36c24908191b25e474621c31aae`.
+- Hosted Chrome verified the 24-unit wall, wordmark rules access, tray placement,
+  Light highlight and fresh real dice 5,4. Combined 24→15 move, tray Undo, and
+  Reset cancellation passed with no console errors.
+- Cached update activated after closing the old client; local server stopped.
+  Public app left open. Screenshot: `/private/tmp/mahbusa-original-board.jpg`.
