@@ -288,3 +288,14 @@ viewport. Rechecked the affected behaviors.
 - Combined 2+4 movement and tray Undo passed; no console errors observed.
 - Svelte checking reported zero errors and warnings. Actual iPhone/Safari and
   repeated network-offline UI tests remain pending.
+- Production build and offline packaging passed. GitHub CI passed for deployed
+  commit `674c58b4a8f85549f7792dbbd47c2f35c55ab22d`.
+- Public version 9 deployed successfully at
+  https://mahbusa.bubblyspice4.chatgpt.site; deployment
+  `appgdep_6aceb97d2a748191870de40a497f6d33`.
+- An existing hosted tab had a user game in progress and held the old service
+  worker active. Preserved that game; hosted new-version browser validation is
+  deferred until the user closes the old client.
+- A fresh production preview on port 4181 verified matching edges, opening
+  rolls and fresh gameplay dice with no console errors. Temporary preview
+  servers/tabs stopped. Screenshot: `/private/tmp/mahbusa-matching-heights.jpg`.

@@ -36,9 +36,9 @@ button slot; Start game expands only their bottom edge. Reset confirmation is re
 The gray outer frame is removed; board and tray geometry fill the old footprint
 with circular checkers and the same relative arrangement. During play, dice float
 over the narrow center wall. The active player stays highlighted in the header. The wall
+overlay follows actual SVG scale, including letterboxing and orientation changes.
 and colored point bases share their top/bottom edges with the playing surface
 and bear-off bar. Point hit areas extend to those same edges.
-overlay follows actual SVG scale, including letterboxing and orientation changes.
 Next game/New round actions live in the winning message. Confirmed reset.
 Immediate wins cannot be undone. Portrait phones prompt rotation. English only.
 
