@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import type { Component } from 'svelte';
   import Board from './components/Board.svelte';
+  import Die from './components/Die.svelte';
   import { createGame, startRound, openingRoll, startGame, applyMovePath, availableMoves, availableMovePaths, undo, endTurnAndRoll, nextGameAndRoll, randomDie } from './lib/engine';
   import type { Game, MovePath, Pair, Player } from './lib/engine';
   let game: Game = $state(createGame());
@@ -18,11 +19,8 @@
   const paths = $derived(selected === null ? [] : availableMovePaths(game, selected));
   const destinations = $derived([...new Set(paths.map(path => path.to))]);
   const finished = $derived(game.phase === 'gameOver' || game.phase === 'roundOver');
-  const shownDice = $derived(game.dice ?? (game.phase === 'opening' || game.phase === 'roll' ? game.opening : null));
   const openingTied = $derived(game.opening?.[0] != null && game.opening[0] === game.opening[1]);
-  const dots: Record<number, number[]> = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
-  const primaryLabel = $derived(game.phase === 'ready' ? 'Start round' : game.phase === 'roll' ? 'Start game' : game.phase === 'moving' ? 'End turn' : game.phase === 'gameOver' ? 'Next game' : 'New round');
-  const status = $derived(notice || (game.phase === 'ready' ? 'Two players. One device. First to 3.' :
+  const status = $derived(notice || (game.phase === 'ready' ? 'Sit down and play.' :
     game.phase === 'opening' ? (openingTied ? 'A tie! Both players reroll.' : game.opening ? `${names[game.opening[0] === null ? 0 : 1]}, roll your die.` : 'Roll one die each. Higher starts.') :
     game.phase === 'roll' ? `${names[game.active]} starts. Ready to play?` :
     game.phase === 'moving' ? (moves.length ? (selected === null ? 'Choose a checker. Legal moves will light up.' : 'Choose a highlighted destination.') : 'No moves remaining. End your turn when ready.') :
@@ -72,67 +70,71 @@
   function reset() { game = startRound(); clear(); resetDialog.close(); }
 </script>
 
-<svelte:head><title>Mahbusa · Two players. One board.</title></svelte:head>
+<svelte:head><title>Mahbusa</title></svelte:head>
 <div class="app-wrap">
   <header class="site-header">
     <a class="wordmark" href="/" onclick={(event) => event.preventDefault()} aria-label="Mahbusa home"><span class="brand-icon" aria-hidden="true"><i></i><i></i></span>mahbusa<span class="wordmark-dot">.</span></a>
-      <div class="scoreboard" role="region" aria-label="Round scoreboard">
-        {#each names as name, player}
-          <div class="player-score" class:active-player={game.active === player && !finished && game.phase !== 'ready' && game.phase !== 'opening'}>
-            <span class="player-disc" class:dark-disc={player === 1}></span><span>{name}</span><strong>{game.score[player]}</strong>
-          </div>
-        {/each}
-        <div class="round-target">FIRST TO <strong>3</strong></div>
+    <div class="scoreboard" role="region" aria-label="Round scoreboard">
+      {#each names as name, player}
+        <div class="player-score" class:active-player={game.active === player && !finished && game.phase !== 'ready' && game.phase !== 'opening'}>
+          <span class="player-disc" class:dark-disc={player === 1}></span><span>{name}</span><strong>{game.score[player]}</strong>
+          {#if game.active === player && game.phase === 'moving'}<span class="sr-only">Current turn</span>{/if}
+        </div>
+      {/each}
+    </div>
+    <div class="header-right">
+      <span class="local-label"><span class="status-dot"></span>{online ? 'LOCAL PLAY' : 'OFFLINE PLAY'}</span>
+      <div class="header-tools" role="group" aria-label="Game controls">
+        <button class="rules-button undo-control" aria-label="Undo last move" disabled={game.phase !== 'moving' || !game.history.length} onclick={() => { game = undo(game); clear(); }}><span aria-hidden="true">↶</span> Undo</button>
+        <button class="rules-button reset-control" aria-label="Reset round" onclick={() => resetDialog.showModal()}>Reset</button>
+        <button class="rules-button help-control" onclick={() => rulesDialog.showModal()}>How to play</button>
       </div>
-    <div class="header-right"><span class="local-label"><span class="status-dot"></span>{online ? 'LOCAL PLAY' : 'OFFLINE PLAY'}</span><button class="rules-button" onclick={() => rulesDialog.showModal()}>How to play</button></div>
+    </div>
   </header>
   <main>
     <div class="portrait-prompt"><span aria-hidden="true">↻</span><h2>A little more room to play.</h2><p>Turn your phone sideways for the board.</p><small>Your current game stays right here.</small></div>
     <section class="play-area" aria-label="Game">
+      <p class="sr-only" aria-live="polite">{status}</p>
       <div class="board-region">
-        <Board {game} {selected} {moves} {destinations} {choosePoint} bearOff={() => destination(-1)} />
+        <Board {game} {selected} {moves} {destinations} {choosePoint} bearOff={() => destination(-1)}>
+          {#snippet wall()}
+            {#if game.phase === 'moving' && game.dice}
+              <div class="wall-dice" role="group" aria-label={'Dice ' + game.dice.join(' and ')}>
+                {#each game.dice as value}<Die {value} spent={!game.remaining.includes(value)} />{/each}
+              </div>
+            {/if}
+          {/snippet}
+        </Board>
         {#if game.phase === 'ready'}
-          <div class="welcome-note"><span class="eyebrow">WELCOME TO THE BOARD</span><h2>Good company.<br />A good game.</h2><p>No sign-up. Just sit down and play.</p></div>
-        {/if}
-        {#if finished}
-          <div class="result-card" aria-label="Game result"><div role="status"><div class="eyebrow">{game.phase === 'roundOver' ? 'ROUND COMPLETE' : 'GAME COMPLETE'}</div><h2>{names[game.outcome!.winner]} wins<span>.</span></h2><p>{game.outcome!.reason === 'mother' ? 'Mother piece pinned' : game.outcome!.points === 2 ? 'All checkers off. Opponent has none off.' : 'All checkers borne off.'}</p><div class="points-award">+{game.outcome!.points} {game.outcome!.points === 1 ? 'point' : 'points'}</div></div><button class="primary-button result-action" onclick={primary}>{game.phase === 'roundOver' ? 'New round' : 'Next game'}</button></div>
-        {/if}
-      </div>
-      <div class="turn-panel" class:opening-panel={game.phase === 'opening' || game.phase === 'roll'}>
-        <div class="turn-info"><span class="turn-marker" class:dark-marker={game.active === 1}></span><div><div class="eyebrow">{game.phase === 'opening' ? 'WHO GOES FIRST?' : game.phase === 'roll' ? `${names[game.active].toUpperCase()} STARTS` : finished ? 'WELL PLAYED' : game.phase === 'ready' ? 'READY WHEN YOU ARE' : `${names[game.active].toUpperCase()}'S TURN`}</div><p aria-live="polite">{status}</p></div></div>
-        <div class="turn-actions">
-          {#if game.phase === 'opening' || game.phase === 'roll'}
+          <div class="center-message welcome-message"><span class="eyebrow">WELCOME TO THE BOARD</span><h2>Good company.<br />A good game.</h2><p>No sign-up. Just sit down and play.</p><button class="primary-button" onclick={primary}>Start round</button></div>
+        {:else if game.phase === 'opening' || game.phase === 'roll'}
+          <div class="center-message opening-message" aria-label="Opening contest">
+            <span class="eyebrow">{game.phase === 'opening' ? 'WHO GOES FIRST?' : names[game.active].toUpperCase() + ' STARTS'}</span>
+            <p class="opening-status">{status}</p>
             <div class="opening-rolls" role="group" aria-label="Opening rolls">
               {#each [0, 1] as player}
                 {@const value = game.opening?.[player]}
                 <div class="opening-player">
-                  <div class="die" role="img" aria-label={value == null ? `${names[player]} has not rolled` : `${names[player]} rolled ${value}`}>
-                    {#if value != null}{#each Array(9) as _, cell}<span class:visible-pip={dots[value].includes(cell)}></span>{/each}{:else}<span class="die-dash">—</span>{/if}
-                  </div>
+                  <Die value={value ?? null} label={value == null ? names[player] + ' has not rolled' : names[player] + ' rolled ' + value} />
                   <button class="primary-button opening-button" disabled={game.phase !== 'opening' || (!openingTied && value != null)} onclick={() => openingDie(player as Player)}>{names[player]}: {openingTied ? 'reroll' : value != null ? 'rolled' : 'roll die'}</button>
                 </div>
               {/each}
             </div>
             <div class="opening-start">{#if game.phase === 'roll'}<button class="primary-button" onclick={primary}>Start game</button>{/if}</div>
-          {:else}
-          <div class="dice-area" aria-label={shownDice ? `Dice ${shownDice.join(' and ')}` : 'Dice not rolled'}>
-            <div class="dice-pair">{#each [0, 1] as index}{@const value = shownDice?.[index]}<div class="die" class:die-spent={game.phase === 'moving' && value != null && !game.remaining.includes(value)} aria-hidden="true">{#if value != null}{#each Array(9) as _, cell}<span class:visible-pip={dots[value].includes(cell)}></span>{/each}{:else}<span class="die-dash">—</span>{/if}</div>{/each}</div>
-            <span class="dice-caption">{game.phase === 'moving' ? `${game.remaining.length} ${game.remaining.length === 1 ? 'MOVE' : 'MOVES'} LEFT` : 'LET IT ROLL'}</span>
           </div>
-          <button class="undo-button" aria-label="Undo last move" disabled={game.phase !== 'moving' || !game.history.length} onclick={() => { game = undo(game); clear(); }}><span aria-hidden="true">↶</span> Undo</button>
-          {#if !finished}<button class="primary-button" disabled={game.phase === 'moving' && moves.length > 0} onclick={primary}>{primaryLabel}<span aria-hidden="true">→</span></button>{/if}
-          {/if}
-        </div>
+        {:else if finished}
+          <div class="center-message result-card" aria-label="Game result"><div role="status"><div class="eyebrow">{game.phase === 'roundOver' ? 'ROUND COMPLETE' : 'GAME COMPLETE'}</div><h2>{names[game.outcome!.winner]} wins<span>.</span></h2><p>{game.outcome!.reason === 'mother' ? 'Mother piece pinned' : game.outcome!.points === 2 ? 'All checkers off. Opponent has none off.' : 'All checkers borne off.'}</p><div class="points-award">+{game.outcome!.points} {game.outcome!.points === 1 ? 'point' : 'points'}</div></div><button class="primary-button result-action" onclick={primary}>{game.phase === 'roundOver' ? 'New round' : 'Next game'}</button></div>
+        {:else if !moves.length}
+          <div class="center-message turn-complete" aria-label="Turn complete"><span class="eyebrow">{names[game.active].toUpperCase()}'S TURN</span><h2>{game.remaining.length ? 'No moves available.' : 'Turn complete.'}</h2><p>Pass the board when you're ready.</p><button class="primary-button" onclick={primary}>End turn</button></div>
+        {/if}
+        {#if choices.length}
+          <div class="center-message move-choice" role="group" aria-label="Choose dice for move"><p>Use which dice?</p><div class="choice-actions">{#each choices as path}<button class="primary-button" onclick={() => commit(path)}>Use {path.steps.map(step => step.die).join(' + ')}</button>{/each}<button class="text-button" onclick={() => choices = []}>Cancel</button></div></div>
+        {/if}
+        {#if destinations.includes(-1)}<button class="bear-off-button" onclick={() => destination(-1)}>Bear off selected checker</button>{/if}
+        {#if notice}<p class="board-notice" role="status">{notice}</p>{/if}
       </div>
-      {#if choices.length}
-        <div class="die-choice" role="group" aria-label="Choose dice for move"><span>Use which dice?</span>{#each choices as path}<button onclick={() => commit(path)}>Use {path.steps.map(step => step.die).join(' + ')}</button>{/each}<button class="text-button" onclick={() => choices = []}>Cancel</button></div>
-      {/if}
-      {#if destinations.includes(-1)}<button class="bear-off-button" onclick={() => destination(-1)}>Bear off selected checker →</button>{/if}
     </section>
-    <footer class="game-footer"><span>Two players. One board. No distractions.</span><button class="text-button" onclick={() => resetDialog.showModal()}>Reset round</button></footer>
-    {#if DevTools}
-      <DevTools loadScenario={(fixture) => { game = fixture; clear(); }} setDice={(value) => forced = value} />
-    {/if}
+    {#if DevTools}<DevTools loadScenario={(fixture) => { game = fixture; clear(); }} setDice={(value) => forced = value} />{/if}
   </main>
 </div>
 <dialog bind:this={rulesDialog} aria-labelledby="rules-title">
