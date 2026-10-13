@@ -208,3 +208,14 @@ viewport. Rechecked the affected behaviors.
   scoreboard and rotate prompt; returning to landscape retained the dice.
 - Browser console errors: none observed. Actual iPhone/Safari checks and repeated
   network-offline UI testing remain pending.
+- Production build and development-fixture exclusion passed. GitHub CI passed
+  for deployed commit `f1ff174bdbc4ce549ed6a662a1b66570ea582ac7`.
+- Public version 6 deployed successfully at
+  https://mahbusa.bubblyspice4.chatgpt.site; deployment
+  `appgdep_6aceaed9ee788191a806e7dd55d7747c`.
+- Hosted Chrome smoke test passed centered Start round/opening/Start game,
+  Light's real combined 1+3 move from 24 to 20, header Undo, center End turn,
+  and automatic Dark wall dice 5,2. No development controls or console errors.
+- Updated cached assets activated after closing the old client. Local server
+  stopped; live app left open showing wall dice and the header toolbar.
+- Screenshot saved at `/private/tmp/mahbusa-center-controls.jpg` for handoff.
