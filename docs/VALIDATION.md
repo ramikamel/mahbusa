@@ -90,3 +90,27 @@ viewport. Rechecked the affected behaviors.
 - The corrected worker activated after closing the old preview client.
 - Final app left open in Chrome; the temporary local preview was stopped.
 - All 23 automated tests and GitHub CI passed for the hosting compatibility fix.
+
+## Separate opening rolls — October 12, 2026
+
+- Light and Dark now roll one opening die each using separate buttons, in either
+  order. Already-rolled players wait for their opponent. A tie enables both
+  rerolls; the first reroll clears both previous results before recording the new die.
+- All 26 automated tests passed (19 engine, 5 offline, 2 Vitest). Svelte checking
+  reported zero errors or warnings; production build and fixture exclusion passed.
+- Chrome extension QA passed both rolling orders, disabled repeat rolls, waiting
+  for the second player, ties, independent rerolls, both possible starters, fresh
+  first-turn dice and legal destinations. No console errors were observed.
+- At 844×390, both controls fit inside the viewport. Portrait shows the rotate
+  prompt; returning to landscape preserves the opening contest.
+- GitHub Actions passed for application commit
+  `6c85c6794d2a75b8e724397741db2f79fb1cba35`.
+- Public version 3 deployed successfully at
+  https://mahbusa.bubblyspice4.chatgpt.site; deployment
+  `appgdep_6acd9a652c9c8191ba486ba91f7a8c6f`.
+- Hosted Chrome smoke test passed separate rolls, a real random tie and rerolls,
+  a Dark win, fresh dice, and reset. Development controls are absent. The new
+  cached assets activated after closing the previous app client.
+- Local test server stopped; published app left open at the opening contest.
+- Actual iPhone checks remain pending. Offline worker behavior was covered by
+  automated tests; manual network-offline testing was not repeated for this change.
