@@ -114,3 +114,31 @@ viewport. Rechecked the affected behaviors.
 - Local test server stopped; published app left open at the opening contest.
 - Actual iPhone checks remain pending. Offline worker behavior was covered by
   automated tests; manual network-offline testing was not repeated for this change.
+
+## Combined dice destinations — October 13, 2026
+
+- Selecting a checker offers legal single-die and combined destinations. With
+  2 and 4, this includes 2, 4 and 6 spaces when legal; doubles include up to four
+  steps. Every intermediate landing uses normal movement, pin and dice-use rules.
+- Equivalent dice orders share a destination without a redundant prompt. Different
+  bear-off dice choices remain selectable. One Undo reverses the whole tapped route.
+- All 32 automated tests passed (25 engine, 5 offline, 2 Vitest). New tests cover
+  both players, blocked intermediate/final points, alternate order, forced dice
+  use, pin release, immediate wins, doubles, bear-off and atomic Undo.
+- Svelte check: zero errors/warnings. Production build and development fixture
+  exclusion passed. A spread-board doubles destination calculation measured
+  11.1 ms locally; this is not a measurement of iPhone interaction latency.
+- Chrome extension QA passed 24→18 using 2+4, full Undo, a blocked first landing
+  with a legal reverse order, both routes blocked, four-step doubles via Enter,
+  and unchanged bearing-off dice choices. No console errors were observed.
+- At 844×390, combined movement and Undo worked; controls remained in view.
+- GitHub CI passed for `cb9e806a96618b167a4afe1611be5635b1b5e938`.
+- Public version 4 deployed successfully at
+  https://mahbusa.bubblyspice4.chatgpt.site; deployment
+  `appgdep_6ace9ad94e34819187b02aaa2a6b707c`.
+- Hosted smoke test used a real 4+3 roll: Dark had destinations 4, 5 and 8 from
+  point 1; tapping 8 consumed both dice, and one Undo restored the board and dice.
+  The new cached assets activated after closing the previous app client.
+- Development controls are absent from the hosted release. Local server stopped;
+  public board left open showing combined destinations.
+- Actual iPhone checks remain pending; manual network-offline QA was not repeated.
