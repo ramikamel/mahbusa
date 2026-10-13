@@ -102,10 +102,7 @@
           {#snippet tray()}
             <div class="tray-tools" role="group" aria-label="Board controls and borne-off checkers">
               <button class="tray-control" aria-label="Undo last move" title="Undo last move" disabled={game.phase !== 'moving' || !game.history.length} onclick={() => { game = undo(game); clear(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 3 11l6 6M3 11h10a6 6 0 0 1 6 6" /></svg></button>
-              <button class="tray-counts" disabled={!destinations.includes(-1)} aria-label={destinations.includes(-1) ? 'Bear off selected checker' : 'Borne-off checkers: Dark ' + game.position.off[1] + ', Light ' + game.position.off[0]} onclick={() => destination(-1)}>
-                <span class="tray-count" aria-label={'Dark borne off: ' + game.position.off[1]}><span class="player-disc dark-disc" aria-hidden="true"></span><span>{game.position.off[1]}</span></span>
-                <span class="tray-count" aria-label={'Light borne off: ' + game.position.off[0]}><span class="player-disc" aria-hidden="true"></span><span>{game.position.off[0]}</span></span>
-              </button>
+              {#if destinations.includes(-1)}<button class="tray-bear-off" aria-label="Bear off selected checker" title="Bear off selected checker" onclick={() => destination(-1)}></button>{/if}
               <button class="tray-control" aria-label="Reset round" title="Reset round" onclick={() => resetDialog.showModal()}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7" /></svg></button>
             </div>
           {/snippet}
@@ -113,7 +110,7 @@
         {#if game.phase === 'ready'}
           <div class="center-message welcome-message"><span class="eyebrow">WELCOME TO THE BOARD</span><h2>Good company.<br />A good game.</h2><p>No sign-up. Just sit down and play.</p><button class="primary-button" onclick={primary}>Start round</button></div>
         {:else if game.phase === 'opening' || game.phase === 'roll'}
-          <div class="center-message opening-message" aria-label="Opening contest">
+          <div class="center-message opening-message" class:has-start={game.phase === 'roll'} aria-label="Opening contest">
             <span class="eyebrow">{game.phase === 'opening' ? 'WHO GOES FIRST?' : names[game.active].toUpperCase() + ' STARTS'}</span>
             <p class="opening-status">{status}</p>
             <div class="opening-rolls" role="group" aria-label="Opening rolls">
@@ -125,7 +122,7 @@
                 </div>
               {/each}
             </div>
-            <div class="opening-start">{#if game.phase === 'roll'}<button class="primary-button" onclick={primary}>Start game</button>{/if}</div>
+            {#if game.phase === 'roll'}<div class="opening-start"><button class="primary-button" onclick={primary}>Start game</button></div>{/if}
           </div>
         {:else if finished}
           <div class="center-message result-card" aria-label="Game result"><div role="status"><div class="eyebrow">{game.phase === 'roundOver' ? 'ROUND COMPLETE' : 'GAME COMPLETE'}</div><h2>{names[game.outcome!.winner]} wins<span>.</span></h2><p>{game.outcome!.reason === 'mother' ? 'Mother piece pinned' : game.outcome!.points === 2 ? 'All checkers off. Opponent has none off.' : 'All checkers borne off.'}</p><div class="points-award">+{game.outcome!.points} {game.outcome!.points === 1 ? 'point' : 'points'}</div></div><button class="primary-button result-action" onclick={primary}>{game.phase === 'roundOver' ? 'New round' : 'Next game'}</button></div>
@@ -152,4 +149,4 @@
   <div class="install-note"><strong>Take the board with you.</strong><p>On iPhone, open in Safari, choose Share → Add to Home Screen. Load the app once online before playing offline. Only app files are cached; refreshing or reopening starts fresh.</p></div>
   <button class="primary-button" onclick={() => rulesDialog.close()}>Back to the board →</button>
 </dialog>
-<dialog bind:this={resetDialog} aria-labelledby="reset-title"><span class="eyebrow">A FRESH START</span><h2 id="reset-title">Reset this round?</h2><p>The current board and both scores will be cleared.</p><div class="dialog-actions"><button class="secondary-button" onclick={() => resetDialog.close()}>Keep playing</button><button class="primary-button" onclick={reset}>Reset round →</button></div></dialog>
+<dialog bind:this={resetDialog} aria-labelledby="reset-title"><span class="eyebrow">A FRESH START</span><h2 id="reset-title">Reset this round?</h2><p>The current board and both scores will be cleared.</p><div class="dialog-actions"><button class="secondary-button" onclick={() => resetDialog.close()}>Keep playing</button><button class="primary-button danger-button" onclick={reset}>Reset round →</button></div></dialog>

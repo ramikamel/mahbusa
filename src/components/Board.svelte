@@ -16,6 +16,11 @@
   let boardWidth = $state(0);
   let boardPixelsHeight = $state(0);
   const scale = $derived(Math.min(boardWidth / 840, boardPixelsHeight / boardHeight));
+  // Fill the former frame footprint without stretching circular checkers.
+  const horizontalScale = 838 / 801;
+  const verticalScale = $derived((boardHeight - 2) / (boardHeight - 48));
+  function mapX(value: number) { return 1 + (value - 24) * horizontalScale; }
+  function mapY(value: number) { return 1 + (value - 24) * verticalScale; }
   function x(slot: number) { return 64 + slot * 58 + (slot >= 6 ? 36 : 0); }
   const targets = $derived(new Set(destinations));
   const canBear = $derived(targets.has(-1));
@@ -40,10 +45,9 @@
 
 <div class="board-shell" bind:clientWidth={boardWidth} bind:clientHeight={boardPixelsHeight}>
   <svg class="board" viewBox={`0 0 840 ${boardHeight}`} aria-label="Mahbusa board, 24 points" role="group">
-    <rect x="1" y="1" width="838" height={boardHeight - 2} rx="24" class="board-border" />
-    <rect x="24" y="24" width="756" height={boardHeight - 48} rx="12" class="board-field" />
-    <rect x="391" y="24" width="24" height={boardHeight - 48} rx="6" class="board-spine" />
-    <path d={`M403 ${boardHeight / 2 - 28}v56`} class="spine-mark" />
+    <rect x="1" y="1" width={756 * horizontalScale} height={boardHeight - 2} rx={12 * horizontalScale} class="board-field" />
+    <rect x={mapX(391)} y="1" width={24 * horizontalScale} height={boardHeight - 2} rx={6 * horizontalScale} class="board-spine" />
+    <path d={`M${mapX(403)} ${mapY(boardHeight / 2 - 28)}v${56 * verticalScale}`} class="spine-mark" />
     {#each [{ points: top, upper: true }, { points: bottom, upper: false }] as row}
       {#each row.points as point, slot}
         {@const cx = x(slot)}
@@ -53,16 +57,16 @@
           onclick={() => choosePoint(point)}
           onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choosePoint(point); } }}
           class:point-selected={selected === point} class:point-target={targets.has(point)}>
-          <rect x={cx - 28} y={row.upper ? 26 : boardHeight / 2 + 9} width="56" height={boardHeight / 2 - 37} rx="8" class="point-hit" />
-          <path d={row.upper ? `M${cx - 25} 43H${cx + 25}L${cx} ${boardHeight / 2 - 26}Z` : `M${cx - 25} ${boardHeight - 43}H${cx + 25}L${cx} ${boardHeight / 2 + 26}Z`}
+          <rect x={mapX(cx - 28)} y={mapY(row.upper ? 26 : boardHeight / 2 + 9)} width={56 * horizontalScale} height={(boardHeight / 2 - 37) * verticalScale} rx={8 * horizontalScale} class="point-hit" />
+          <path d={row.upper ? `M${mapX(cx - 25)} ${mapY(43)}H${mapX(cx + 25)}L${mapX(cx)} ${mapY(boardHeight / 2 - 26)}Z` : `M${mapX(cx - 25)} ${mapY(boardHeight - 43)}H${mapX(cx + 25)}L${mapX(cx)} ${mapY(boardHeight / 2 + 26)}Z`}
             class="triangle" class:triangle-alt={slot % 2 === 0} />
           {#each tokens(point) as token, i}
             {@const inset = compact ? 56 : 68}
             {@const cy = row.upper ? inset + token.offset : boardHeight - inset - token.offset}
-            <circle cx={cx} {cy} r={compact ? 18 : 23} class="checker" class:checker-light={token.player === 0} class:checker-dark={token.player === 1} />
-            {#if token.label}<text x={cx} y={cy + 5} class="stack-count" class:count-dark={token.player === 1}>{token.label}</text>{/if}
+            <circle cx={mapX(cx)} cy={mapY(cy)} r={(compact ? 18 : 23) * horizontalScale} class="checker" class:checker-light={token.player === 0} class:checker-dark={token.player === 1} />
+            {#if token.label}<text x={mapX(cx)} y={mapY(cy) + 5 * horizontalScale} class="stack-count" class:count-dark={token.player === 1}>{token.label}</text>{/if}
           {/each}
-          {#if targets.has(point)}<circle cx={cx} cy={row.upper ? boardHeight / 2 - 12 : boardHeight / 2 + 12} r="6" class="destination-dot" />{/if}
+          {#if targets.has(point)}<circle cx={mapX(cx)} cy={mapY(row.upper ? boardHeight / 2 - 12 : boardHeight / 2 + 12)} r={6 * horizontalScale} class="destination-dot" />{/if}
         </g>
       {/each}
     {/each}
@@ -70,9 +74,14 @@
       onclick={() => { if (canBear) bearOff(); }}
       onkeydown={(event) => { if (canBear && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); bearOff(); } }}
       class:off-available={canBear}>
-      <rect x="793" y="25" width="32" height={boardHeight - 50} rx="12" class="off-tray" />
+      <rect x={mapX(793)} y={mapY(25)} width={32 * horizontalScale} height={(boardHeight - 50) * verticalScale} rx={12 * horizontalScale} class="off-tray" />
+      <text x={mapX(809)} y={mapY(boardHeight / 2 - (compact ? 42 : 57))} class="off-number">{game.position.off[1]}</text>
+      <circle cx={mapX(809)} cy={mapY(boardHeight / 2 - (compact ? 25 : 36))} r={8 * horizontalScale} class="checker-dark" />
+      <path d={`M${mapX(800)} ${mapY(boardHeight / 2)}h${18 * horizontalScale}`} class="tray-divider" />
+      <circle cx={mapX(809)} cy={mapY(boardHeight / 2 + (compact ? 25 : 36))} r={8 * horizontalScale} class="checker-light" />
+      <text x={mapX(809)} y={mapY(boardHeight / 2 + (compact ? 52 : 67))} class="off-number">{game.position.off[0]}</text>
     </g>
   </svg>
-  {#if wall}<div class="board-wall" style:left={`${boardWidth / 2 - 17 * scale}px`} style:top={`${boardPixelsHeight / 2}px`}>{@render wall()}</div>{/if}
-  {#if tray}<div class="tray-overlay" style:left={`${boardWidth / 2 + 389 * scale}px`} style:top={`${boardPixelsHeight / 2}px`} style:height={`${(boardHeight - 50) * scale}px`}>{@render tray()}</div>{/if}
+  {#if wall}<div class="board-wall" style:left={`${boardWidth / 2 + (mapX(403) - 420) * scale}px`} style:top={`${boardPixelsHeight / 2}px`}>{@render wall()}</div>{/if}
+  {#if tray}<div class="tray-overlay" style:left={`${boardWidth / 2 + (mapX(809) - 420) * scale}px`} style:top={`${boardPixelsHeight / 2}px`} style:height={`${(boardHeight - 50) * verticalScale * scale}px`}>{@render tray()}</div>{/if}
 </div>
