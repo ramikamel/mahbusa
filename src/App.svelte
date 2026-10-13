@@ -103,6 +103,7 @@
             <div class="tray-tools" role="group" aria-label="Board controls and borne-off checkers">
               <button class="tray-control" aria-label="Undo last move" title="Undo last move" disabled={game.phase !== 'moving' || !game.history.length} onclick={() => { game = undo(game); clear(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 3 11l6 6M3 11h10a6 6 0 0 1 6 6" /></svg></button>
               {#if destinations.includes(-1)}<button class="tray-bear-off" aria-label="Bear off selected checker" title="Bear off selected checker" onclick={() => destination(-1)}></button>{/if}
+              {#if game.phase === 'moving' && !moves.length}<button class="tray-control tray-end-turn" aria-label="End turn" title="End turn" onclick={primary}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" /></svg></button>{/if}
               <button class="tray-control" aria-label="Reset round" title="Reset round" onclick={() => resetDialog.showModal()}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7" /></svg></button>
             </div>
           {/snippet}
@@ -126,8 +127,6 @@
           </div>
         {:else if finished}
           <div class="center-message result-card" aria-label="Game result"><div role="status"><div class="eyebrow">{game.phase === 'roundOver' ? 'ROUND COMPLETE' : 'GAME COMPLETE'}</div><h2>{names[game.outcome!.winner]} wins<span>.</span></h2><p>{game.outcome!.reason === 'mother' ? 'Mother piece pinned' : game.outcome!.points === 2 ? 'All checkers off. Opponent has none off.' : 'All checkers borne off.'}</p><div class="points-award">+{game.outcome!.points} {game.outcome!.points === 1 ? 'point' : 'points'}</div></div><button class="primary-button result-action" onclick={primary}>{game.phase === 'roundOver' ? 'New round' : 'Next game'}</button></div>
-        {:else if !moves.length}
-          <div class="center-message turn-complete" aria-label="Turn complete"><span class="eyebrow">{names[game.active].toUpperCase()}'S TURN</span><h2>{game.remaining.length ? 'No moves available.' : 'Turn complete.'}</h2><p>Pass the board when you're ready.</p><button class="primary-button" onclick={primary}>End turn</button></div>
         {/if}
         {#if choices.length}
           <div class="center-message move-choice" role="group" aria-label="Choose dice for move"><p>Use which dice?</p><div class="choice-actions">{#each choices as path}<button class="primary-button" onclick={() => commit(path)}>Use {path.steps.map(step => step.die).join(' + ')}</button>{/each}<button class="text-button" onclick={() => choices = []}>Cancel</button></div></div>
@@ -142,7 +141,7 @@
   <div class="dialog-heading"><span class="eyebrow">THE RULES OF THE BOARD</span><button class="close-button" aria-label="Close rules" onclick={() => rulesDialog.close()}>×</button></div><h2 id="rules-title">How to play.</h2>
   <p>Race your 15 checkers around the board and bear them off. Light moves counterclockwise from the upper-right starting point; Dark moves clockwise from the lower-right starting point.</p>
   <p><strong>Who starts?</strong> Each player taps their own button to roll one die. Higher roll starts; ties mean both roll again. Tap Start game to roll two fresh dice for the winner.</p>
-  <p><strong>Pass the turn.</strong> After using your legal moves, tap End turn. The next player's dice roll automatically. If no moves are possible, tap End turn to pass.</p>
+  <p><strong>Pass the turn.</strong> After using your legal moves, tap the End turn arrow between the removed-piece counts in the right bar. The next player's dice roll automatically. If no moves are possible, tap the arrow to pass.</p>
   <ol><li><strong>Roll & move.</strong> Tap your checker, then a highlighted destination. Each move uses one die. Doubles give four moves. Use as many dice as possible; if only one can be used and either is playable, use the higher die.</li><li><strong>Pin, don't hit.</strong> Land on one opposing checker to pin it. It cannot move until your final covering checker leaves. Two opposing checkers, or an opposing checker covering yours, block a point.</li><li><strong>Protect your mother.</strong> The last checker on your starting point is your mother. If it is pinned, your opponent immediately wins 2 points.</li><li><strong>Bring them home.</strong> When all your remaining checkers are in your last six points, bear off with matching dice. An oversize die can take the farthest checker only when no checker is farther away.</li><li><strong>First to 3.</strong> A game wins 1 point, or 2 if the opponent has borne off none. First to 3 or more wins the round. The previous winner starts the next game.</li></ol>
   <p><strong>Use the total.</strong> Highlighted destinations include combined dice moves when every step is legal. Tap a farther destination to use multiple dice on one checker. With doubles, you can combine up to four steps.</p>
   <p><strong>Take your time.</strong> Undo moves before End Turn. One Undo reverses an entire combined move. Dice rolls and winning moves cannot be undone.</p>

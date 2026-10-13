@@ -18,8 +18,9 @@ Minimal theme, centered Light/Dark scores in the header without the round-target
 label. The Mahbusa wordmark opens How to play. Borderless Undo/Reset icons sit
 in the right-hand bear-off strip, with color-coded counts between them. The
 counts use the original vertical arrangement: Dark number above its disc,
-center divider, Light disc above its number. A 44 px bear-off target overlays
-the middle of the tray when a selected checker can leave.
+center divider, Light disc above its number. A subtle 44 px End turn arrow replaces
+the divider when no legal moves remain. A 44 px bear-off target overlays the
+middle of the tray when a selected checker can leave.
 No separate game heading,
 bottom turn panel, travel captions or footer slogan. Board point numbers and pin lock icons are hidden;
 stack counts, pin stacking and accessible point labels remain. Larger dice (52 px
@@ -30,15 +31,19 @@ landing follows normal rules; doubles can combine up to four steps. Equivalent
 dice orders use one destination; distinct dice choices prompt the player. A single
 Undo reverses the entire destination tap. Explicit End Turn immediately rolls for
 the opponent and closes Undo history; blocked rolls wait for explicit End Turn.
-Welcome, opening rolls, Start game, End turn when no moves remain, dice choices,
+Welcome, opening rolls, Start game, dice choices,
 and winning actions appear in center messages. Opening messages have no reserved
 button slot; Start game expands only their bottom edge. Reset confirmation is red.
 The gray outer frame is removed; board and tray geometry fill the old footprint
 with circular checkers and the same relative arrangement. During play, dice float
 over the narrow center wall. The active player stays highlighted in the header. The wall
-overlay follows actual SVG scale, including letterboxing and orientation changes.
-and colored point bases share their top/bottom edges with the playing surface
+overlay follows actual SVG scale and orientation changes.
+Colored point bases share their top/bottom edges with the playing surface
 and bear-off bar. Point hit areas extend to those same edges.
+The board fills available viewport height below the header, respecting the bottom
+safe area and a small margin. SVG height adapts to keep checkers circular. Checker
+stacks start just inside the top/bottom walls. The wordmark explicitly retains its
+dark text color on mobile browsers.
 Next game/New round actions live in the winning message. Confirmed reset.
 Immediate wins cannot be undone. Portrait phones prompt rotation. English only.
 

@@ -14,7 +14,7 @@ Start fixtures through the development selector or `?scenario=NAME`.
 | combined-one-route | Select 9; tap 3 | Targets 5 and 3; blocked point 7 forces the 4-then-2 order; both dice consumed |
 | combined-blocked | Inspect controls | Both intermediate points blocked; combined destination 3 absent; no moves |
 | combined-doubles | Select 24; tap 16 using Enter; Undo | Targets 22, 20, 18 and 16; four steps consumed; one Undo restores all four |
-| Turn / undo | Move 24→22 using 2; tray Undo; repeat and use 3; set next dice `3,5`; center End turn | Undo restores board and both dice; after both dice are used a center End turn message appears; Dark immediately has wall dice 3,5 and the scoreboard highlight; Undo disabled |
+| Turn / undo | Move 24→22 using 2; tray Undo; repeat and use 3; set next dice `3,5`; tray End turn | Undo restores board and both dice; after both dice are used a subtle arrow replaces the tray divider, with no center message; Dark immediately has wall dice 3,5 and the scoreboard highlight; Undo disabled |
 | pin-and-release | Select 9; move to 7; try an unhighlighted point; Undo; pin again; move 7→6 | Pin visible; illegal destination does not move; undo removes pin and restores die; final covering checker leaving releases Dark |
 | blocked-turn | Inspect controls; set next dice `2,4`; End turn | No legal moves; board unchanged; Dark immediately has dice 2,4 |
 | blocked-handover | Set next dice `1,1`; End turn | Dark gets four moves from double 1 but all blocked; stays on Dark until explicit End turn |
@@ -28,11 +28,13 @@ Start fixtures through the development selector or `?scenario=NAME`.
 | Reset | Reset round; Keep playing; Reset round; confirm | Cancellation preserves game; confirmation clears both scores and restarts opening |
 | Rules | Click Mahbusa wordmark (also test Enter); Back to the board | Rules and install instructions visible; modal closes and board preserved; separate How to play button absent |
 | Board / header | Inspect board and header | No gray outer frame; enlarged board/tray fill the same footprint and checkers stay circular; narrow wall proportions retained; header has wordmark help and centered scores; active player highlighted; Undo/Reset in right-hand tray |
-| Center messages | Start round; roll each opening die; Start game; finish moves; Undo | Welcome/start, opening dice/buttons, Start game, and End turn are in center messages; contest dice stay fixed; tray Undo hides completion message and restores moves |
+| Center messages | Start round; roll each opening die; Start game; finish moves; Undo | Welcome/start, opening dice/buttons and Start game are in center messages; contest dice stay fixed; no completion message; tray Undo hides End turn arrow and restores moves |
 | Opening expansion | Measure card and dice before/after deciding the starter at desktop and landscape sizes | No empty Start game slot before winner; bottom grows by button/margin height, while card top and dice coordinates remain fixed |
 | Reset appearance | Tray Reset; inspect confirmation; Keep playing; Reset and confirm | Confirmation Reset button red; cancellation preserves game; confirmation resets scores and opening |
 | Restored counters | Inspect tray, bear off via highlighted tray, Undo | Dark number/disc, divider, Light disc/number restored; count updates and Undo restores it; utility icons stay separate |
 | Matching heights | Inspect desktop 1200×900 and landscape 667×375 / 844×390 | Colored point bases, playing surface, center wall and right-hand bar have matching top/bottom edges; movement/Undo remain functional |
+| Viewport fill / checker edges | Inspect desktop 1200×900 and landscape 667×375 / 844×390 / 844×320 | Board reaches the available viewport height with a small bottom margin; top/bottom checker stacks sit just inside walls; circles remain round; no counts/control overlaps or clipped actions |
+| Wordmark color | Inspect portrait 390×844 and landscape phones; open rules | Title remains dark rather than native button blue; rules still open; orientation preserves the game |
 | Wall dice / tray | During moving phase inspect dice and tray at desktop and both landscape sizes; rotate portrait and back | Dice center matches original narrow wall and overlays it; tray controls/counts are separate, in view and 44 px targets; values and spent states preserved |
 | Responsive | Test desktop, 844×390 and 667×375 landscape, 390×844 portrait | 52 px desktop/44 px landscape dice; 14 px status and controls; landscape actions in viewport; portrait rotate prompt and centered header scores; orientation preserves game |
 | Refresh | Move, refresh tab | Fresh board and zero scores; no local saved state |

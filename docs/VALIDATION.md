@@ -299,3 +299,24 @@ viewport. Rechecked the affected behaviors.
 - A fresh production preview on port 4181 verified matching edges, opening
   rolls and fresh gameplay dice with no console errors. Temporary preview
   servers/tabs stopped. Screenshot: `/private/tmp/mahbusa-matching-heights.jpg`.
+
+## Viewport board and tray End turn — October 13, 2026
+
+- Removed the completed-turn center card. A subtle 44 px End turn arrow replaces
+  the divider between the right-bar counters only when no legal moves remain.
+  Undo hides the arrow and restores moves; blocked turns still require a tap.
+- The board fills viewport height below the header and keeps a 12 px bottom
+  margin plus the bottom safe area. The SVG coordinate height adapts without
+  stretching checker circles; stacks start 3 SVG units inside the walls.
+- Production Chrome measured board heights 299 px at 667×375, 314 px at 844×390,
+  244 px at 844×320 and 792 px at 1200×900. At 844×390 checker width/height both
+  measured 35.869 px, with edges about 2.86 px inside the playing surface.
+- End turn, Undo and Reset remain separate 44 px targets, clear of counts at the
+  short 844×320 size. Wordmark computed color is rgb(38,44,40) in portrait and
+  landscape; explicit appearance/text color overrides native iOS button styling.
+- Combined moves, single Undo, automatic opponent dice, blocked double handover,
+  portrait rotation/state preservation, rules keyboard access and red reset passed.
+  Opening card expands 52 px downward with its top fixed in production Chrome.
+- All 36 tests passed; Svelte checking has zero errors/warnings; production build
+  and offline packaging passed. Chrome console errors: none. Actual iPhone/Safari
+  testing and repeated network-offline UI testing remain pending.

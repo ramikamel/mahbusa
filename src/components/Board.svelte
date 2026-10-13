@@ -12,12 +12,14 @@
   let width = $state(1200);
   let height = $state(800);
   const compact = $derived(height <= 600 && width > height);
-  const boardHeight = $derived(compact ? 250 : 462);
   let boardWidth = $state(0);
   let boardPixelsHeight = $state(0);
+  // Match the available screen area with an isotropic SVG coordinate system.
+  const boardHeight = $derived(boardWidth > 0 && boardPixelsHeight > 0 ? boardPixelsHeight * 840 / boardWidth : 462);
   const scale = $derived(Math.min(boardWidth / 840, boardPixelsHeight / boardHeight));
   // Fill the former frame footprint without stretching circular checkers.
   const horizontalScale = 838 / 801;
+  const checkerRadius = $derived((compact ? 18 : 23) * horizontalScale);
   const verticalScale = $derived((boardHeight - 2) / (boardHeight - 48));
   function mapX(value: number) { return 1 + (value - 24) * horizontalScale; }
   function mapY(value: number) { return 1 + (value - 24) * verticalScale; }
@@ -61,10 +63,10 @@
           <path d={row.upper ? `M${mapX(cx - 25)} 1H${mapX(cx + 25)}L${mapX(cx)} ${mapY(boardHeight / 2 - 26)}Z` : `M${mapX(cx - 25)} ${boardHeight - 1}H${mapX(cx + 25)}L${mapX(cx)} ${mapY(boardHeight / 2 + 26)}Z`}
             class="triangle" class:triangle-alt={slot % 2 === 0} />
           {#each tokens(point) as token, i}
-            {@const inset = compact ? 56 : 68}
+            {@const inset = 1 + checkerRadius + 3}
             {@const cy = row.upper ? inset + token.offset : boardHeight - inset - token.offset}
-            <circle cx={mapX(cx)} cy={mapY(cy)} r={(compact ? 18 : 23) * horizontalScale} class="checker" class:checker-light={token.player === 0} class:checker-dark={token.player === 1} />
-            {#if token.label}<text x={mapX(cx)} y={mapY(cy) + 5 * horizontalScale} class="stack-count" class:count-dark={token.player === 1}>{token.label}</text>{/if}
+            <circle cx={mapX(cx)} {cy} r={checkerRadius} class="checker" class:checker-light={token.player === 0} class:checker-dark={token.player === 1} />
+            {#if token.label}<text x={mapX(cx)} y={cy + 5 * horizontalScale} class="stack-count" class:count-dark={token.player === 1}>{token.label}</text>{/if}
           {/each}
           {#if targets.has(point)}<circle cx={mapX(cx)} cy={mapY(row.upper ? boardHeight / 2 - 12 : boardHeight / 2 + 12)} r={6 * horizontalScale} class="destination-dot" />{/if}
         </g>
@@ -77,7 +79,7 @@
       <rect x={mapX(793)} y="1" width={32 * horizontalScale} height={boardHeight - 2} rx={12 * horizontalScale} class="off-tray" />
       <text x={mapX(809)} y={mapY(boardHeight / 2 - (compact ? 42 : 57))} class="off-number">{game.position.off[1]}</text>
       <circle cx={mapX(809)} cy={mapY(boardHeight / 2 - (compact ? 25 : 36))} r={8 * horizontalScale} class="checker-dark" />
-      <path d={`M${mapX(800)} ${mapY(boardHeight / 2)}h${18 * horizontalScale}`} class="tray-divider" />
+      {#if game.phase !== 'moving' || moves.length}<path d={`M${mapX(800)} ${mapY(boardHeight / 2)}h${18 * horizontalScale}`} class="tray-divider" />{/if}
       <circle cx={mapX(809)} cy={mapY(boardHeight / 2 + (compact ? 25 : 36))} r={8 * horizontalScale} class="checker-light" />
       <text x={mapX(809)} y={mapY(boardHeight / 2 + (compact ? 52 : 67))} class="off-number">{game.position.off[0]}</text>
     </g>
