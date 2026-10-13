@@ -266,3 +266,14 @@ viewport. Rechecked the affected behaviors.
   both landscape sizes, portrait prompt, wall alignment and round checker bounds.
   At 844×390, checker width/height both measured 35.869 px. Console errors: none.
 - Actual iPhone/Safari and repeated network-offline UI testing remain pending.
+- All 36 tests, Svelte checking (zero errors/warnings), production build and
+  offline fixture/cache checks passed. GitHub CI passed for deployed commit
+  `bab1d1d9b959dd7a966da3b29f4145a259dd8fd9`.
+- Public version 8 deployed successfully at
+  https://mahbusa.bubblyspice4.chatgpt.site; deployment
+  `appgdep_6aceb7baf2188191a8e445ae2b64b677`.
+- Hosted Chrome verified no frame, red confirmation, no opening button slot,
+  real tie/reroll and downward-only expansion with unchanged dice coordinates.
+  Restored counter discs/numbers/divider are present; no console errors observed.
+- Updated app cache activated after old client closure. Local server stopped;
+  public app left open. Screenshot: `/private/tmp/mahbusa-unframed-board.jpg`.
