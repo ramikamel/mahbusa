@@ -1,21 +1,22 @@
 <script lang="ts">
   import type { Game, Move, Player } from '../lib/engine';
   import type { Snippet } from 'svelte';
-  let { game, selected, moves, destinations, choosePoint, bearOff, wall }: {
+  let { game, selected, moves, destinations, choosePoint, bearOff, wall, tray }: {
     game: Game; selected: number | null; moves: Move[]; destinations: number[];
     choosePoint: (point: number) => void; bearOff: () => void;
     wall?: Snippet;
+    tray?: Snippet;
   } = $props();
   const top = Array.from({ length: 12 }, (_, i) => i + 12);
   const bottom = Array.from({ length: 12 }, (_, i) => 11 - i);
   let width = $state(1200);
   let height = $state(800);
   const compact = $derived(height <= 600 && width > height);
-  const boardHeight = $derived(compact ? 320 : 462);
+  const boardHeight = $derived(compact ? 250 : 462);
   let boardWidth = $state(0);
   let boardPixelsHeight = $state(0);
   const scale = $derived(Math.min(boardWidth / 840, boardPixelsHeight / boardHeight));
-  function x(slot: number) { return 64 + slot * 58 + (slot >= 6 ? 50 : -10); }
+  function x(slot: number) { return 64 + slot * 58 + (slot >= 6 ? 36 : 0); }
   const targets = $derived(new Set(destinations));
   const canBear = $derived(targets.has(-1));
   function tokens(point: number) {
@@ -41,7 +42,8 @@
   <svg class="board" viewBox={`0 0 840 ${boardHeight}`} aria-label="Mahbusa board, 24 points" role="group">
     <rect x="1" y="1" width="838" height={boardHeight - 2} rx="24" class="board-border" />
     <rect x="24" y="24" width="756" height={boardHeight - 48} rx="12" class="board-field" />
-    <rect x="371" y="24" width="64" height={boardHeight - 48} rx="6" class="board-spine" />
+    <rect x="391" y="24" width="24" height={boardHeight - 48} rx="6" class="board-spine" />
+    <path d={`M403 ${boardHeight / 2 - 28}v56`} class="spine-mark" />
     {#each [{ points: top, upper: true }, { points: bottom, upper: false }] as row}
       {#each row.points as point, slot}
         {@const cx = x(slot)}
@@ -69,12 +71,8 @@
       onkeydown={(event) => { if (canBear && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); bearOff(); } }}
       class:off-available={canBear}>
       <rect x="793" y="25" width="32" height={boardHeight - 50} rx="12" class="off-tray" />
-      <text x="809" y={boardHeight / 2 - 57} class="off-number">{game.position.off[1]}</text>
-      <circle cx="809" cy={boardHeight / 2 - 36} r="8" class="checker-dark" />
-      <path d={`M800 ${boardHeight / 2}h18`} class="tray-divider" />
-      <circle cx="809" cy={boardHeight / 2 + 36} r="8" class="checker-light" />
-      <text x="809" y={boardHeight / 2 + 67} class="off-number">{game.position.off[0]}</text>
     </g>
   </svg>
   {#if wall}<div class="board-wall" style:left={`${boardWidth / 2 - 17 * scale}px`} style:top={`${boardPixelsHeight / 2}px`}>{@render wall()}</div>{/if}
+  {#if tray}<div class="tray-overlay" style:left={`${boardWidth / 2 + 389 * scale}px`} style:top={`${boardPixelsHeight / 2}px`} style:height={`${(boardHeight - 50) * scale}px`}>{@render tray()}</div>{/if}
 </div>

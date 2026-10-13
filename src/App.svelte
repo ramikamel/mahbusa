@@ -73,7 +73,7 @@
 <svelte:head><title>Mahbusa</title></svelte:head>
 <div class="app-wrap">
   <header class="site-header">
-    <a class="wordmark" href="/" onclick={(event) => event.preventDefault()} aria-label="Mahbusa home"><span class="brand-icon" aria-hidden="true"><i></i><i></i></span>mahbusa<span class="wordmark-dot">.</span></a>
+    <button class="wordmark" aria-label="Mahbusa — How to play" aria-haspopup="dialog" title="How to play" onclick={() => rulesDialog.showModal()}><span class="brand-icon" aria-hidden="true"><i></i><i></i></span>mahbusa<span class="wordmark-dot">.</span></button>
     <div class="scoreboard" role="region" aria-label="Round scoreboard">
       {#each names as name, player}
         <div class="player-score" class:active-player={game.active === player && !finished && game.phase !== 'ready' && game.phase !== 'opening'}>
@@ -84,11 +84,6 @@
     </div>
     <div class="header-right">
       <span class="local-label"><span class="status-dot"></span>{online ? 'LOCAL PLAY' : 'OFFLINE PLAY'}</span>
-      <div class="header-tools" role="group" aria-label="Game controls">
-        <button class="rules-button undo-control" aria-label="Undo last move" disabled={game.phase !== 'moving' || !game.history.length} onclick={() => { game = undo(game); clear(); }}><span aria-hidden="true">↶</span> Undo</button>
-        <button class="rules-button reset-control" aria-label="Reset round" onclick={() => resetDialog.showModal()}>Reset</button>
-        <button class="rules-button help-control" onclick={() => rulesDialog.showModal()}>How to play</button>
-      </div>
     </div>
   </header>
   <main>
@@ -103,6 +98,16 @@
                 {#each game.dice as value}<Die {value} spent={!game.remaining.includes(value)} />{/each}
               </div>
             {/if}
+          {/snippet}
+          {#snippet tray()}
+            <div class="tray-tools" role="group" aria-label="Board controls and borne-off checkers">
+              <button class="tray-control" aria-label="Undo last move" title="Undo last move" disabled={game.phase !== 'moving' || !game.history.length} onclick={() => { game = undo(game); clear(); }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 3 11l6 6M3 11h10a6 6 0 0 1 6 6" /></svg></button>
+              <button class="tray-counts" disabled={!destinations.includes(-1)} aria-label={destinations.includes(-1) ? 'Bear off selected checker' : 'Borne-off checkers: Dark ' + game.position.off[1] + ', Light ' + game.position.off[0]} onclick={() => destination(-1)}>
+                <span class="tray-count" aria-label={'Dark borne off: ' + game.position.off[1]}><span class="player-disc dark-disc" aria-hidden="true"></span><span>{game.position.off[1]}</span></span>
+                <span class="tray-count" aria-label={'Light borne off: ' + game.position.off[0]}><span class="player-disc" aria-hidden="true"></span><span>{game.position.off[0]}</span></span>
+              </button>
+              <button class="tray-control" aria-label="Reset round" title="Reset round" onclick={() => resetDialog.showModal()}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7" /></svg></button>
+            </div>
           {/snippet}
         </Board>
         {#if game.phase === 'ready'}
@@ -130,7 +135,6 @@
         {#if choices.length}
           <div class="center-message move-choice" role="group" aria-label="Choose dice for move"><p>Use which dice?</p><div class="choice-actions">{#each choices as path}<button class="primary-button" onclick={() => commit(path)}>Use {path.steps.map(step => step.die).join(' + ')}</button>{/each}<button class="text-button" onclick={() => choices = []}>Cancel</button></div></div>
         {/if}
-        {#if destinations.includes(-1)}<button class="bear-off-button" onclick={() => destination(-1)}>Bear off selected checker</button>{/if}
         {#if notice}<p class="board-notice" role="status">{notice}</p>{/if}
       </div>
     </section>
