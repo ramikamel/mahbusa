@@ -277,3 +277,14 @@ viewport. Rechecked the affected behaviors.
   Restored counter discs/numbers/divider are present; no console errors observed.
 - Updated app cache activated after old client closure. Local server stopped;
   public app left open. Screenshot: `/private/tmp/mahbusa-unframed-board.jpg`.
+
+## Board-height alignment — October 13, 2026
+
+- Extended colored point bases to the center wall's top and bottom edges and
+  matched the right-hand bar and its overlay to the same height. Expanded point
+  hit regions accordingly; checkers, narrow wall width and dice placement retained.
+- Chrome measured zero top/bottom differences between playing surface, wall,
+  bar and outer point bases at 1200×900, 667×375 and 844×390.
+- Combined 2+4 movement and tray Undo passed; no console errors observed.
+- Svelte checking reported zero errors and warnings. Actual iPhone/Safari and
+  repeated network-offline UI tests remain pending.

@@ -32,6 +32,7 @@ Start fixtures through the development selector or `?scenario=NAME`.
 | Opening expansion | Measure card and dice before/after deciding the starter at desktop and landscape sizes | No empty Start game slot before winner; bottom grows by button/margin height, while card top and dice coordinates remain fixed |
 | Reset appearance | Tray Reset; inspect confirmation; Keep playing; Reset and confirm | Confirmation Reset button red; cancellation preserves game; confirmation resets scores and opening |
 | Restored counters | Inspect tray, bear off via highlighted tray, Undo | Dark number/disc, divider, Light disc/number restored; count updates and Undo restores it; utility icons stay separate |
+| Matching heights | Inspect desktop 1200×900 and landscape 667×375 / 844×390 | Colored point bases, playing surface, center wall and right-hand bar have matching top/bottom edges; movement/Undo remain functional |
 | Wall dice / tray | During moving phase inspect dice and tray at desktop and both landscape sizes; rotate portrait and back | Dice center matches original narrow wall and overlays it; tray controls/counts are separate, in view and 44 px targets; values and spent states preserved |
 | Responsive | Test desktop, 844×390 and 667×375 landscape, 390×844 portrait | 52 px desktop/44 px landscape dice; 14 px status and controls; landscape actions in viewport; portrait rotate prompt and centered header scores; orientation preserves game |
 | Refresh | Move, refresh tab | Fresh board and zero scores; no local saved state |

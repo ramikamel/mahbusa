@@ -57,8 +57,8 @@
           onclick={() => choosePoint(point)}
           onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choosePoint(point); } }}
           class:point-selected={selected === point} class:point-target={targets.has(point)}>
-          <rect x={mapX(cx - 28)} y={mapY(row.upper ? 26 : boardHeight / 2 + 9)} width={56 * horizontalScale} height={(boardHeight / 2 - 37) * verticalScale} rx={8 * horizontalScale} class="point-hit" />
-          <path d={row.upper ? `M${mapX(cx - 25)} ${mapY(43)}H${mapX(cx + 25)}L${mapX(cx)} ${mapY(boardHeight / 2 - 26)}Z` : `M${mapX(cx - 25)} ${mapY(boardHeight - 43)}H${mapX(cx + 25)}L${mapX(cx)} ${mapY(boardHeight / 2 + 26)}Z`}
+          <rect x={mapX(cx - 28)} y={mapY(row.upper ? 24 : boardHeight / 2 + 9)} width={56 * horizontalScale} height={(boardHeight / 2 - (row.upper ? 35 : 33)) * verticalScale} rx={8 * horizontalScale} class="point-hit" />
+          <path d={row.upper ? `M${mapX(cx - 25)} 1H${mapX(cx + 25)}L${mapX(cx)} ${mapY(boardHeight / 2 - 26)}Z` : `M${mapX(cx - 25)} ${boardHeight - 1}H${mapX(cx + 25)}L${mapX(cx)} ${mapY(boardHeight / 2 + 26)}Z`}
             class="triangle" class:triangle-alt={slot % 2 === 0} />
           {#each tokens(point) as token, i}
             {@const inset = compact ? 56 : 68}
@@ -74,7 +74,7 @@
       onclick={() => { if (canBear) bearOff(); }}
       onkeydown={(event) => { if (canBear && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); bearOff(); } }}
       class:off-available={canBear}>
-      <rect x={mapX(793)} y={mapY(25)} width={32 * horizontalScale} height={(boardHeight - 50) * verticalScale} rx={12 * horizontalScale} class="off-tray" />
+      <rect x={mapX(793)} y="1" width={32 * horizontalScale} height={boardHeight - 2} rx={12 * horizontalScale} class="off-tray" />
       <text x={mapX(809)} y={mapY(boardHeight / 2 - (compact ? 42 : 57))} class="off-number">{game.position.off[1]}</text>
       <circle cx={mapX(809)} cy={mapY(boardHeight / 2 - (compact ? 25 : 36))} r={8 * horizontalScale} class="checker-dark" />
       <path d={`M${mapX(800)} ${mapY(boardHeight / 2)}h${18 * horizontalScale}`} class="tray-divider" />
@@ -83,5 +83,5 @@
     </g>
   </svg>
   {#if wall}<div class="board-wall" style:left={`${boardWidth / 2 + (mapX(403) - 420) * scale}px`} style:top={`${boardPixelsHeight / 2}px`}>{@render wall()}</div>{/if}
-  {#if tray}<div class="tray-overlay" style:left={`${boardWidth / 2 + (mapX(809) - 420) * scale}px`} style:top={`${boardPixelsHeight / 2}px`} style:height={`${(boardHeight - 50) * verticalScale * scale}px`}>{@render tray()}</div>{/if}
+  {#if tray}<div class="tray-overlay" style:left={`${boardWidth / 2 + (mapX(809) - 420) * scale}px`} style:top={`${boardPixelsHeight / 2}px`} style:height={`${(boardHeight - 2) * scale}px`}>{@render tray()}</div>{/if}
 </div>
