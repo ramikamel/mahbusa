@@ -46,7 +46,7 @@ main{padding-top:20px}.board{max-height:65vh}.stack-count{font-size:17px}.result
 .center-message{left:47.32%}.opening-message.has-start{transform:translate(-50%,calc(-50% + 28px))}.off-number{font-size:17px;text-anchor:middle;fill:#5c6852;font-weight:500}.tray-divider{stroke:#aebaa1}.tray-tools{position:relative}.tray-bear-off{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:44px;height:44px;min-width:44px;padding:0;background:transparent;border-radius:7px;pointer-events:auto}.tray-bear-off:hover{background:#5773491a}.danger-button{background:#b33a32}.danger-button:not(:disabled):hover{background:#942e27}
 @media(max-height:600px) and (orientation:landscape){.opening-message.has-start{transform:translate(-50%,calc(-50% + 26px))}}
 
-/* Fill the usable viewport; the SVG adapts its height while circles stay round. */
+/* Fit the usable viewport, capped by the board's original proportions. */
 .board-shell{height:calc(100dvh - 108px - env(safe-area-inset-bottom))}
 .board{height:100%;max-height:none}
 .tray-end-turn{position:absolute;top:50%;transform:translateY(-50%);color:#3f604d}

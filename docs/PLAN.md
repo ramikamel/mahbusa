@@ -40,8 +40,9 @@ over the narrow center wall. The active player stays highlighted in the header. 
 overlay follows actual SVG scale and orientation changes.
 Colored point bases share their top/bottom edges with the playing surface
 and bear-off bar. Point hit areas extend to those same edges.
-The board fills available viewport height below the header, respecting the bottom
-safe area and a small margin. SVG height adapts to keep checkers circular. Checker
+The board uses available viewport height below the header up to the original
+840 × 462 proportions, respecting the bottom safe area and a small margin.
+SVG height adapts to keep checkers circular. Checker
 stacks start just inside the top/bottom walls. The wordmark explicitly retains its
 dark text color on mobile browsers.
 Next game/New round actions live in the winning message. Confirmed reset.

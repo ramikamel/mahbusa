@@ -330,3 +330,14 @@ viewport. Rechecked the affected behaviors.
 - No hosted user game was open during this update activation. Temporary local
   servers/tabs stopped; viewport override reset; public app left open. Screenshot:
   `/private/tmp/mahbusa-viewport-board.jpg`.
+
+## Restored board height cap — October 13, 2026
+
+- Restored the maximum height defined by the original 840×462 board proportions.
+  Available viewport height remains the smaller bound, keeping phone space useful.
+- Production Chrome measured desktop height 600.594 px at 1092 px board width
+  (1200×900 viewport), down from 792 px. Phone boards remain 314 px at 844×390
+  and 299 px at 667×375; circles retain equal width/height (35.869 px at 844×390).
+- Checker-wall alignment, mobile title styling and right-bar End turn retained.
+  Svelte checks, production build and offline packaging passed; console errors:
+  none. Preview screenshot: `/private/tmp/mahbusa-restored-limit.jpg`.

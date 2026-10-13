@@ -14,7 +14,8 @@
   const compact = $derived(height <= 600 && width > height);
   let boardWidth = $state(0);
   let boardPixelsHeight = $state(0);
-  // Match the available screen area with an isotropic SVG coordinate system.
+  // Fit the viewport within the original 840 × 462 board height limit.
+  const maxBoardPixelsHeight = $derived((boardWidth || 840) * 462 / 840);
   const boardHeight = $derived(boardWidth > 0 && boardPixelsHeight > 0 ? boardPixelsHeight * 840 / boardWidth : 462);
   const scale = $derived(Math.min(boardWidth / 840, boardPixelsHeight / boardHeight));
   // Fill the former frame footprint without stretching circular checkers.
@@ -45,7 +46,7 @@
 
 <svelte:window bind:innerWidth={width} bind:innerHeight={height} />
 
-<div class="board-shell" bind:clientWidth={boardWidth} bind:clientHeight={boardPixelsHeight}>
+<div class="board-shell" style:max-height={`${maxBoardPixelsHeight}px`} bind:clientWidth={boardWidth} bind:clientHeight={boardPixelsHeight}>
   <svg class="board" viewBox={`0 0 840 ${boardHeight}`} aria-label="Mahbusa board, 24 points" role="group">
     <rect x="1" y="1" width={756 * horizontalScale} height={boardHeight - 2} rx={12 * horizontalScale} class="board-field" />
     <rect x={mapX(391)} y="1" width={24 * horizontalScale} height={boardHeight - 2} rx={6 * horizontalScale} class="board-spine" />
