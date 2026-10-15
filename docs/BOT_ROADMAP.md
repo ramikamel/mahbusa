@@ -59,8 +59,8 @@ Production crypto dice remain unchanged.
 ## Commit checkpoints and dependencies
 
 1. **Done:** start page, placeholder and same-device Multiplayer entry.
-2. Contracts, literal strategy/rules fixtures, persisted roadmap and scoped plan.
-3. Complete-turn reference oracle, optimized generation and equivalence tests.
+2. **Done:** contracts, literal strategy/rules fixtures, persisted roadmap and scoped plan.
+3. **Done:** complete-turn reference oracle, optimized generation and equivalence tests.
 4. Strategy evaluator and inspectable feature contributions.
 5. Development-only expert lab: edit board/score/dice, preview candidates,
    annotate preferred/acceptable/bad plays, explicit JSON import/export.

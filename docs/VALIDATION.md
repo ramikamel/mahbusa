@@ -393,7 +393,7 @@ viewport. Rechecked the affected behaviors.
 - Full verification: 46 Vitest + 34 Node tests passed (80 total), Svelte check
   zero errors/warnings, production build and offline packaging passed.
 - Complete spread-board double-1 generation returned 1,157 final positions in
-  approximately 59–68 ms locally. This is a fixture measurement, not a worst-case
+  approximately 59–74 ms locally. This is a fixture measurement, not a worst-case
   device guarantee or a full search benchmark.
 - Independent read-only review found no Critical, Important or Minor defects
   and independently reran all 80 tests and type checks. Review assumes valid

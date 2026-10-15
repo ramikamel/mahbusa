@@ -65,5 +65,5 @@ only public checked moves; optimized generation shares no traversal/dedup code.
 - [x] Address important findings with a failing regression first, then green suite.
   Review found no Critical, Important or Minor defects.
 - [x] Production/offline build; confirm UI source and behavior are unchanged.
-- [ ] Commit implementation and validation record, integrate on main and push.
-- [ ] Leave Single player as In development. Next checkpoint is strategy evaluation.
+- [x] Commit implementation and validation record, integrate on main and push.
+- [x] Leave Single player as In development. Next checkpoint is strategy evaluation.
