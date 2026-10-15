@@ -7,15 +7,23 @@
   import type { Game, MovePath, Pair, Player } from './lib/engine';
   let game: Game = $state(createGame());
   let screen = $state<'home' | 'single-player' | 'multiplayer'>('home');
-  let mainElement: HTMLElement;
+  let mainElement = $state<HTMLElement>(null!);
   let selected: number | null = $state(null);
   let choices: MovePath[] = $state([]);
   let notice = $state('');
   let online = $state(true);
-  let rulesDialog: HTMLDialogElement;
-  let resetDialog: HTMLDialogElement;
+  let rulesDialog = $state<HTMLDialogElement>(null!);
+  let resetDialog = $state<HTMLDialogElement>(null!);
   let DevTools = $state<Component<{ loadScenario: (game: Game) => void; setDice: (value: string) => void }> | null>(null);
   let forced = $state('');
+  let labOpen = $state(false);
+  let ExpertLab = $state<Component<{ onClose: () => void }> | null>(null);
+  async function openLab() {
+    if (import.meta.env.DEV) {
+      const panel = await import('./components/lab/ExpertLab.svelte');
+      ExpertLab = panel.default; labOpen = true;
+    }
+  }
   const names = ['Light', 'Dark'];
   const moves = $derived(availableMoves(game));
   const paths = $derived(selected === null ? [] : availableMovePaths(game, selected));
@@ -32,6 +40,7 @@
     update(); window.addEventListener('online', update); window.addEventListener('offline', update);
     if (import.meta.env.DEV) {
       import('./components/DevTools.svelte').then(({ default: panel }) => { DevTools = panel; });
+      if (new URLSearchParams(location.search).get('lab') === '1') void openLab();
     }
     return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
   });
@@ -83,6 +92,9 @@
 </script>
 
 <svelte:head><title>Mahbusa</title></svelte:head>
+{#if import.meta.env.DEV && labOpen && ExpertLab}
+  <ExpertLab onClose={() => { labOpen = false; }} />
+{:else}
 <div class="app-wrap" class:mode-page={screen !== 'multiplayer'}>
   <header class="site-header">
     <button class="wordmark" aria-label="Mahbusa — How to play" aria-haspopup="dialog" title="How to play" onclick={() => rulesDialog.showModal()}><span class="brand-icon" aria-hidden="true"><i></i><i></i></span>mahbusa<span class="wordmark-dot">.</span></button>
@@ -95,6 +107,7 @@
       {/each}
     </div>{/if}
     <div class="header-right">
+      {#if import.meta.env.DEV}<button class="text-button" onclick={openLab}>Expert lab</button>{/if}
       <span class="local-label"><span class="status-dot"></span>{online ? 'LOCAL PLAY' : 'OFFLINE PLAY'}</span>
     </div>
   </header>
@@ -184,3 +197,4 @@
   <button class="primary-button" onclick={() => rulesDialog.close()}>{screen === 'multiplayer' ? 'Back to the board →' : 'Back'}</button>
 </dialog>
 <dialog bind:this={resetDialog} aria-labelledby="reset-title"><span class="eyebrow">A FRESH START</span><h2 id="reset-title">Reset this round?</h2><p>Resetting or going back to start clears the current board and both scores.</p><div class="dialog-actions"><button class="secondary-button" onclick={() => resetDialog.close()}>Keep playing</button><button class="primary-button danger-button" onclick={reset}>Reset round →</button></div><button class="text-button back-to-start" onclick={backToStart}>Back to start</button></dialog>
+{/if}
