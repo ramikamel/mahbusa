@@ -1,3 +1,4 @@
+import type { TurnInput, TurnPlan } from './bot/types';
 export type Player = 0 | 1;
 export type Pair = [number, number];
 export type OpeningDice = [number | null, number | null];
@@ -110,7 +111,9 @@ type Evaluation = { length: number; winning: boolean; moves: Move[] };
 function key(position: Position, dice: number[]) {
   return position.points.map(p => `${p.count[0]},${p.count[1]},${p.top ?? '-'}`).join(';') + '|' + position.off.join(',') + '|' + [...dice].sort().join(',');
 }
-export function legalMoves(position: Position, player: Player, remaining: number[]): Move[] {
+// One analysis context can serve every branch of a complete-turn traversal.
+// Existing callers still get a fresh context through legalMoves().
+function legalMoveGenerator(player: Player) {
   const memo = new Map<string, Evaluation>();
   function evaluate(pos: Position, dice: number[]): Evaluation {
     if (!dice.length) return { length: 0, winning: false, moves: [] };
@@ -136,10 +139,61 @@ export function legalMoves(position: Position, player: Player, remaining: number
     memo.set(cacheKey, result);
     return result;
   }
-  return evaluate(position, remaining).moves;
+  return (position: Position, remaining: number[]) => evaluate(position, remaining).moves;
+}
+export function legalMoves(position: Position, player: Player, remaining: number[]): Move[] {
+  return legalMoveGenerator(player)(position, remaining);
 }
 export function availableMoves(game: Game): Move[] {
   return game.phase === 'moving' ? legalMoves(game.position, game.active, game.remaining) : [];
+}
+/** Complete turns across any checkers, with one deterministic representative
+ * per final position/dice/outcome. Input must be a valid in-progress position.
+ * This does not roll dice, advance score/player, or construct UI history.
+ */
+export function generateTurns(input: TurnInput): TurnPlan[] {
+  const { position, active } = input;
+  if (active !== 0 && active !== 1) throw new Error('Unknown player.');
+  const remaining = [...input.remaining].sort((a, b) => a - b);
+  if (remaining.length > 4 || remaining.some(d => !Number.isInteger(d) || d < 1 || d > 6)
+    || (remaining.length > 2 && new Set(remaining).size !== 1)) {
+    throw new Error('Invalid remaining dice.');
+  }
+  const legal = legalMoveGenerator(active);
+  const memo = new Map<string, TurnPlan[]>();
+  function visit(pos: Position, dice: number[]): TurnPlan[] {
+    const stateKey = key(pos, dice);
+    const cached = memo.get(stateKey);
+    if (cached) return cached;
+    const moves = legal(pos, dice);
+    if (!moves.length) {
+      const leaf = [{ moves: [], position: pos, remaining: dice, outcome: null }];
+      memo.set(stateKey, leaf);
+      return leaf;
+    }
+    const results = new Map<string, TurnPlan>();
+    for (const move of moves) {
+      // Only legal generated moves reach the private transition. Public applyMove
+      // retains its checks; sharing step keeps rules identical without histories.
+      const next = step(pos, active, move);
+      const rest = [...dice]; rest.splice(rest.indexOf(move.die), 1);
+      const suffixes: TurnPlan[] = next.outcome
+        ? [{ moves: [], position: next.position, remaining: [], outcome: next.outcome }]
+        : visit(next.position, rest);
+      for (const suffix of suffixes) {
+        const finalKey = key(suffix.position, suffix.remaining) + '|' + JSON.stringify(suffix.outcome);
+        if (!results.has(finalKey)) results.set(finalKey, { ...suffix, moves: [move, ...suffix.moves] });
+      }
+    }
+    const plans = [...results.values()];
+    memo.set(stateKey, plans);
+    return plans;
+  }
+  // Internal suffixes share cached structure. Public results own all their data.
+  return visit(position, remaining).map(plan => ({
+    moves: plan.moves.map(move => ({ ...move })), position: clone(plan.position),
+    remaining: [...plan.remaining], outcome: plan.outcome ? { ...plan.outcome } : null,
+  }));
 }
 // Offer every legal prefix of a route followed by the same checker. Each step
 // uses the normal rules, including maximum dice usage and intermediate pins.

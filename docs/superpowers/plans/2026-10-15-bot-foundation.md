@@ -39,9 +39,9 @@ docs/PLAN.md; this plan.
 remaining, outcome), PreRollState (position, active, score), evaluator/worker/model
 contracts. No executable evaluator or model loader yet.
 
-- [ ] Save roadmap, contracts and literal fixtures for opening, blocks, forced
+- [x] Save roadmap, contracts and literal fixtures for opening, blocks, forced
   dice, mother capture, pins, unsupported mother, bearing off and doubles.
-- [ ] Run Svelte/TypeScript check and existing 36 tests. Commit.
+- [x] Run Svelte/TypeScript check and existing 36 tests. Commit.
 
 ### Task 2: Reference and full-turn behavior
 
@@ -50,13 +50,13 @@ contracts. No executable evaluator or model loader yet.
 **Interfaces:** generateTurns(input: TurnInput): TurnPlan[]. The reference uses
 only public checked moves; optimized generation shares no traversal/dedup code.
 
-- [ ] Write explicit expected-result tests for multi-checker play, deduplication,
+- [x] Write explicit expected-result tests for multi-checker play, deduplication,
   blocks, forced order/higher die, doubles, pins, wins, and bearing off; add oracle
   equivalence, both colors, invalid dice/player, immutability and replay checks.
-- [ ] Run tests with a stub returning no plans: expected behavior assertions fail.
-- [ ] Implement generation and a shared memoized legal-move analyzer. Keep applyMove
+- [x] Run tests with a stub returning no plans: expected behavior assertions fail.
+- [x] Implement generation and a shared memoized legal-move analyzer. Keep applyMove
   checked; search uses the existing private step only on generated legal moves.
-- [ ] Run focused tests, full suites and checks; inspect performance on spread-board
+- [x] Run focused tests, full suites and checks; inspect performance on spread-board
   doubles. Record measurements without promising a device-wide timing guarantee.
 
 ### Task 3: Review, integrate and validate (roadmap commit 3)
