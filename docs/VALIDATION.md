@@ -364,3 +364,11 @@ viewport. Rechecked the affected behaviors.
   from cached assets. Development tools absent; Chrome console errors: none.
 - Actual iPhone/Safari verification remains pending. Bot work is intentionally
   deferred; this release implements only the roadmap's first checkpoint.
+- GitHub CI passed for deployed commit `4c2ac92b32ee922087ef1833ae81b92add29777b`.
+  Public version 12 deployed successfully; deployment
+  `appgdep_6ad048c1cc188191a4389476895c4eb6`.
+- Hosted Chrome activated the update after closing its old cached client.
+  Verified both modes, placeholder Back, multiplayer welcome/zero scores, and
+  confirmed Back to start. No console errors. Screenshot:
+  `/private/tmp/mahbusa-start-page.jpg`. Temporary servers/tabs stopped;
+  viewport override reset and public start page left open.
