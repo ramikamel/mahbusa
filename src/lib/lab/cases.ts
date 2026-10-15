@@ -40,7 +40,7 @@ export function validateLabInput(value: unknown): LabInput {
   const active = integer(input.active, 0, 1, 'Player') as Player;
   const score = pair(input.score, 2, 'Score'), off = pair(board.off, 14, 'Borne off');
   if (!Array.isArray(board.points) || board.points.length !== 24) fail('Board must have 24 points.');
-  const points = board.points.map((raw, i): Point => {
+  const points = Array.from(board.points, (raw, i): Point => {
     const point = object(raw, 'Point ' + (i + 1)), count = pair(point.count, 15, 'Point ' + (i + 1));
     const top = point.top;
     if (top !== null && top !== 0 && top !== 1) fail('Invalid top color on point ' + (i + 1) + '.');
@@ -61,7 +61,7 @@ export function validateLabInput(value: unknown): LabInput {
     if (mother.count[player] === 1 && mother.top !== player) fail('A captured mother is a finished game.');
   }
   if (!Array.isArray(input.remaining)) fail('Dice must be an array.');
-  const remaining = input.remaining.map(d => integer(d, 1, 6, 'Die')).sort((a, b) => a - b);
+  const remaining = Array.from(input.remaining, d => integer(d, 1, 6, 'Die')).sort((a, b) => a - b);
   if (!((remaining.length === 2 && remaining[0] !== remaining[1])
     || (remaining.length === 4 && remaining.every(d => d === remaining[0])))) {
     fail('Use a full roll: two distinct dice or four equal dice for doubles.');

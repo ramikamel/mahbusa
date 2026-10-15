@@ -25,6 +25,7 @@ describe('expert lab boundaries', () => {
 
   const invalid: [string, (x: any) => void][] = [
     ['point count', x => x.position.points.pop()],
+    ['sparse points', x => { delete x.position.points[5]; }],
     ['fractional count', x => x.position.points[23].count[0] = 14.5],
     ['negative count', x => x.position.points[1].count[0] = -1],
     ['wrong total', x => x.position.points[23].count[0] = 14],
@@ -40,6 +41,7 @@ describe('expert lab boundaries', () => {
     ['unexpanded doubles', x => x.remaining = [2, 2]],
     ['mixed doubles', x => x.remaining = [2, 2, 2, 3]],
     ['invalid die', x => x.remaining = [0, 2]],
+    ['sparse dice', x => { delete x.remaining[1]; }],
   ];
   it.each(invalid)('rejects %s', (_, mutate) => {
     const state = input(); mutate(state);
