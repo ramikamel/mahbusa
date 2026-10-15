@@ -48,6 +48,14 @@ test('production build refuses development fixtures', async () => fixture(async 
   await writeFile(join(cwd, 'dist/assets/app.js'), 'const fixture = "mother-win"');
   const result = generate(cwd); assert.notEqual(result.status, 0); assert.match(result.stderr, /leaked into production/);
 }));
+for (const [file, marker] of [['lab.js', 'mahbusa-expert-lab'], ['lab.css', '.lab-workspace'], ['lab.js', 'Expert lab']]) {
+  test('production build refuses expert lab marker ' + marker, async () => fixture(async cwd => {
+    await writeFile(join(cwd, 'dist/assets', file), marker);
+    const result = generate(cwd);
+    assert.notEqual(result.status, 0);
+    assert.match(result.stderr, /leaked into production/);
+  }));
+}
 test('worker caches app assets, cleans own old caches, defers updates', async () => fixture(async cwd => {
   assert.equal(generate(cwd).status, 0);
   const source = await readFile(join(cwd, 'dist/sw.js'), 'utf8');

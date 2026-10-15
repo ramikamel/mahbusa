@@ -9,7 +9,7 @@ const assets = (await files('dist')).sort();
 const hash = createHash('sha256').update('asset-cache-v3');
 for (const path of assets) {
   const data = await readFile(path); hash.update(path); hash.update(data);
-  if (path.endsWith('.js') && /pin-and-release|mother-win|Development scenarios/.test(data.toString())) {
+  if (/\.(js|css)$/.test(path) && /pin-and-release|mother-win|Development scenarios|mahbusa-expert-lab|Expert lab|lab-workspace/.test(data.toString())) {
     throw new Error('Development fixtures leaked into production.');
   }
 }

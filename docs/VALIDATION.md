@@ -1,5 +1,39 @@
 # Validation record
 
+## Development expert lab — October 15, 2026
+
+- Checkpoint 5 adds a DEV-gated dynamic editor at ?lab=1 and a development header
+  entry. Reuses the board with opt-in editable points; production geometry and
+  multiplayer behavior are preserved. Lab styles remain in its dynamic component.
+- Full-turn board/player/score/dice editing, three presets, paged candidate list,
+  checked prefix/final replay, next-game/round copy and actual feature breakdown.
+  Candidate labels/notes attach to canonical results; changed analyzed positions
+  create separate cases. Cases and labels stay in memory until explicit export.
+- Versioned JSON validates totals, pin shape, top colors, mother/completed-game
+  state, scores, full rolls, result-label membership, sizes and duplicates.
+  Imports are atomic and require replacement confirmation. Export excludes cached
+  values. Validation establishes structure, not historical opening reachability.
+- Test-first coverage: neutral validation accepted wrong totals before implementation;
+  sparse-array regressions failed then passed. New packaging assertions first
+  failed, then passed after guarding both JS and CSS against lab markers.
+- Automated checks: 130 Vitest + 37 Node tests passed (167 total), Svelte/TypeScript
+  zero errors/warnings, production build and offline generation passed.
+- Chrome extension QA passed analysis, exact mother-win replay, multi-label notes,
+  prefix replay, invalid-total disabled analysis, separate cases preserving labels,
+  invalid JSON preserving cases, import cancellation and replacement, JSON download,
+  keyboard point selection, held pins, and 390×844 layout without horizontal overflow.
+- Browser download-event observation timed out, but native Chrome and the generated
+  8 KB Downloads file confirmed completion. Extension file chooser automation lacked
+  file-URL permission; the native picker successfully loaded the downloaded JSON
+  without settings changes. No browser errors/warnings observed in app checks.
+- Production preview verified the current JS asset on a fresh origin (an old preview
+  origin had a cached app). ?lab=1 still shows normal mode selection, no lab entry,
+  Single player In development, and separate multiplayer opening controls.
+- Development multiplayer smoke passed opening tie/reroll, deterministic fresh dice,
+  combined movement and Undo after returning from the lab.
+- No Sites deployment: the lab is intentionally absent from production. Actual
+  iPhone/Safari and full worker/search performance remain later acceptance work.
+
 ## Bot strategy evaluator and turn ranking — October 15, 2026
 
 - Checkpoint 4 adds a versioned strategy-v1 evaluator with 15 normalized features,
