@@ -10,8 +10,9 @@ game at its welcome/Start round screen. Start and development screens work in
 either orientation, with no scoreboard or rotation prompt. Only the game asks
 portrait phones to rotate. Reset dialog offers Back to start and explains that
 this clears the board and scores. Navigation is in memory; refresh returns home.
-Bot implementation and training are future work; this release is the first
-checkpoint of the single-player roadmap only.
+The start page is checkpoint 1 of [the single-player roadmap](BOT_ROADMAP.md).
+Engine foundation work follows its separate scoped implementation plan; public
+bot play stays In development until a trained candidate passes qualification.
 
 ## Agreed rules
 15 pieces on each starting point, opposing directions, pin rather than hit.
@@ -77,4 +78,5 @@ Automated rules and conservation tests plus browser scenarios for every rule,
 turn control and reset. Real iPhone checks for installation, orientation, offline,
 and feedback under 100 ms. Record unperformed checks as pending.
 
-No login, backend, persistence, online play, AI, native app or App Store release.
+No login, backend, game persistence, online play, native app or App Store release.
+The local trained opponent is planned in BOT_ROADMAP.md; it is not enabled yet.
