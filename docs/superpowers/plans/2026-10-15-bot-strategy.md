@@ -81,9 +81,9 @@ strategyEvaluator implements PositionEvaluator with versioned id strategy-v1.
 Each row includes plan, value, explanation, continuation (or null for round win),
 and kind handover/next-game/round-win. Explanation perspective is input.active.
 
-- [ ] Write failing tests for round wins, one-vs-two point outcomes at different
+- [x] Write failing tests for round wins, one-vs-two point outcomes at different
   scores, blocked handover, forced moves, symmetry and preservation of all plans.
-- [ ] Replay outcome scoring once; next-game continuation uses initialPosition
+- [x] Replay outcome scoring once; next-game continuation uses initialPosition
   and winning starter. Nonwinning turns hand over; stable sorting retains ties.
 - [ ] Run focused and full suites, type/build/offline checks and record timing.
   Commit; independent review; integrate and push after checks. No site deployment.

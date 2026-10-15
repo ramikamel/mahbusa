@@ -1,5 +1,32 @@
 # Validation record
 
+## Bot strategy evaluator and turn ranking — October 15, 2026
+
+- Checkpoint 4 adds a versioned strategy-v1 evaluator with 15 normalized features,
+  explicit weights, per-feature contributions and a bounded heuristic value.
+  Mother protection, pin location/cover/passage, support, contact risk, mobility,
+  progress and round score encode the initial expert preferences.
+- Mother-capture threat checks all 21 weighted rolls, including combined dice
+  and four uses of doubles, with intermediate blocking from the actual rules.
+  Ordinary blot pressure and isolation remain static proxies. The overall
+  heuristic is not a calibrated round-win probability or qualified bot.
+- Complete-turn ranking preserves every generated legal option, including forced
+  exposure/releases. It evaluates handover from the original player's perspective;
+  a game win awards points once and resets with the winner starting. A round win
+  returns exact +1 without evaluating another board.
+- Test-first neutral stubs failed the real strategy and ranking assertions before
+  implementation. Added 41 tests for strategic comparisons, exact threat fractions,
+  scores, color reflection, bounded explanations, stable ties, forced moves,
+  checked-engine replay, deterministic behavior and input ownership.
+- Full verification: 87 Vitest + 34 Node tests passed (121 total), Svelte check
+  zero errors/warnings, production build and offline packaging passed.
+- Local fixture timings: 100 mother-contact evaluations about 6–9 ms; complete
+  ranking of 174 spread-board double-1 results about 9–15 ms. These are Mac
+  fixture measurements, not search or iPhone performance guarantees.
+- No frontend imports, layout changes or bot entry point. Public Single player
+  remains In development; the production JS/CSS asset hashes are unchanged.
+  No browser behavior changed, so browser QA/deployment was not repeated.
+
 ## Completed locally — October 11, 2026
 
 - Git repository on `main` with incremental source commits and a pnpm lockfile.

@@ -1,7 +1,8 @@
 # Mahbusa single-player engine roadmap
 
-Agreed October 15, 2026. The public start page/placeholder is complete. The next
-authorized work is checkpoints 2–3, not a public bot or training run.
+Agreed October 15, 2026. The public start page/placeholder and engine checkpoints
+2–4 are complete. Next is the development-only expert lab; public bot play and
+training remain later checkpoints.
 
 ## Product requirements
 
@@ -61,7 +62,9 @@ Production crypto dice remain unchanged.
 1. **Done:** start page, placeholder and same-device Multiplayer entry.
 2. **Done:** contracts, literal strategy/rules fixtures, persisted roadmap and scoped plan.
 3. **Done:** complete-turn reference oracle, optimized generation and equivalence tests.
-4. Strategy evaluator and inspectable feature contributions.
+4. **Done:** strategy evaluator, inspectable feature contributions and complete-turn
+   ranking with score-aware game/round continuation. Versioned strategy-v1 weights
+   are provisional heuristics, not trained probabilities or qualified bot strength.
 5. Development-only expert lab: edit board/score/dice, preview candidates,
    annotate preferred/acceptable/bad plays, explicit JSON import/export.
 6. Headless seeded rounds, RNG validation and reproducible paired benchmarks.
