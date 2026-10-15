@@ -26,6 +26,15 @@
 - No frontend imports, layout changes or bot entry point. Public Single player
   remains In development; the production JS/CSS asset hashes are unchanged.
   No browser behavior changed, so browser QA/deployment was not repeated.
+- Independent read-only whole-branch review found no Critical, Important or Minor
+  issues. Its separate engine-oracle check passed 378 roll cases across nine
+  compact contact positions and both colors, including blocks and pinned attackers.
+  This was bounded verification, not an exhaustive proof across every valid board.
+- Review scope decisions: weights remain unqualified (risk: weak play); ordinary
+  pin/release estimates remain proxies (risk: tactical misranking); callers must
+  supply engine-valid boards (risk: invalid evaluations without later boundary
+  validation); device/worker/search/training checks remain later checkpoints
+  (risk: local timing cannot establish public readiness).
 
 ## Completed locally — October 11, 2026
 

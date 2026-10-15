@@ -85,5 +85,5 @@ and kind handover/next-game/round-win. Explanation perspective is input.active.
   scores, blocked handover, forced moves, symmetry and preservation of all plans.
 - [x] Replay outcome scoring once; next-game continuation uses initialPosition
   and winning starter. Nonwinning turns hand over; stable sorting retains ties.
-- [ ] Run focused and full suites, type/build/offline checks and record timing.
+- [x] Run focused and full suites, type/build/offline checks and record timing.
   Commit; independent review; integrate and push after checks. No site deployment.
