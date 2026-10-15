@@ -372,3 +372,33 @@ viewport. Rechecked the affected behaviors.
   confirmed Back to start. No console errors. Screenshot:
   `/private/tmp/mahbusa-start-page.jpg`. Temporary servers/tabs stopped;
   viewport override reset and public start page left open.
+
+## Bot foundation: contracts and complete turns — October 15, 2026
+
+- Roadmap checkpoints 2–3 add versioned bot interfaces and literal fixtures,
+  plus generateTurns(position/active/remaining). Public Single player remains
+  In development. No evaluator, model, RNG or UI integration is enabled.
+- Generation shares memoized legal-move analysis and the existing private
+  transition. It explores different checkers, merges equivalent complete
+  positions/dice/outcomes, stops on wins, returns blocked passes, and owns its
+  output data. Scores, turn handover and UI history remain caller responsibilities.
+- Tests were first run against a missing generator and an empty-result stub;
+  actual expected-state assertions failed before implementation. An oracle
+  comparison initially exposed object-property-order sensitivity in the test
+  serializer; comparison now uses board values in a fixed structural order.
+- Added 44 tests, including checked-public-rules exhaustive oracle comparisons,
+  all 21 rolls on a small contact board for both colors, multi-checker play,
+  partial doubles, pins/releases, immediate mother/bear-off wins, forced usage,
+  invalid dice/player, deterministic output and non-aliasing.
+- Full verification: 46 Vitest + 34 Node tests passed (80 total), Svelte check
+  zero errors/warnings, production build and offline packaging passed.
+- Complete spread-board double-1 generation returned 1,157 final positions in
+  approximately 59–68 ms locally. This is a fixture measurement, not a worst-case
+  device guarantee or a full search benchmark.
+- Independent read-only review found no Critical, Important or Minor defects
+  and independently reran all 80 tests and type checks. Review assumes valid
+  in-progress engine positions per API contract. Untrusted editor/worker input
+  validation, evaluator quality, model loading and device deadlines are later work.
+- No frontend source/layout changes. The shared legality helper was extracted
+  without changing its rules. Existing test-only biased seeded dice sampling is
+  documented for replacement before simulation/training; production dice unchanged.

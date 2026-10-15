@@ -61,8 +61,9 @@ only public checked moves; optimized generation shares no traversal/dedup code.
 
 ### Task 3: Review, integrate and validate (roadmap commit 3)
 
-- [ ] Fresh independent whole-branch review, especially Review Focus above.
-- [ ] Address important findings with a failing regression first, then green suite.
-- [ ] Production/offline build; confirm public app code is unchanged.
+- [x] Fresh independent whole-branch review, especially Review Focus above.
+- [x] Address important findings with a failing regression first, then green suite.
+  Review found no Critical, Important or Minor defects.
+- [x] Production/offline build; confirm UI source and behavior are unchanged.
 - [ ] Commit implementation and validation record, integrate on main and push.
 - [ ] Leave Single player as In development. Next checkpoint is strategy evaluation.
