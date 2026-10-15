@@ -3,6 +3,16 @@
 Two people share one landscape board. Svelte + TypeScript + Vite, scalable SVG,
 independent pure rules engine, static hosting, offline assets, no saved game state.
 
+## Start page
+Fresh visits show Single player and Multiplayer. Single player opens an
+"In development" screen with Back; Multiplayer opens the existing same-device
+game at its welcome/Start round screen. Start and development screens work in
+either orientation, with no scoreboard or rotation prompt. Only the game asks
+portrait phones to rotate. Reset dialog offers Back to start and explains that
+this clears the board and scores. Navigation is in memory; refresh returns home.
+Bot implementation and training are future work; this release is the first
+checkpoint of the single-player roadmap only.
+
 ## Agreed rules
 15 pieces on each starting point, opposing directions, pin rather than hit.
 Mother-piece pin wins immediately for 2 without exceptions. Use maximum dice,

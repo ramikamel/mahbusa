@@ -51,3 +51,12 @@ main{padding-top:20px}.board{max-height:65vh}.stack-count{font-size:17px}.result
 .board{height:100%;max-height:none}
 .tray-end-turn{position:absolute;top:50%;transform:translateY(-50%);color:#3f604d}
 @media(max-height:600px) and (orientation:landscape){.board-shell{height:calc(100dvh - 76px - env(safe-area-inset-bottom))}.board{max-height:none}}
+
+/* Mode selection is usable in either orientation; only the board asks to rotate. */
+.app-main:focus{outline:none}.mode-page .site-header{grid-template-columns:1fr auto;height:76px;min-height:76px;padding:0}
+.mode-main{display:grid;place-items:center;min-height:calc(100dvh - 76px - env(safe-area-inset-bottom));padding:28px 0 44px}
+.mode-screen{width:100%;max-width:640px;text-align:center}.mode-screen h1{font-size:40px;line-height:1.15;font-weight:550;letter-spacing:-1.5px;margin:0}.mode-screen h1>span{color:var(--accent)}
+.mode-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:32px}.mode-button{display:flex;flex-direction:column;align-items:center;gap:10px;min-height:180px;padding:26px 20px;border:1px solid #d4dbca;border-radius:14px;background:#f1f2e9;color:#262c28;appearance:none;-webkit-appearance:none;-webkit-text-fill-color:currentColor}.mode-button:hover{background:#e5eadc;border-color:#adbba1}.mode-name{font-size:19px;font-weight:600;letter-spacing:-.3px}.mode-description{font-size:14px;color:#65705e}
+.mode-icon{height:42px;display:flex;align-items:center;justify-content:center;margin-bottom:4px}.mode-icon i{display:block;width:34px;height:34px;border:1.5px solid #c6caba;border-radius:50%;background:#fcfbf3}.mode-icon-pair i+i{margin-left:-9px;background:#344237;border-color:#243329}.mode-back{margin-top:28px;min-width:112px}.back-to-start{display:block;margin:12px auto 0;padding:10px 16px}
+@media(max-width:540px){.mode-screen h1{font-size:32px}.mode-actions{grid-template-columns:1fr;gap:12px;margin-top:26px}.mode-button{min-height:150px;padding:20px}.mode-main{padding:28px 0}}
+@media(max-height:600px) and (orientation:landscape){.mode-page .site-header{height:56px;min-height:56px}.mode-main{min-height:calc(100dvh - 56px - env(safe-area-inset-bottom));padding:20px 0}.mode-screen h1{font-size:30px}.mode-actions{margin-top:20px}.mode-button{min-height:150px;padding:18px}}

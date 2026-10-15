@@ -3,10 +3,15 @@
 Run `pnpm dev`, open the printed URL with the connected Chrome extension, and
 use real controls. After each action, inspect fresh DOM/accessible state. Use
 screenshots to check appearance. Do not inject or mutate game state in the browser.
-Start fixtures through the development selector or `?scenario=NAME`.
+Choose Multiplayer before testing the board. Start fixtures through the
+development selector or `?scenario=NAME` after entering Multiplayer.
 
 | Scenario | Actions | Expected result |
 | --- | --- | --- |
+| Start page | Fresh visit; Single player; Back; Multiplayer | Home shows both modes without board/scoreboard; Single player shows In development and Back; Multiplayer opens the original welcome/Start round screen |
+| Menu orientation | Inspect home and placeholder at 390×844 portrait and 667×375 landscape | Buttons stay accessible with no horizontal overflow; no rotation prompt or scoreboard; wordmark stays dark |
+| Return to start | Play a move; Reset round; Keep playing; reopen Reset; Back to start; Multiplayer | Cancellation preserves game; confirmation text explains board/scores are cleared; leaving returns home; reentering shows fresh welcome and zero scores |
+| Menu keyboard / rules | Activate Single player, Back, Multiplayer with Enter; open/close wordmark rules from home | Navigation focuses main content; normal keyboard access works; rules return to the originating screen |
 | Separate opening rolls | Start round; set next dice `6,1`; Dark: roll die; Light: roll die | Dice remain in the same player positions; both roll buttons disabled after Light wins; Start game appears; board not playable yet |
 | Opening ties | Start/reset round; set next dice `3,3`; Light: roll die; Dark: roll die; set `2,5`; Dark: reroll; Light: roll die | Tie enables both rerolls and no Start game; Dark reroll clears old Light die; Dark wins and Start game appears |
 | Fresh turn | After Light wins contest, set dice `2,3`; Start game; select point 24 | Fresh dice 2,3 on the center wall; legal targets 22, 21 and combined 19; End turn absent while moves remain; no Roll dice button |
@@ -37,13 +42,14 @@ Start fixtures through the development selector or `?scenario=NAME`.
 | Wordmark color | Inspect portrait 390×844 and landscape phones; open rules | Title remains dark rather than native button blue; rules still open; orientation preserves the game |
 | Wall dice / tray | During moving phase inspect dice and tray at desktop and both landscape sizes; rotate portrait and back | Dice center matches original narrow wall and overlays it; tray controls/counts are separate, in view and 44 px targets; values and spent states preserved |
 | Responsive | Test desktop, 844×390 and 667×375 landscape, 390×844 portrait | 52 px desktop/44 px landscape dice; 14 px status and controls; landscape actions in viewport; portrait rotate prompt and centered header scores; orientation preserves game |
-| Refresh | Move, refresh tab | Fresh board and zero scores; no local saved state |
+| Refresh | Move, refresh tab; choose Multiplayer | Home appears first; reentering shows fresh board and zero scores; no local saved state |
 
 ## Production and offline
 
 1. `pnpm build` must reject leaked development controls or fixture strings.
 2. `pnpm preview`, open app, then reload after first service worker installation.
 3. Verify the development selector and fixed-dice controls are absent.
+   Verify home → Single player → Back → Multiplayer also works offline.
 4. In Chrome DevTools, use Application → Service Workers → Offline. Reload and
    play a turn. Verify Network shows cached app assets and no gameplay requests.
 5. Inspect Application storage: only versioned app asset caches, no saved game

@@ -345,3 +345,22 @@ viewport. Rechecked the affected behaviors.
   Public version 11 deployed successfully; deployment
   `appgdep_6acec1115be48191b440bc394cf6efcc`. Existing hosted game preserved;
   its cached assets will update after old app clients close.
+
+## Start page and single-player placeholder — October 14, 2026
+
+- Fresh visits show Single player and Multiplayer. Single player opens only
+  In development and Back; Multiplayer opens the existing welcome/Start round.
+  Main content receives focus on navigation; scoreboard is game-only.
+- Home/placeholder work in portrait and landscape. Chrome checked 390×844,
+  667×375 and desktop 1200×900: no portrait rotation prompt on menus, no
+  horizontal overflow, and game height remains 299 px compact / 600.594 px desktop.
+- Keyboard entry/Back, separate opening rolls, fresh dice, combined 2+4 moves,
+  Undo, reset cancellation and Back to start passed. A scored 2–0 game returned
+  home and reentered as a fresh 0–0 welcome. No engine rules were changed.
+- All 36 existing tests passed; Svelte check reported zero errors/warnings;
+  production build and asset-only offline packaging passed.
+- Production cache was installed, then the local preview server was stopped.
+  Reload, Single player → Back → Multiplayer, and Start round still worked
+  from cached assets. Development tools absent; Chrome console errors: none.
+- Actual iPhone/Safari verification remains pending. Bot work is intentionally
+  deferred; this release implements only the roadmap's first checkpoint.

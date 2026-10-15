@@ -1,11 +1,13 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import type { Component } from 'svelte';
   import Board from './components/Board.svelte';
   import Die from './components/Die.svelte';
   import { createGame, startRound, openingRoll, startGame, applyMovePath, availableMoves, availableMovePaths, undo, endTurnAndRoll, nextGameAndRoll, randomDie } from './lib/engine';
   import type { Game, MovePath, Pair, Player } from './lib/engine';
   let game: Game = $state(createGame());
+  let screen = $state<'home' | 'single-player' | 'multiplayer'>('home');
+  let mainElement: HTMLElement;
   let selected: number | null = $state(null);
   let choices: MovePath[] = $state([]);
   let notice = $state('');
@@ -68,25 +70,57 @@
     else if (game.phase === 'gameOver') game = nextGameAndRoll(game, dice());
   }
   function reset() { game = startRound(); clear(); resetDialog.close(); }
+  async function navigate(next: typeof screen) {
+    screen = next;
+    await tick();
+    mainElement.focus();
+  }
+  function backToStart() {
+    resetDialog.close();
+    game = createGame(); forced = ''; clear();
+    void navigate('home');
+  }
 </script>
 
 <svelte:head><title>Mahbusa</title></svelte:head>
-<div class="app-wrap">
+<div class="app-wrap" class:mode-page={screen !== 'multiplayer'}>
   <header class="site-header">
     <button class="wordmark" aria-label="Mahbusa — How to play" aria-haspopup="dialog" title="How to play" onclick={() => rulesDialog.showModal()}><span class="brand-icon" aria-hidden="true"><i></i><i></i></span>mahbusa<span class="wordmark-dot">.</span></button>
-    <div class="scoreboard" role="region" aria-label="Round scoreboard">
+    {#if screen === 'multiplayer'}<div class="scoreboard" role="region" aria-label="Round scoreboard">
       {#each names as name, player}
         <div class="player-score" class:active-player={game.active === player && !finished && game.phase !== 'ready' && game.phase !== 'opening'}>
           <span class="player-disc" class:dark-disc={player === 1}></span><span>{name}</span><strong>{game.score[player]}</strong>
           {#if game.active === player && game.phase === 'moving'}<span class="sr-only">Current turn</span>{/if}
         </div>
       {/each}
-    </div>
+    </div>{/if}
     <div class="header-right">
       <span class="local-label"><span class="status-dot"></span>{online ? 'LOCAL PLAY' : 'OFFLINE PLAY'}</span>
     </div>
   </header>
-  <main>
+  <main bind:this={mainElement} tabindex="-1" class="app-main" class:mode-main={screen !== 'multiplayer'}>
+    {#if screen === 'home'}
+      <section class="mode-screen" aria-labelledby="mode-title">
+        <h1 id="mode-title">Choose your game<span>.</span></h1>
+        <div class="mode-actions">
+          <button class="mode-button" onclick={() => navigate('single-player')}>
+            <span class="mode-icon" aria-hidden="true"><i></i></span>
+            <span class="mode-name">Single player</span>
+            <span class="mode-description">Against the bot</span>
+          </button>
+          <button class="mode-button" onclick={() => navigate('multiplayer')}>
+            <span class="mode-icon mode-icon-pair" aria-hidden="true"><i></i><i></i></span>
+            <span class="mode-name">Multiplayer</span>
+            <span class="mode-description">Two players, one device</span>
+          </button>
+        </div>
+      </section>
+    {:else if screen === 'single-player'}
+      <section class="mode-screen development-screen" aria-labelledby="development-title">
+        <h1 id="development-title">In development<span>.</span></h1>
+        <button class="secondary-button mode-back" onclick={() => navigate('home')}>Back</button>
+      </section>
+    {:else}
     <div class="portrait-prompt"><span aria-hidden="true">↻</span><h2>A little more room to play.</h2><p>Turn your phone sideways for the board.</p><small>Your current game stays right here.</small></div>
     <section class="play-area" aria-label="Game">
       <p class="sr-only" aria-live="polite">{status}</p>
@@ -135,6 +169,7 @@
       </div>
     </section>
     {#if DevTools}<DevTools loadScenario={(fixture) => { game = fixture; clear(); }} setDice={(value) => forced = value} />{/if}
+    {/if}
   </main>
 </div>
 <dialog bind:this={rulesDialog} aria-labelledby="rules-title">
@@ -146,6 +181,6 @@
   <p><strong>Use the total.</strong> Highlighted destinations include combined dice moves when every step is legal. Tap a farther destination to use multiple dice on one checker. With doubles, you can combine up to four steps.</p>
   <p><strong>Take your time.</strong> Undo moves before End Turn. One Undo reverses an entire combined move. Dice rolls and winning moves cannot be undone.</p>
   <div class="install-note"><strong>Take the board with you.</strong><p>On iPhone, open in Safari, choose Share → Add to Home Screen. Load the app once online before playing offline. Only app files are cached; refreshing or reopening starts fresh.</p></div>
-  <button class="primary-button" onclick={() => rulesDialog.close()}>Back to the board →</button>
+  <button class="primary-button" onclick={() => rulesDialog.close()}>{screen === 'multiplayer' ? 'Back to the board →' : 'Back'}</button>
 </dialog>
-<dialog bind:this={resetDialog} aria-labelledby="reset-title"><span class="eyebrow">A FRESH START</span><h2 id="reset-title">Reset this round?</h2><p>The current board and both scores will be cleared.</p><div class="dialog-actions"><button class="secondary-button" onclick={() => resetDialog.close()}>Keep playing</button><button class="primary-button danger-button" onclick={reset}>Reset round →</button></div></dialog>
+<dialog bind:this={resetDialog} aria-labelledby="reset-title"><span class="eyebrow">A FRESH START</span><h2 id="reset-title">Reset this round?</h2><p>Resetting or going back to start clears the current board and both scores.</p><div class="dialog-actions"><button class="secondary-button" onclick={() => resetDialog.close()}>Keep playing</button><button class="primary-button danger-button" onclick={reset}>Reset round →</button></div><button class="text-button back-to-start" onclick={backToStart}>Back to start</button></dialog>
