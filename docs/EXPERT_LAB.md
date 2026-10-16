@@ -30,6 +30,8 @@ not unanalyzed draft edits or cached heuristic values. Loading a saved case or
 preset discards the current unanalyzed draft. Collections support 20 cases,
 100 labels per case, notes up to 4,000 characters and JSON up to 1 MiB (UTF-8).
 Export then start a new collection when full.
+Edits that exceed the aggregate byte limit are rejected while preserving the
+previous value. Near the limit, export uses compact JSON to keep the file importable.
 
 The schema uses format mahbusa-expert-lab, version 1. Inputs include position,
 active player, round score, and remaining dice as a full roll (two distinct dice

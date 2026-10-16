@@ -1,5 +1,29 @@
 # Validation record
 
+## Expert lab final review and export fix — October 16, 2026
+
+- Independent review found one Important issue: a compact import could become
+  unexportable after pretty formatting, and editor updates could exceed the
+  collection byte cap. No Critical or Minor findings.
+- Fixed with compact export fallback and transactional UTF-8 size checks before
+  accepting note/label/title/new-case changes. Rejected controls restore their
+  prior value. Three regressions failed first and now pass.
+- Final verification: 133 Vitest + 37 Node tests (170 total), Svelte/TypeScript
+  zero errors/warnings, production/offline build passed. New tests round-trip
+  the reviewer's large fixture and verify rejection preserves exportable work.
+- Additional Chrome QA passed 174-result pagination, labels on page two, and
+  rejecting a 21st case while preserving all 20 cases/40 labels.
+- Near-limit browser import was exercised via the native picker and its replacement
+  dialog; final export/size-control UI automation could not finish because Chrome
+  extension reconnection/debugger failures interrupted it. These boundaries are
+  covered by automated regressions; do not count the interrupted UI check as passed.
+- Review scope decisions: structural validity does not establish historical
+  reachability (risk: unreachable test positions); main-thread/cancellation budgets
+  await workers (risk: large analyses can pause UI); heuristic strength/training
+  await qualification (risk: weak play); automatic reload recovery stays excluded
+  (risk: unexported work is lost); actual iPhone/Safari checks remain pending
+  (risk: desktop QA does not establish device acceptance).
+
 ## Development expert lab — October 15, 2026
 
 - Checkpoint 5 adds a DEV-gated dynamic editor at ?lab=1 and a development header

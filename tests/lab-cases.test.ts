@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as E from '../src/lib/engine';
-import { exportLabCollection, parseLabCollection, previewTurn, resultKey, validateLabInput } from '../src/lib/lab/cases';
+import { exportLabCollection, parseLabCollection, previewTurn, resultKey, validateLabInput, withLabCase } from '../src/lib/lab/cases';
 import type { LabCollection } from '../src/lib/lab/cases';
 import { botFixtures, mirrored } from './helpers/bot-fixtures';
 
@@ -96,6 +96,55 @@ describe('expert lab boundaries', () => {
   it('rejects malformed and over-limit UTF-8 JSON before parsing cases', () => {
     expect(() => parseLabCollection('{bad')).toThrow();
     expect(() => parseLabCollection('é'.repeat(524289))).toThrow(/MiB/);
+  });
+});
+
+describe('collection exportability', () => {
+  function largeCollection(): LabCollection {
+    const position = E.emptyPosition();
+    position.points[0] = { count: [0, 15], top: 1 };
+    for (const i of [10, 12, 14, 16, 18]) position.points[i] = { count: [3, 0], top: 0 };
+    const state = { position, active: 0 as const, score: [0, 0] as E.Pair, remaining: [1, 2] };
+    const annotations = E.generateTurns(state).slice(0, 15).map(plan => ({
+      resultKey: resultKey(plan), judgment: 'acceptable' as const, note: 'x'.repeat(2900),
+    }));
+    return { format: 'mahbusa-expert-lab', version: 1,
+      cases: Array.from({ length: 20 }, (_, i) => ({ id: 'case-' + i, title: 'Large case',
+        input: structuredClone(state), annotations: structuredClone(annotations) })) };
+  }
+  it('exports a valid compact import even when pretty formatting exceeds 1 MiB', () => {
+    const data = largeCollection(), compact = JSON.stringify(data);
+    expect(new TextEncoder().encode(compact).length).toBeLessThan(1024 * 1024);
+    expect(new TextEncoder().encode(JSON.stringify(data, null, 2)).length).toBeGreaterThan(1024 * 1024);
+    const parsed = parseLabCollection(compact), exported = exportLabCollection(parsed);
+    expect(new TextEncoder().encode(exported).length).toBeLessThanOrEqual(1024 * 1024);
+    expect(parseLabCollection(exported)).toEqual(parsed);
+  });
+  it('rejects note/title/case mutations beyond aggregate size without modifying accepted work', () => {
+    const data = largeCollection(), before = JSON.stringify(data);
+    // Grow the collection close to its compact cap using only valid notes.
+    for (let i = 0; i < data.cases.length; i++) {
+      const next = structuredClone(data.cases[i]);
+      next.annotations = next.annotations.map(a => ({ ...a, note: 'x'.repeat(4000) }));
+      try { data.cases = withLabCase(data, next).cases; } catch { break; }
+    }
+    expect(JSON.stringify(data)).not.toBe(before);
+    const kept = JSON.stringify(data);
+    const oversized = structuredClone(data.cases[19]);
+    oversized.annotations = oversized.annotations.map(a => ({ ...a, note: '界'.repeat(4000) }));
+    expect(() => withLabCase(data, oversized)).toThrow(/MiB/);
+    expect(JSON.stringify(data)).toBe(kept);
+    expect(() => exportLabCollection(data)).not.toThrow();
+  });
+  it('inserts and replaces trusted cases without changing the source and enforces case cap', () => {
+    const data = collection(), original = JSON.stringify(data);
+    const next = { ...data.cases[0], title: 'Renamed' };
+    expect(withLabCase(data, next).cases[0].title).toBe('Renamed');
+    const added = withLabCase(data, { ...next, id: 'new' });
+    expect(added.cases).toHaveLength(2);
+    expect(JSON.stringify(data)).toBe(original);
+    const full = largeCollection();
+    expect(() => withLabCase(full, { ...next, id: 'one-too-many' })).toThrow(/20 cases/);
   });
 });
 

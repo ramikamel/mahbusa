@@ -5,7 +5,7 @@
   import type { Game, Move, Player } from '../../lib/engine';
   import { rankStrategyTurns } from '../../lib/bot/rank-strategy';
   import type { RankedTurn } from '../../lib/bot/rank-strategy';
-  import { exportLabCollection, MAX_LAB_BYTES, MAX_LAB_CASES, parseLabCollection, previewTurn, resultKey, validateLabInput } from '../../lib/lab/cases';
+  import { exportLabCollection, MAX_LAB_BYTES, parseLabCollection, previewTurn, resultKey, validateLabInput, withLabCase } from '../../lib/lab/cases';
   import type { Judgment, LabCase, LabCollection, LabInput } from '../../lib/lab/cases';
 
   let { onClose }: { onClose: () => void } = $props();
@@ -42,6 +42,16 @@
   const pages = $derived(Math.max(1, Math.ceil(rows.length / 20)));
 
   function invalidate() { rows = []; analyzed = false; candidate = 0; step = 0; page = 0; message = ''; error = ''; }
+  function saveCase(next: LabCase) {
+    cases = withLabCase({ format: 'mahbusa-expert-lab', version: 1, cases }, next).cases;
+  }
+  function changeTitle(element: HTMLInputElement) {
+    if (!analyzed) { title = element.value; return; }
+    try {
+      if (!element.value.trim()) throw new Error('Enter a case title.');
+      saveCase({ ...current, title: element.value }); title = element.value; error = '';
+    } catch (err) { element.value = title; error = err instanceof Error ? err.message : 'Title was not saved.'; }
+  }
   function loadCase(id: string) {
     caseId = id;
     const saved = cases.find(c => c.id === id)!;
@@ -79,25 +89,30 @@
       if (!title.trim() || title.length > 160) throw new Error('Enter a case title (1–160 characters).');
       const ranked = rankStrategyTurns(clean);
       if (JSON.stringify(clean) !== JSON.stringify(current.input)) {
-        if (cases.length >= MAX_LAB_CASES) throw new Error('Collection is full (20 cases). Export, then start a new collection.');
         const next: LabCase = { id: crypto.randomUUID(), title, input: clean, annotations: [] };
-        cases = [...cases, next]; caseId = next.id;
+        saveCase(next); caseId = next.id;
         message = 'New position saved as a separate case. Existing labels are preserved.';
-      } else current.title = title;
+      } else saveCase({ ...current, title });
       rows = ranked; analyzed = true; candidate = 0; page = 0; step = ranked[0]?.plan.moves.length ?? 0;
     } catch (err) { error = err instanceof Error ? err.message : 'Analysis failed.'; }
     finally { busy = false; }
   }
   function selectCandidate(index: number) { candidate = index; step = rows[index].plan.moves.length; error = ''; }
-  function label(value: string, note = annotation?.note ?? '') {
-    if (!row) return;
+  function label(value: string, note = annotation?.note ?? ''): boolean {
+    if (!row) return false;
     const key = resultKey(row.plan), existing = current.annotations.find(a => a.resultKey === key);
-    if (!value) { current.annotations = current.annotations.filter(a => a.resultKey !== key); return; }
-    if (value !== 'preferred' && value !== 'acceptable' && value !== 'bad') return;
-    if (!existing && current.annotations.length >= 100) { error = 'Use at most 100 labels per case.'; return; }
+    if (!value) { saveCase({ ...current, annotations: current.annotations.filter(a => a.resultKey !== key) }); return true; }
+    if (value !== 'preferred' && value !== 'acceptable' && value !== 'bad') return false;
+    if (!existing && current.annotations.length >= 100) { error = 'Use at most 100 labels per case.'; return false; }
     const next = { resultKey: key, judgment: value as Judgment, note: note.slice(0, 4000) };
-    current.annotations = [...current.annotations.filter(a => a.resultKey !== key), next];
-    message = 'Label saved in memory. Export JSON to keep it.'; error = '';
+    try {
+      saveCase({ ...current, annotations: [...current.annotations.filter(a => a.resultKey !== key), next] });
+      message = 'Label saved in memory. Export JSON to keep it.'; error = '';
+      return true;
+    } catch (err) {
+      error = err instanceof Error ? err.message : 'Label was not saved.'; message = '';
+      return false;
+    }
   }
   function exported(download = false) {
     try {
@@ -190,7 +205,7 @@
     <aside aria-label="Editor and expert review">
       <section class="lab-panel">
         <div class="lab-list-heading"><h2>Position</h2>{#if analyzed}<button onclick={invalidate}>Edit position</button>{/if}</div>
-        <label>Case title <input maxlength="160" bind:value={title} oninput={() => { if (analyzed && title.trim()) current.title = title; }} /></label>
+        <label>Case title <input maxlength="160" value={title} oninput={e => changeTitle(e.currentTarget)} /></label>
         {#if !analyzed}
           <label>Player to move <select bind:value={draft.active} onchange={invalidate}><option value={0}>Light</option><option value={1}>Dark</option></select></label>
           <div class="lab-fields">
@@ -218,8 +233,8 @@
       {#if analyzed && row}
         <section class="lab-panel">
           <h2>Your judgment</h2>
-          <label>Candidate label <select value={annotation?.judgment ?? ''} onchange={e => label(e.currentTarget.value)}><option value="">Unreviewed</option><option value="preferred">Preferred</option><option value="acceptable">Acceptable</option><option value="bad">Bad</option></select></label>
-          <label>Expert note <textarea rows="3" maxlength="4000" disabled={!annotation} value={annotation?.note ?? ''} oninput={e => label(annotation!.judgment, e.currentTarget.value)} placeholder="Why would you play or avoid this?"></textarea></label>
+          <label>Candidate label <select value={annotation?.judgment ?? ''} onchange={e => { if (!label(e.currentTarget.value)) e.currentTarget.value = annotation?.judgment ?? ''; }}><option value="">Unreviewed</option><option value="preferred">Preferred</option><option value="acceptable">Acceptable</option><option value="bad">Bad</option></select></label>
+          <label>Expert note <textarea rows="3" maxlength="4000" disabled={!annotation} value={annotation?.note ?? ''} oninput={e => { if (!label(annotation!.judgment, e.currentTarget.value)) e.currentTarget.value = annotation?.note ?? ''; }} placeholder="Why would you play or avoid this?"></textarea></label>
           <small>You can mark multiple results preferred or acceptable. Choose Unreviewed to remove a label.</small>
         </section>
         <section class="lab-panel">

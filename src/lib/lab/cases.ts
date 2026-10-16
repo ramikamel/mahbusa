@@ -107,11 +107,25 @@ export function parseLabCollection(text: string): LabCollection {
   return { format: 'mahbusa-expert-lab', version: 1, cases };
 }
 
+/** Transactional size guard for trusted editor mutations. Use parseLabCollection
+ * for untrusted data; do not regenerate every legal label on each keystroke.
+ */
+export function withLabCase(data: LabCollection, next: LabCase): LabCollection {
+  const cases = data.cases.some(c => c.id === next.id)
+    ? data.cases.map(c => c.id === next.id ? next : c) : [...data.cases, next];
+  if (cases.length > MAX_LAB_CASES) fail('Collection is full (20 cases). Export, then start a new collection.');
+  const result = { ...data, cases };
+  if (new TextEncoder().encode(JSON.stringify(result)).byteLength > MAX_LAB_BYTES) {
+    fail('Collection would exceed 1 MiB. This edit was not saved; export before starting another collection.');
+  }
+  return result;
+}
+
 export function exportLabCollection(data: LabCollection): string {
   const clean = parseLabCollection(JSON.stringify(data));
-  const text = JSON.stringify(clean, null, 2);
-  if (new TextEncoder().encode(text).byteLength > MAX_LAB_BYTES) fail('Export exceeds 1 MiB.');
-  return text;
+  const pretty = JSON.stringify(clean, null, 2);
+  // Accepted compact imports must remain exportable; formatting is optional.
+  return new TextEncoder().encode(pretty).byteLength <= MAX_LAB_BYTES ? pretty : JSON.stringify(clean);
 }
 
 export function previewTurn(input: LabInput, plan: TurnPlan | null, steps: number): Game {
