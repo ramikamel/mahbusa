@@ -1,5 +1,31 @@
 # Validation record
 
+## Seeded round simulation and paired benchmark — October 16, 2026
+
+- Checkpoint 6 adds Node-only versioned SHA-256 counter streams with rejection
+  sampling, independent dice/action domains, checked complete-turn policies, real
+  opening/round transitions, explicit turn limits, and paired color-swapped reports.
+  Production crypto dice and public single-player status are unchanged.
+- 24 additional tests cover independent SHA word fixtures, all 36 ordered dice
+  outcomes including doubles, bounded rejection, input/action stream isolation,
+  illegal/partial/fabricated plans, scoring, complete round reproducibility, role
+  mapping, censoring, intervals and actual Node CLI output/error paths.
+- Full checks: 154 Vitest + 40 Node tests passed (194 total), Svelte/TypeScript
+  zero errors/warnings, production build and offline packaging passed. Production
+  JS/CSS asset hashes are unchanged from the expert-lab checkpoint.
+- Baseline: source 13dcfaf3c9dd4b35d7ea352e10266685256f75ba, sourceDirty=false,
+  root seed initial-baseline-2026-10-16, strategy-v1-greedy versus random-legal-v1,
+  100 paired seeds / 200 completed rounds, zero truncations. Strategy won 200–0,
+  points 733–8, mother losses 0–119, 31,466 turns across 408 games.
+- Paired conservative 95% Hoeffding interval for A's score: [0.8642,1].
+  This diagnostic assumes representative independent pairs. No model promotion,
+  trained strength claim, or repeated-look stopping rule is implied.
+- Local batch wall time about 45.9 s. Maximum measured strategy decision about
+  274 ms on this Mac; not an iPhone or search-budget guarantee.
+- Full report kept locally at .local/initial-baseline-2026-10-16.json (ignored).
+  Random play is a weak control. Expert-held-out positions, search, trained
+  models, equal runtime qualification and device acceptance remain later work.
+
 ## Expert lab final review and export fix — October 16, 2026
 
 - Independent review found one Important issue: a compact import could become
