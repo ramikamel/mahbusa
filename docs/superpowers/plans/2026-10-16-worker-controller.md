@@ -28,7 +28,7 @@ per job, revision-aware controller with4500ms watchdog and4000ms search target.
 - Real browser worker must bundle without Node dependencies or development-only
   faults entering production; timer heartbeat and cancellation must be visible.
 
-### Task1: Worker boundary and browser-safe checked replay
+### Task 1: Worker boundary and browser-safe checked replay
 **Files:** new src/lib/bot/validation.ts,replay.ts,worker-runtime.ts,search.worker.ts,
 worker-factory.ts; modify simulation.ts/types.ts; tests/bot-worker-runtime.test.ts.
 **Interfaces:** validateSearchState(unknown) => asserts valid TurnInput & score;
@@ -40,7 +40,7 @@ send:(SearchReply)=>void):void. SearchReply errors include modelId.
 - [ ] Implement extracted replay/request validation/worker runtime/factory. Run
   all tests/typecheck and confirm simulation golden hashes. Commit.
 
-### Task2: Controller lifecycle and watchdog
+### Task 2: Controller lifecycle and watchdog
 **Files:** new src/lib/bot/controller.ts; tests/bot-controller.test.ts.
 **Interfaces:** createBotController options/methods/outcomes per spec; exported
 WorkerLike transport interface for deterministic external worker test harness.
@@ -50,7 +50,7 @@ WorkerLike transport interface for deterministic external worker test harness.
   dispose, setup/post/crash/messageerror/observer errors, reentrant callbacks.
 - [ ] Implement minimal controller; run full suite/typecheck, commit.
 
-### Task3: Actual browser smoke, bundle and docs
+### Task 3: Actual browser smoke, bundle and docs
 **Files:** tests/browser/worker.html,worker-smoke.ts plus fault-worker.ts;
 docs/BOT_WORKER.md,BOT_ROADMAP.md,VALIDATION.md; include smoke bundle verification
 in package/CI only if useful without changing public production entry.
