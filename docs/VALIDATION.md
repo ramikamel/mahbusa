@@ -616,3 +616,14 @@ viewport. Rechecked the affected behaviors.
 - Roadmap checkpoint7 is implemented. Next is worker/controller progress, hard
   watchdog, cancellation and stale-reply protection, followed by actual learning
   and automated qualification. Single player remains In development.
+- Final verification:151 Vitest+44 Node tests (195 total), Svelte checking0errors/
+  0warnings, production build/offline packaging passed. Fresh whole-branch review
+  found no Critical, Important or Minor issues; independently reran the full suite
+  and checking plus48 cached/uncached public-engine oracle comparisons across
+  colors/scores/doubles, and an in-evaluation deadline interruption probe.
+- Review scope decisions: worker lifecycle/watchdog checks remain checkpoint8
+  before UI integration; learned strength remains later automatic qualification;
+  strict device latency requires a worker plus phone measurements; this internal
+  API expects valid engine positions and trusted synchronous evaluators. Current
+  contracts and disabled public bot make these deliberate boundaries, not claims
+  of tested cancellation, trained strength or hard execution limits.
