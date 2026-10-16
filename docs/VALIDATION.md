@@ -530,3 +530,41 @@ viewport. Rechecked the affected behaviors.
 - No frontend source/layout changes. The shared legality helper was extracted
   without changing its rules. Existing test-only biased seeded dice sampling is
   documented for replacement before simulation/training; production dice unchanged.
+
+## Automatic self-play replaces the expert lab — October 16, 2026
+
+- Removed the development lab entry/editor/annotation import-export workflow and
+  its unused Board editing prop. Local exports remain untouched. Chrome extension
+  verified even `?lab=1` opens the normal home, Single player remains In development,
+  Multiplayer/opening rolls/Start game still work, and console warnings/errors
+  are absent. Public game layout and rules are unchanged.
+- Simulation exposes owned pre-roll position/active/score only, before initial
+  dice, after handovers, and after winner-started game resets. Regression tests
+  preserve pre-change dice/trace hashes and prove observer mutation isolation.
+  Completed rounds label each active perspective from the final round winner;
+  cutoffs supply no targets. This generates data, not trained weights.
+- Streaming CLI/default mirror behavior were implemented after observed failing
+  tests. CLI integration tests cover real Node imports, metadata/targets/checksum,
+  cutoffs, exclusive output directory, invalid options and an injected partial
+  write failure. Failed runs hash actual partial bytes and cannot appear complete.
+- Verified 114 Vitest + 42 Node tests (156 total), Svelte check zero errors/warnings,
+  production build and offline packaging. Retired lab tests were removed with
+  the feature; their deletion accounts for the lower total than the prior release.
+- Diagnostic data run at clean source `fd8068c549a68f4c9445b4d73d883ad5b517fd11`:
+  seed `automatic-self-play-2026-10-16`, 100/100 completed rounds, zero cutoffs,
+  28,917 positions (14,497 targets +1 / 14,420 targets -1), 300 games and 1,681
+  passes. Color round wins Light43/Dark57. Every target, pre-roll score, schema,
+  checker count and checksum was inspected. JSONL: 20,403,572 bytes; SHA-256
+  `f5218e0bcc2a8066732e37286d36eaebde0f64b00b7b4b8f1554e4dcdf6e2e69`.
+  Local path `.local/automatic-self-play-2026-10-16/`. Wall time about25s while the
+  mirror benchmark ran concurrently; timings are machine/load specific.
+- Mirror diagnostic at that same clean source: seed `automatic-mirror-2026-10-16`,
+  100 color-swapped pairs / 200 completed rounds, zero cutoffs, 56,780 turns,
+  576 games and 3,566 passes. Entrant rounds100–100, points427–427, mother losses
+  16–16. Both legs had identical traces/dice with complementary entrant winners.
+  Paired score50% is expected by construction and is not strength improvement.
+  Wall time44.9s; report `.local/automatic-mirror-2026-10-16.json`.
+- Roadmap now requires automatic outcome learning, opponent pools, held-out round
+  seeds/positions and frozen-version matches. No user annotations or expert-review
+  gate remain. Dice-aware search, workers, actual model training/export/parity and
+  device/offline model qualification remain; public Single player stays deferred.
