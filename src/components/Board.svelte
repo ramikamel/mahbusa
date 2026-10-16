@@ -1,12 +1,11 @@
 <script lang="ts">
   import type { Game, Move, Player } from '../lib/engine';
   import type { Snippet } from 'svelte';
-  let { game, selected, moves, destinations, choosePoint, bearOff, wall, tray, editable = false }: {
+  let { game, selected, moves, destinations, choosePoint, bearOff, wall, tray }: {
     game: Game; selected: number | null; moves: Move[]; destinations: number[];
     choosePoint: (point: number) => void; bearOff: () => void;
     wall?: Snippet;
     tray?: Snippet;
-    editable?: boolean;
   } = $props();
   const top = Array.from({ length: 12 }, (_, i) => i + 12);
   const bottom = Array.from({ length: 12 }, (_, i) => 11 - i);
@@ -56,7 +55,7 @@
       {#each row.points as point, slot}
         {@const cx = x(slot)}
         {@const p = game.position.points[point]}
-        {@const selectable = editable || (game.phase === 'moving' && p.top === game.active && moves.some(m => m.from === point))}
+        {@const selectable = game.phase === 'moving' && p.top === game.active && moves.some(m => m.from === point)}
         <g role="button" tabindex={selectable || targets.has(point) ? 0 : -1} aria-label={label(point)} aria-disabled={!selectable && !targets.has(point)}
           onclick={() => choosePoint(point)}
           onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choosePoint(point); } }}

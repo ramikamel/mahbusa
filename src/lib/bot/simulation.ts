@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { performance } from 'node:perf_hooks';
-import { applyMove, availableMoves, endTurnAndRoll, generateTurns, nextGameAndRoll, openingRoll, other, startGame, startRound } from '../engine.ts';
+import { applyMove, availableMoves, endTurn, generateTurns, nextGame, openingRoll, other, roll as rollGame, startGame, startRound } from '../engine.ts';
 import type { Game, Pair, Player } from '../engine';
-import type { TurnInput, TurnPlan } from './types';
+import type { PreRollState, TurnInput, TurnPlan } from './types';
 import { rankStrategyTurns } from './rank-strategy.ts';
 import { createSeededRandom } from './seeded.ts';
 import type { SeededRandom } from './seeded';
@@ -20,7 +20,7 @@ export type RoundResult = {
   motherLosses:Pair; diceHash:string; traceHash:string;
   timing:{decisionMs:Pair;maxDecisionMs:Pair};
 };
-export type RoundOptions = { seed:string; aColor:Player; policies:[BotPolicy,BotPolicy]; maxTurns?:number };
+export type RoundOptions = { seed:string; aColor:Player; policies:[BotPolicy,BotPolicy]; maxTurns?:number; onPreRoll?:(state:PreRollState)=>void };
 
 /** Checked replay is the boundary between a policy proposal and match state. */
 export function replayPlan(source:Game,plan:TurnPlan):Game {
@@ -58,6 +58,10 @@ export function simulateRound(options:RoundOptions):RoundResult {
     if(contests>=1000)throw new Error('Opening contest limit exceeded.');
     const pair=roll();game=openingRoll(openingRoll(game,0,pair[0]),1,pair[1]);
   }
+  function observe(){
+    options.onPreRoll?.({position:structuredClone(game.position),active:game.active,score:[...game.score] as Pair});
+  }
+  observe();
   game=startGame(game,roll());
   const role=(color:Player):Player=>color===aColor?0:1;
   while(turns<maxTurns){
@@ -70,7 +74,9 @@ export function simulateRound(options:RoundOptions):RoundResult {
     if(!plan.moves.length)passes++;
     if(game.outcome){games++;if(game.outcome.reason==='mother')motherLosses[other(role(game.outcome.winner))]++;}
     if(game.phase==='roundOver'||turns===maxTurns)break;
-    game=game.phase==='gameOver'?nextGameAndRoll(game,roll()):endTurnAndRoll(game,roll());
+    game=game.phase==='gameOver'?nextGame(game):endTurn(game);
+    observe();
+    game=rollGame(game,roll());
   }
   const complete=game.phase==='roundOver';
   return {seed,aColor,policies:[policies[0].id,policies[1].id],status:complete?'complete':'turn-limit',
