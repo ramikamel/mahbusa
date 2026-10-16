@@ -28,10 +28,10 @@ replay and paired color-swapped rounds. Existing strategy is the baseline.
 createSeededRandom(seed:string,stream:string):SeededRandom;
 boundedInteger(next:()=>number,bound:number):number; RNG_VERSION constant.
 
-- [ ] Write tests: known SHA stream words, seed repeatability/separation,
+- [x] Write tests: known SHA stream words, seed repeatability/separation,
   reject top remainder values before mapping, bounds/invalid source validation,
   deterministic 36 ordered dice outcomes including doubles and broad count checks.
-- [ ] Run missing/stub failure, implement, run focused/full suite and commit.
+- [x] Run missing/stub failure, implement, run focused/full suite and commit.
 
 ### Task 2: Checked policies and complete rounds
 **Files:** src/lib/bot/simulation.ts; tests/bot-simulation.test.ts;
@@ -43,10 +43,10 @@ simulateRound({seed,aColor,policies:[BotPolicy,BotPolicy],maxTurns?}):RoundResul
 RoundResult includes complete/turn-limit status, role winner|null, score, turns,
 games, passes, motherLosses, hashes and per-role decisionMs/maxDecisionMs.
 
-- [ ] Tests fail for bad/partial plans, false result metadata, no mutation,
+- [x] Tests fail for bad/partial plans, false result metadata, no mutation,
   immediate mother/bearoff scoring, complete repeatable rounds, independent dice,
   explicit cutoff, role/color mapping. Implement and run focused/full tests.
-- [ ] Make Node runtime imports explicit .ts, allowImportingTsExtensions under
+- [x] Make Node runtime imports explicit .ts, allowImportingTsExtensions under
   noEmit; keep shared rules unchanged. Typecheck and commit.
 
 ### Task 3: Paired benchmark and usable CLI
@@ -57,9 +57,9 @@ tests/bot-benchmark.test.ts; tests/benchmark-cli.node.test.mjs; package.json;
 summarizePairs(results:[RoundResult,RoundResult][]):metrics.
 CLI options/defaults and report fields follow spec.
 
-- [ ] Fail tests for color-swapped complete pair means/intervals, deterministic
+- [x] Fail tests for color-swapped complete pair means/intervals, deterministic
   hashes, censored samples suppressing statistics, bad CLI args and Node import path.
-- [ ] Implement, run bounded diagnostic match batch and save ignored report;
+- [x] Implement, run bounded diagnostic match batch and save ignored report;
   include seed, count, points/mother losses and limits. No promotion claim.
-- [ ] Full suites/typecheck/build/offline, fresh review, fix important findings
+- [x] Full suites/typecheck/build/offline, fresh review, fix important findings
   test-first; commit, FF merge, integrated checks, push and CI.

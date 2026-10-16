@@ -25,6 +25,14 @@
 - Full report kept locally at .local/initial-baseline-2026-10-16.json (ignored).
   Random play is a weak control. Expert-held-out positions, search, trained
   models, equal runtime qualification and device acceptance remain later work.
+- Fresh independent whole-branch review found no Critical, Important or Minor
+  findings. It ran all 21 new Vitest tests, 32 Node engine/CLI tests, and the
+  actual CLI tests on the exact Node22.18.0 minimum successfully.
+- Review scope: the random control does not establish expert strength; policies
+  are trusted local executable code (hostile/nonterminating code can hang the
+  runner); device/search/worker deadlines remain later work; the long batch was
+  run once by the coordinator (timings are machine-dependent), while the reviewer
+  independently checked bounded reproducibility and runtime behavior.
 
 ## Expert lab final review and export fix — October 16, 2026
 

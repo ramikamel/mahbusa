@@ -1,8 +1,8 @@
 # Mahbusa single-player engine roadmap
 
 Agreed October 15, 2026. The public start page/placeholder and engine checkpoints
-2–6 are implemented. Next is dice-aware search; public bot play and training
-remain later checkpoints.
+2–6 are complete. Next is dice-aware search; public bot play and training remain
+later checkpoints.
 
 ## Product requirements
 
