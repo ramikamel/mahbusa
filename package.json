@@ -13,6 +13,7 @@
     "selfplay:bot": "node scripts/self-play-bot.mjs",
     "test:offline": "node --test tests/offline.node.test.mjs",
     "build": "vite build && node scripts/offline.mjs",
+    "build:worker-smoke": "node scripts/build-worker-smoke.mjs",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": { "svelte": "^5.39.0" },

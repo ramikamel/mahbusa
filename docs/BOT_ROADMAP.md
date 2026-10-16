@@ -2,8 +2,9 @@
 
 Revised October 16, 2026: evaluation runs automatically through self-play; no
 annotation or expert-lab work is required from the user. The start page and engine
-checkpoints 2–7 plus automatic outcome data are complete. Next is the worker
-controller; actual weight training and public bot play remain later checkpoints.
+checkpoints 2–8 plus automatic outcome data are complete. Next is the local
+training environment, model encoding/export and inference parity; actual trained
+strength and public bot play remain later checkpoints.
 
 ## Product requirements
 
@@ -83,7 +84,10 @@ it does not update weights until the learner is implemented.
    depth iterative updates, deterministic/time budgets and measured performance.
    [Search usage](BOT_SEARCH.md) documents the experimental reference policy and
    pilot limits. Stronger-than-greedy play has not been qualified.
-8. Worker/controller, progress fallback, cancellation and lifecycle tests.
+8. **Done:** native search worker/controller, checked progress/watchdog fallback,
+   cancellation/replacement/disposal and stale-reply protection. Real Chrome
+   lifecycle smoke passed; [worker usage](BOT_WORKER.md) records the API and
+   caller revision/cancellation duties. Public bot remains disabled.
 9. Local training environment, shards, model encoding/export and TS parity.
 10. Bootstrap from automatic outcome data; train a candidate, freeze each model
     version and resume self-play against current/old/strategy opponent pools.

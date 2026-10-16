@@ -627,3 +627,41 @@ viewport. Rechecked the affected behaviors.
   API expects valid engine positions and trusted synchronous evaluators. Current
   contracts and disabled public bot make these deliberate boundaries, not claims
   of tested cancellation, trained strength or hard execution limits.
+
+## Search worker/controller checkpoint — October16,2026
+
+- Browser-safe checked replay was extracted from Node simulation; existing export
+  and deterministic seeded hashes remain intact. Full state validation rejects
+  malformed counts/tops/pins/dice/scores and terminal states at the worker boundary.
+  Proposals are replayed through public rules, including complete blocked passes.
+- Added native module worker, correlated progress/complete/errors and lazy
+  per-search controller. Default4000ms search/4500ms watchdog, with request ID,
+  board revision, evaluator ID and worker-generation checks. Every settlement
+  clears handlers/timer and terminates its worker; watchdog fallback uses only
+  previously received checked progress. No progress produces error without a move.
+-20 lifecycle tests cover lazy startup, owned states/updates/results, stale and
+  captured old callbacks, invalid/partial metadata/stats, monotonic depth,
+  cancellation/replacement/disposal, factory/post/runtime/decode/observer failures,
+  retry and callback reentrancy.10 boundary/runtime tests cover actual search and
+  replay, both colors, doubles/pins/bearoff/blocked turns, missing models and bad
+  inputs. Tests ran RED before implementation; malformed array event regression
+  also ran RED before its guard. Type checking reports0errors/0warnings.
+- Built real worker/controller into a separate test graph with Vite, no Node
+  runtime/externalization. Emitted search worker11.17kB, test entry12.15kB and
+  isolated deliberate-fault worker3.04kB (uncompressed). CI now verifies this
+  bundle. None of those files enter the public app shell.
+- Chrome extension verified the **built** test page on127.0.0.1:4175. All six
+  checks passed: native completion/progress with live heartbeat, cancel/reset and
+  fresh revision, watchdog with checked fallback, watchdog without a fabricated
+  move then retry, native crash/retry, disposal preventing further work.
+  Real spread-double search completed in4031ms with2progress updates and55
+  heartbeat ticks; Ping interface was clicked successfully while it was thinking.
+  This is desktop Chrome evidence, not iPhone or background timing qualification.
+  Browser console errors/warnings:none, including handled deliberate crash.
+- No public UI, rules, login, storage or training changes. Public Single player
+  remains In development. Roadmap checkpoint8 complete; next is model encoding,
+  local learning/export and cross-language inference parity, then qualification.
+- Full verification:181 Vitest+44 Node tests (225 total), zero Svelte errors or
+  warnings, public production/offline build passed. Public JS/CSS hashes and
+  offline version `ef3756aba643a909` match the prior checkpoint. Separate worker
+  smoke build also passed and is included in GitHub CI.

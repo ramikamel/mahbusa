@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mahbusa worker checks</title>
+<style>body{max-width:54rem;margin:3rem auto;padding:1rem;font:18px system-ui;color:#26302b;background:#faf8f1}button{font:inherit;padding:.6rem 1rem;margin:.3rem}li{margin:1rem 0}output{display:block;margin:1rem 0}pre{white-space:pre-wrap}</style></head>
+<body><h1>Mahbusa worker checks</h1><p>Developer smoke test. This page is excluded from the public app.</p>
+<button id="run">Run worker checks</button><button id="ping">Ping interface</button>
+<output id="heartbeat" aria-label="Heartbeat">Heartbeat: 0</output><output id="pings">Interface pings: 0</output>
+<p id="status" role="status">Ready</p><ol id="results"></ol><pre id="details"></pre>
+<script type="module" src="./worker-smoke.ts"></script></body></html>
