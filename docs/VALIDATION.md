@@ -568,3 +568,6 @@ viewport. Rechecked the affected behaviors.
   seeds/positions and frozen-version matches. No user annotations or expert-review
   gate remain. Dice-aware search, workers, actual model training/export/parity and
   device/offline model qualification remain; public Single player stays deferred.
+- Fresh independent whole-branch review found no Critical, Important or Minor
+  issues and no behaviors set aside. Reviewer independently passed 21 domain
+  simulation/self-play/benchmark tests and all eight CLI integration tests.
