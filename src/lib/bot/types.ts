@@ -33,7 +33,7 @@ export type SearchStats = { nodes: number; completedDepth: number; elapsedMs: nu
 export type SearchReply = {
   type: 'progress' | 'complete'; requestId: string; revision: number; modelId: string;
   plan: TurnPlan; stats: SearchStats;
-} | { type: 'error'; requestId: string; revision: number; message: string };
+} | { type: 'error'; requestId: string; revision: number; modelId: string; message: string };
 
 export type ModelManifest = {
   formatVersion: 1; id: string; rulesVersion: string; featureSchemaVersion: string;

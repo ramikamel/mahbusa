@@ -1,8 +1,7 @@
 import { createHash } from 'node:crypto';
-import { isDeepStrictEqual } from 'node:util';
 import { performance } from 'node:perf_hooks';
-import { applyMove, availableMoves, endTurn, generateTurns, nextGame, openingRoll, other, roll as rollGame, startGame, startRound } from '../engine.ts';
-import type { Game, Pair, Player } from '../engine';
+import { endTurn, generateTurns, nextGame, openingRoll, other, roll as rollGame, startGame, startRound } from '../engine.ts';
+import type { Pair, Player } from '../engine';
 import type { PreRollState, TurnInput, TurnPlan } from './types';
 import { rankStrategyTurns } from './rank-strategy.ts';
 import { createSeededRandom } from './seeded.ts';
@@ -22,26 +21,8 @@ export type RoundResult = {
 };
 export type RoundOptions = { seed:string; aColor:Player; policies:[BotPolicy,BotPolicy]; maxTurns?:number; onPreRoll?:(state:PreRollState)=>void };
 
-/** Checked replay is the boundary between a policy proposal and match state. */
-export function replayPlan(source:Game,plan:TurnPlan):Game {
-  if(source.phase!=='moving')throw new Error('Replay requires a moving game.');
-  let game=structuredClone(source);
-  for(const move of plan.moves){
-    if(!availableMoves(game).some(m=>m.from===move.from && m.to===move.to && m.die===move.die)){
-      throw new Error('Policy proposed an illegal move.');
-    }
-    game=applyMove(game,move);
-  }
-  if(availableMoves(game).length)throw new Error('Policy proposed an incomplete turn.');
-  if(!isDeepStrictEqual(game.position,plan.position) || !isDeepStrictEqual(game.outcome,plan.outcome)
-    || !isDeepStrictEqual([...game.remaining].sort((a,b)=>a-b),plan.remaining)){
-    throw new Error('Policy result does not match checked replay.');
-  }
-  for(const player of [0,1])if(game.position.off[player]+game.position.points.reduce((n,p)=>n+p.count[player],0)!==15){
-    throw new Error('Checker conservation failed.');
-  }
-  return game;
-}
+import { replayPlan } from './replay.ts';
+export { replayPlan } from './replay.ts';
 
 export function simulateRound(options:RoundOptions):RoundResult {
   const {seed,aColor,policies}=options,maxTurns=options.maxTurns??2000;
