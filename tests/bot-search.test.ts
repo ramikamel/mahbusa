@@ -81,6 +81,11 @@ describe('dice-aware complete-turn search',()=>{
     expect(result.stopReason).toBe('round-win');expect(result.value).toEqual({kind:'round-win-expectation',value:1});
     expect(result.plan.outcome?.reason).toBe('mother');expect(result.stats.nodes).toBe(0);
   });
+  it('keeps mathematically certain chance values within the declared value bounds',()=>{
+    const evaluator:PositionEvaluator={id:'edge',evaluate:()=>({kind:'heuristic',value:-1})};
+    const result=searchTurns(pinRace(),{maxDepth:1,evaluator});
+    expect(result.value.value).toBe(-1);
+  });
   it.each(Object.entries(botFixtures))('depth0 retains frozen greedy behavior for %s',(_,fixture)=>{
     const input={...fixture(),score:[0,0] as E.Pair};
     const result=searchTurns(input,{maxDepth:0});

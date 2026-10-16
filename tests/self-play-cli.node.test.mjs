@@ -69,3 +69,10 @@ test('self-play CLI validates arguments before creating output',()=>{
   assert.equal(run(['--help']).status,0);
   for(const args of [[],['--rounds','0'],['--rounds','10001'],['--rounds','1.5'],['--rounds','1','--rounds','2'],['--max-turns','0'],['--max-turns','100001'],['--seed',''],['--seed','x'.repeat(257)],['--out'],['--wat','1']])assert.equal(run(args).status,1);
 });
+test('self-play CLI records explicit search selection and rejects unknown policy',async()=>fixture(async out=>{
+  const result=run(['--rounds','1','--max-turns','1','--policy','search','--out',out]);
+  assert.equal(result.status,2,result.stderr);
+  const {manifest}=await inspect(out,result);
+  assert.match(manifest.policy,/^expectimax-v1\/strategy-v1\/d1\/n1000\/c10000$/);
+  assert.equal(run(['--policy','random','--out',out+'-invalid']).status,1);
+}));

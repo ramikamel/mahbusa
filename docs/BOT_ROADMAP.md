@@ -2,8 +2,8 @@
 
 Revised October 16, 2026: evaluation runs automatically through self-play; no
 annotation or expert-lab work is required from the user. The start page and engine
-checkpoints 2–6 plus automatic outcome data are complete. Next is dice-aware
-search; actual weight training and public bot play remain later checkpoints.
+checkpoints 2–7 plus automatic outcome data are complete. Next is the worker
+controller; actual weight training and public bot play remain later checkpoints.
 
 ## Product requirements
 
@@ -79,7 +79,10 @@ it does not update weights until the learner is implemented.
 6a. **Done:** automatic completed-round outcome samples and streaming JSONL,
     dataset checksums/provenance, cutoff/failure protection and strategy mirror
     evaluation. No annotations needed and no model trained yet.
-7. Dice-aware search, caches, iterative deepening and measured performance.
+7. **Done:** full-width dice-aware search, bounded local value cache, completed-
+   depth iterative updates, deterministic/time budgets and measured performance.
+   [Search usage](BOT_SEARCH.md) documents the experimental reference policy and
+   pilot limits. Stronger-than-greedy play has not been qualified.
 8. Worker/controller, progress fallback, cancellation and lifecycle tests.
 9. Local training environment, shards, model encoding/export and TS parity.
 10. Bootstrap from automatic outcome data; train a candidate, freeze each model

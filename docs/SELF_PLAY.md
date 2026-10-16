@@ -10,7 +10,8 @@ pnpm selfplay:bot --seed local-batch-001 --rounds 100 --out .local/local-batch-0
 
 Use Node 22.18 or newer. Options: `--seed` (1–256 characters; default
 `mahbusa-self-play-v1`), `--rounds` (1–10000; default 100), `--max-turns`
-(1–100000 per round; default 2000), and required `--out NEW_DIRECTORY`.
+(1–100000 per round; default 2000), `--policy strategy|search` (default strategy),
+and required `--out NEW_DIRECTORY`.
 Existing directories are refused so previous datasets are preserved. Data under
 `.local/` is ignored by Git. Generation runs locally, one round in memory at a
 time; the website stores no games and loads none of this Node-only code.
@@ -30,8 +31,10 @@ Each run writes:
   SHA-256 plus UTF-8 byte count of the actual JSONL file. A cutoff round contributes
   no line or labels. Check both status and checksum before consuming data.
 
-The policy is the current `strategy-v1-greedy` on both sides, with entrant colors
-alternating. Per-round seed is SHA-256 of UTF-8 JSON
+The default policy is the frozen `strategy-v1-greedy` on both sides, with entrant
+colors alternating. `--policy search` explicitly selects the experimental bounded
+search policy on both sides; the manifest and each round record its actual ID.
+See [search usage](BOT_SEARCH.md). Search does not change the outcome-label rules. Per-round seed is SHA-256 of UTF-8 JSON
 `['self-play-v1', rootSeed, index]`; benchmark seeds use a different domain.
 Given identical source/policy/options, positions, outcomes and trace hashes
 repeat. Wall-clock timings and timestamps can differ, so whole-file checksums
@@ -57,5 +60,5 @@ expected and cannot demonstrate improvement. Later search/trained candidates
 must beat frozen previous versions on held-out seeds under equal budgets before
 promotion. Keep training, validation and final confirmation round seeds separate;
 do not leak adjacent positions from one round across these splits. The remaining
-search, worker, training/parity and device qualification steps are in the
+worker, training/parity and device qualification steps are in the
 [roadmap](BOT_ROADMAP.md). Public Single player remains In development until then.

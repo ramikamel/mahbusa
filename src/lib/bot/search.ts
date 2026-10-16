@@ -16,7 +16,10 @@ export type SearchOptions={
   maxDepth?:number;maxNodes?:number;cacheEntries?:number;budgetMs?:number;
   evaluator?:PositionEvaluator;now?:()=>number;onUpdate?:(update:SearchUpdate)=>void;
 };
-class BudgetReached extends Error {constructor(readonly reason:'nodes'|'time'){super(reason);}}
+class BudgetReached extends Error {
+  readonly reason:'nodes'|'time';
+  constructor(reason:'nodes'|'time'){super(reason);this.reason=reason;}
+}
 
 /** Full-width expectimax. Only a completed full-root iteration may replace the
  * mandatory greedy baseline. Time cancellation is cooperative between atoms. */
@@ -61,6 +64,8 @@ export function searchTurns(input:TurnInput & {score:Pair},options:SearchOptions
       for(const plan of plans)best=Math.max(best,afterTurn(turn,plan,depth-1));
       value+=outcome.weight*best/36;
     }
+    // Floating-point addition can put a convex average a few ulps outside [-1,1].
+    value=Math.max(-1,Math.min(1,value));
     if(cache.size<capacity)cache.set(key,value);
     return value;
   }

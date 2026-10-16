@@ -4,8 +4,9 @@ import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {runBenchmark} from '../src/lib/bot/benchmark.ts';
 import {firstPolicy,randomPolicy,strategyPolicy} from '../src/lib/bot/simulation.ts';
-const usage='Usage: node scripts/benchmark-bot.mjs [--seed VALUE] [--pairs 1..500] [--max-turns N] [--a strategy|random|first] [--b strategy|random|first] [--out PATH]';
-const policies={strategy:strategyPolicy,random:randomPolicy,first:firstPolicy};
+import {createSearchPolicy} from '../src/lib/bot/search-policy.ts';
+const usage='Usage: node scripts/benchmark-bot.mjs [--seed VALUE] [--pairs 1..500] [--max-turns N] [--a strategy|search|random|first] [--b strategy|search|random|first] [--out PATH]';
+const policies={strategy:strategyPolicy,search:createSearchPolicy(),random:randomPolicy,first:firstPolicy};
 try{
   const args=process.argv.slice(2),values={seed:'mahbusa-benchmark-v1',pairs:'100','max-turns':'2000',a:'strategy',b:'strategy'};
   let output;const seen=new Set();

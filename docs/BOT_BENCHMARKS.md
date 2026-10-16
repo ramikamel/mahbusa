@@ -27,7 +27,9 @@ Options:
 - --seed: nonempty string, maximum 256 characters; default mahbusa-benchmark-v1.
 - --pairs: integer 1–500, default100. Each pair contains two first-to-3 rounds.
 - --max-turns: per-round integer 1–100000, default2000.
-- --a / --b: strategy (default for both), random or first.
+- --a / --b: strategy (default for both), search, random or first.
+  search selects the experimental deterministic depth1/1000-node policy; see
+  [search budgets and limits](BOT_SEARCH.md). Its versioned ID records configuration.
 - --out: optional explicit JSON file path. Existing files are not overwritten.
 
 Progress goes to stderr; the complete JSON report goes to stdout and the optional
@@ -60,7 +62,8 @@ held-out automatic regressions/seeds, frozen earlier engine/model versions, fres
 confirmation seeds and equal runtime budgets.
 
 [Automatic self-play data](SELF_PLAY.md) saves positions without user annotations.
-Future checkpoints add dice-aware search, workers, trained evaluation and stronger
+Dice-aware search is available explicitly; future checkpoints add workers,
+trained evaluation and stronger
 reference opponents. A random
 baseline cannot establish that this bot is strong against an experienced person.
 Long matches stay outside ordinary CI. CI runs seeded correctness tests, the

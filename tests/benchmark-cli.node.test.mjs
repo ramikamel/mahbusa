@@ -44,3 +44,9 @@ test('benchmark CLI signals incomplete samples without counting them as draws',(
   const report=JSON.parse(result.stdout);assert.equal(report.metrics.truncatedRounds,2);
   assert.equal(report.metrics.winRateA,null);assert.equal(report.metrics.interval95A,null);
 });
+test('benchmark CLI explicitly compares bounded search against frozen greedy',()=>{
+  const result=run(['--pairs','1','--max-turns','1','--a','search','--b','strategy']);
+  assert.equal(result.status,2,result.stderr);const report=JSON.parse(result.stdout);
+  assert.match(report.policies[0],/^expectimax-v1\/strategy-v1\/d1\/n1000\/c10000$/);
+  assert.equal(report.policies[1],'strategy-v1-greedy');assert.equal(report.comparison,'control');assert.equal(report.samePolicy,false);
+});
