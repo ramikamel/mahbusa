@@ -1,8 +1,9 @@
-import { generateTurns, initialPosition, other } from '../engine.ts';
+import { generateTurns } from '../engine.ts';
 import type { Pair } from '../engine';
 import type { PositionValue, PreRollState, TurnInput, TurnPlan } from './types';
 import { explainStrategy, validatePreRollState } from './strategy.ts';
 import type { StrategyExplanation } from './strategy';
+import { continuationAfterTurn } from './continuation.ts';
 
 export type RankedTurn = {
   plan: TurnPlan;
@@ -20,21 +21,10 @@ export type RankedTurn = {
 export function rankStrategyTurns(input: TurnInput & { score: Pair }): RankedTurn[] {
   validatePreRollState(input);
   const rows = generateTurns(input).map((plan): RankedTurn => {
-    const score: Pair = [...input.score];
-    let continuation: PreRollState;
-    let kind: RankedTurn['kind'] = 'handover';
-    if (plan.outcome) {
-      const { winner, points } = plan.outcome;
-      score[winner] += points;
-      if (score[winner] >= 3) {
-        return { plan, kind: 'round-win', continuation: null, explanation: null,
-          value: { kind: 'round-win-expectation', value: 1 } };
-      }
-      kind = 'next-game';
-      continuation = { position: initialPosition(), active: winner, score };
-    } else {
-      continuation = { position: plan.position, active: other(input.active), score };
-    }
+    const next = continuationAfterTurn(input,plan), kind = next.kind;
+    if (next.kind === 'round-win') return { plan, kind, continuation: null, explanation: null,
+      value: { kind: 'round-win-expectation', value: 1 } };
+    const continuation = next.state;
     const explanation = explainStrategy(continuation, input.active);
     return { plan, kind, continuation, explanation,
       value: { kind: 'heuristic', value: explanation.value } };
