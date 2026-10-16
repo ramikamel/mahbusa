@@ -1,7 +1,7 @@
-import { generateTurns, initialPosition, other } from '../engine';
+import { generateTurns, initialPosition, other } from '../engine.ts';
 import type { Pair } from '../engine';
 import type { PositionValue, PreRollState, TurnInput, TurnPlan } from './types';
-import { explainStrategy, validatePreRollState } from './strategy';
+import { explainStrategy, validatePreRollState } from './strategy.ts';
 import type { StrategyExplanation } from './strategy';
 
 export type RankedTurn = {

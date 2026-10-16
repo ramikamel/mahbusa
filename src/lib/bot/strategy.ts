@@ -1,4 +1,4 @@
-import { distance, other, rawMoves, startPoint } from '../engine';
+import { distance, other, rawMoves, startPoint } from '../engine.ts';
 import type { Move, Player, Position } from '../engine';
 import type { PositionEvaluator, PositionValue, PreRollState } from './types';
 
