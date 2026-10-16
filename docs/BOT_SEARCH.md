@@ -57,3 +57,10 @@ A tiny pilot is diagnostic and uses a larger compute budget than greedy; it
 cannot satisfy equal-budget promotion or the held-out100-pair qualification gate.
 No public bot, worker, learned model or model training is enabled here. Automatic
 self-play/outcome data remains the iteration workflow; no annotations are needed.
+
+The October16 diagnostic completed16 rounds: search11–greedy5, with no cutoffs.
+Its conservative interval includes50%, and search used much more compute. It is
+not a promotion result. Locally, a4000ms search completed two future turns for
+opening/contact fixtures and one for a174-candidate spread double (about2ms time
+overshoot). The1000-node reference falls back to greedy on that large fixture.
+See [recorded validation](VALIDATION.md) for seeds, exact configuration and limits.

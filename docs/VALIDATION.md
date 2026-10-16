@@ -571,3 +571,48 @@ viewport. Rechecked the affected behaviors.
 - Fresh independent whole-branch review found no Critical, Important or Minor
   issues and no behaviors set aside. Reviewer independently passed 21 domain
   simulation/self-play/benchmark tests and all eight CLI integration tests.
+
+## Dice-aware search checkpoint — October 16, 2026
+
+- Added full-width expectimax over all21 weighted roll outcomes, four-move doubles,
+  forced passes and score-aware continuations. Extracted the existing ranking
+  continuation boundary without changing frozen greedy behavior. Public UI/rules
+  and production asset hashes remain unchanged; no browser UI change to validate.
+- Search publishes an owned legal baseline and only fully completed depth updates;
+  cutoff tests retain the last complete result. Per-call bounded value caches
+  include all board/score/active/depth identity. Evaluator/observer mutation tests
+  protect search state. Node work is deterministic; wall time is cooperative.
+- Tests use an independent36-ordered-roll max/min oracle replaying public rules,
+  plus literal -17/18 and -611/648 pin/pass race values for both colors. Checked
+  game score/reset perspective, different awards on identical next-game boards,
+  invalid controls/values and actual Node CLI search selection/provenance.
+- Node integration exposed unsupported TS constructor parameter properties;
+  explicit fields fixed the actual runtime failure. An observed convex average
+  -1.0000000000000002 gained a failing bound regression, then a numeric clamp.
+- Clean measured source `5a0f4ef89cea92f33dfad2cb6eabe22f2b722ee4`, Node26.11.1.
+  Local profiles ran while pilot/data generation also used CPU. Under4000ms,
+  maxDepth2/maxNodes1000000: opening depth2 in814ms; pin contact depth2 in592ms;
+  174-candidate spread-double depth1 in4002ms (time stop; about1.6ms overshoot);
+  bearoff depth2 in163ms. These are fixtures, not worst cases or iPhone promises.
+  Atomic generation/evaluation and mandatory root ranking may exceed the budget;
+  the worker hard watchdog is still pending.
+- The deterministic depth1/1000-node reference finished depth1 in opening/contact/
+  bearoff (about7/11/3ms). Spread doubles exhausted1000 nodes at depth0 (55ms),
+  correctly retaining greedy. All four profiled choices matched greedy; timing
+  and completed depth alone do not show stronger play. Profile/script retained
+  under `.local/dice-search-profile-2026-10-16.json` and `.local/profile-search.mjs`.
+- Automatic pilot seed `dice-search-pilot-2026-10-16`,8pairs/16 complete rounds:
+  search11–greedy5, points37–24, mother losses0–4;3825 turns,40 games,208 passes,
+  no cutoffs. Paired score68.75%, conservative95% interval[20.73%,100%]. This
+  includes50% and cannot support promotion. Search used about88.3s decision time
+  versus1.0s greedy; budgets were unequal. Wall90.1s, maximum decision283ms.
+  Report `.local/dice-search-pilot-2026-10-16.json`, frozen search policy ID
+  `expectimax-v1/strategy-v1/d1/n1000/c10000` versus `strategy-v1-greedy`.
+- Explicit search self-play seed `dice-search-data-2026-10-16`:2/2 complete rounds,
+  867 automatically labelled positions (434 +1/433 -1),8 games, no cutoffs. Checked
+  every target/state schema, actual policy IDs and file integrity. JSONL611928bytes,
+  SHA-256 `4b601e2a62eaa3124cde43caa1c3a03caaafeb65afd71a7a824df284665d399d`.
+  Data remains local/ignored and is not a trained model or qualified training batch.
+- Roadmap checkpoint7 is implemented. Next is worker/controller progress, hard
+  watchdog, cancellation and stale-reply protection, followed by actual learning
+  and automated qualification. Single player remains In development.
