@@ -1,8 +1,9 @@
 # Mahbusa single-player engine roadmap
 
-Agreed October 15, 2026. The public start page/placeholder and engine checkpoints
-2–6 are complete. Next is dice-aware search; public bot play and training remain
-later checkpoints.
+Revised October 16, 2026: evaluation runs automatically through self-play; no
+annotation or expert-lab work is required from the user. The start page and engine
+checkpoints 2–6 plus automatic outcome data are complete. Next is dice-aware
+search; actual weight training and public bot play remain later checkpoints.
 
 ## Product requirements
 
@@ -50,12 +51,16 @@ Export Float32 weights, schema/rules versions and checksum to typed-array TS
 inference. Verify cross-language prediction parity first. Initial 10,000-round
 batches are experimental sizes, not guarantees; use outcome training then
 temporal-difference self-play against a mix of old/current/strategy opponents.
-Keep datasets/checkpoints local and untracked, approve only validated models.
+Keep datasets/checkpoints local and untracked; promote only automatically
+validated models. Group holdouts by round/seed, never by neighboring positions
+from the same round. Self-play labels come from the completed first-to-three
+round winner, not a provisional game winner. Cutoffs yield no targets.
 
-Before simulation, replace the test-only LCG-modulo dice approach: adjacent
-outputs alternate parity, excluding doubles. Use a tested seeded sampler with
-unbiased bounded draws, independent action/dice streams, and recorded seeds.
-Production crypto dice remain unchanged.
+Seeded simulation uses tested SHA-256 counter streams, unbiased bounded draws,
+independent action/dice streams and recorded seeds. Production crypto dice remain
+unchanged. Use [automatic self-play](SELF_PLAY.md) to generate reproducible local
+outcome data with the strongest current policy on both sides. This supplies data;
+it does not update weights until the learner is implemented.
 
 ## Commit checkpoints and dependencies
 
@@ -65,24 +70,29 @@ Production crypto dice remain unchanged.
 4. **Done:** strategy evaluator, inspectable feature contributions and complete-turn
    ranking with score-aware game/round continuation. Versioned strategy-v1 weights
    are provisional heuristics, not trained probabilities or qualified bot strength.
-5. **Done:** development-only expert lab: edit board/score/dice, preview candidates,
-   annotate preferred/acceptable/bad plays, explicit validated JSON import/export.
-   See [expert lab usage](EXPERT_LAB.md). No production entry or automatic storage.
+5. **Retired:** the development expert lab was removed at the user's request.
+   Manual move labels are not part of the required workflow; local exports are
+   left untouched. Historical plans describe the superseded approach.
 6. **Done:** headless seeded rounds, RNG validation and reproducible paired
    benchmarks. See [benchmark usage](BOT_BENCHMARKS.md). Static strategy beat the
    random control in the initial diagnostic; this is not strength qualification.
+6a. **Done:** automatic completed-round outcome samples and streaming JSONL,
+    dataset checksums/provenance, cutoff/failure protection and strategy mirror
+    evaluation. No annotations needed and no model trained yet.
 7. Dice-aware search, caches, iterative deepening and measured performance.
 8. Worker/controller, progress fallback, cancellation and lifecycle tests.
 9. Local training environment, shards, model encoding/export and TS parity.
-10. Bootstrap data, trained candidate and resumable self-play improvements.
-11. Held-out expert review and strength qualification.
+10. Bootstrap from automatic outcome data; train a candidate, freeze each model
+    version and resume self-play against current/old/strategy opponent pools.
+11. Automated strength qualification: fixed tactical regressions, held-out
+    positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible
     playback (~180 ms/step), human-turn Undo, reset/back cancellation.
 13. Offline model/worker assets, actual iPhone foreground timing, failure recovery.
 14. Public enablement with an approved model; retain previous app/model rollback.
 
 After checkpoint 2 freezes interfaces, generator and evaluator work can run in
-parallel isolated worktrees; lab UI can use stubs. After 3–4, search, simulation/
+parallel isolated worktrees. After 3–4, search, simulation/
 training scaffolding, and stubbed controller can run in parallel. Serious data
 generation waits for verified legality and inference. Qualification waits for a
 trained candidate. Public enablement waits for qualification plus device/offline
@@ -90,8 +100,12 @@ acceptance. One coordinator integrates commits sequentially and publishes.
 
 ## Qualification and iteration
 
-- Exact tactical fixtures and valid complete turns are hard requirements;
-  strategic labels allow multiple acceptable moves and expert disagreement.
+- Legal complete turns and exact tactical/rules regressions are hard requirements.
+  Automatically saved self-play positions/outcomes replace required annotations.
+  Optional user strategy feedback can add regressions but never blocks progress.
+- Mirror self-play checks consistency and generates data. Identical deterministic
+  policies have complementary color-swapped scores (50%); that cannot demonstrate
+  strength improvement or qualify a model. Compare different frozen versions.
 - Hold out positions/seeds from tuning; use fresh confirmation seeds for finalists.
 - Paired color-swapped matches start at 100 pairs and may extend to 500. A paired
   95% interval must support improvement over baseline/current champion before

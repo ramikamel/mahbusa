@@ -7,7 +7,7 @@ import {firstPolicy,randomPolicy,strategyPolicy} from '../src/lib/bot/simulation
 const usage='Usage: node scripts/benchmark-bot.mjs [--seed VALUE] [--pairs 1..500] [--max-turns N] [--a strategy|random|first] [--b strategy|random|first] [--out PATH]';
 const policies={strategy:strategyPolicy,random:randomPolicy,first:firstPolicy};
 try{
-  const args=process.argv.slice(2),values={seed:'mahbusa-benchmark-v1',pairs:'100','max-turns':'2000',a:'strategy',b:'random'};
+  const args=process.argv.slice(2),values={seed:'mahbusa-benchmark-v1',pairs:'100','max-turns':'2000',a:'strategy',b:'strategy'};
   let output;const seen=new Set();
   if(args.length===1&&args[0]==='--help')console.log(usage);
   else{

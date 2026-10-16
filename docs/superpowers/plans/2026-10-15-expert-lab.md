@@ -1,3 +1,6 @@
+> Historical: superseded October 16, 2026 by automatic self-play. The expert lab
+> was removed; no user annotations are required. See [current roadmap](../../BOT_ROADMAP.md).
+
 # Expert Lab Implementation Plan
 
 > **For agentic workers:** Use superpowers:executing-plans inline with test-first

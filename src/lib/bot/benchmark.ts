@@ -43,5 +43,6 @@ export function runBenchmark(options:BenchmarkOptions){
     options.onPair?.(i+1,structuredClone(pair));
   }
   return {format:'mahbusa-benchmark',version:1,rngVersion:RNG_VERSION,rulesVersion:RULES_VERSION,seed,pairs,maxTurns,
+    samePolicy:policies[0].id===policies[1].id,comparison:policies[0].id===policies[1].id?'self-play':'control',
     policies:[policies[0].id,policies[1].id],results,metrics:summarizePairs(results),timing:{wallMs:performance.now()-started}};
 }

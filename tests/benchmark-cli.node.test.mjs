@@ -23,10 +23,20 @@ test('benchmark CLI writes an explicit complete report through real Node imports
     assert.deepEqual(JSON.parse(await readFile(path,'utf8')),report);
     assert.equal(report.metrics.completedRounds,2);
     assert.equal(report.metrics.winRateA,.5);
+    assert.equal(report.samePolicy,true);assert.equal(report.comparison,'self-play');
     assert.match(report.sourceRevision,/^[0-9a-f]{40}$/);
     assert.equal(typeof report.sourceDirty,'boolean');
     assert.match(result.stderr,/Pair 1\/1/);
   }finally{await rm(directory,{recursive:true,force:true});}
+});
+test('benchmark CLI defaults to current strategy on both sides',()=>{
+  const result=run(['--pairs','1','--max-turns','1']);
+  assert.equal(result.status,2,result.stderr);
+  const report=JSON.parse(result.stdout);
+  assert.deepEqual(report.policies,['strategy-v1-greedy','strategy-v1-greedy']);
+  assert.equal(report.samePolicy,true);assert.equal(report.comparison,'self-play');
+  const control=JSON.parse(run(['--pairs','1','--max-turns','1','--b','random']).stdout);
+  assert.equal(control.samePolicy,false);assert.equal(control.comparison,'control');
 });
 test('benchmark CLI signals incomplete samples without counting them as draws',()=>{
   const result=run(['--pairs','1','--max-turns','1','--a','first','--b','first']);
