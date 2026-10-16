@@ -8,7 +8,8 @@
     "dev": "vite --host 127.0.0.1",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
-    "test:engine": "node --test tests/engine.node.test.mjs",
+    "test:engine": "node --test tests/engine.node.test.mjs tests/benchmark-cli.node.test.mjs",
+    "benchmark:bot": "node scripts/benchmark-bot.mjs",
     "test:offline": "node --test tests/offline.node.test.mjs",
     "build": "vite build && node scripts/offline.mjs",
     "preview": "vite preview --host 127.0.0.1"
