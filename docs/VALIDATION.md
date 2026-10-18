@@ -682,3 +682,54 @@ viewport. Rechecked the affected behaviors.
   actual search completed in4011ms with2 progress updates and201 heartbeat ticks;
   the interface ping worked while thinking. Cancellation/reset/retry, both
   watchdog cases, native worker crash/retry and disposal all passed again.
+
+## Local model training checkpoint — October17,2026
+
+- Added the authoritative104-feature, color-canonical pre-roll encoder and a
+  browser-safe104/128/128/1 dense evaluator. Pins, counts, borne-off checkers and
+  round score are represented; dice/history/future random streams are excluded.
+  Literal arithmetic, color reflection, ownership, invalid states, model shape,
+  checksum, finite values and overflow have regression coverage.
+- Node preparation verifies completed self-play metadata and actual raw-file
+  integrity, checks each state/target/round identity, and writes round-separated
+  Float32 shards. Labels come from final round winners. Each round contributes
+  equal total weight. Python verifies split/count/hash/value/weight contracts
+  and consumes exact TS features, without implementing game rules.
+- CPU PyTorch learner exports the lowest-validation-BCE checkpoint, including
+  comparison with initial weights. Actual small-data integration tests train,
+  repeat exact weights/history in the same environment, load exported weights
+  through TS, and refuse corrupt data/invalid options/overwrites. An injected
+  export failure records failed status and cannot pass the parity gate.
+- Real bootstrap source:100 completed strategy-v1-greedy mirror rounds,
+  28917 examples, original dataset SHA-256
+  `f5218e0bcc2a8066732e37286d36eaebde0f64b00b7b4b8f1554e4dcdf6e2e69`.
+  Preparation/training revision `1bf8933071589a2592e42f695f0d20b8e214c7d9`,
+  clean source. Split seed `bootstrap-split-2026-10-17` yielded79 training rounds/
+  23115 examples and21 validation rounds/5802 examples. Prepared manifest SHA-256
+  `f62ad36c8914918b890b32ab684b9bfc203667998454ab503c2a8f80c7710324`.
+- Trained20 epochs, seed20261017, batch256, Adam learning rate0.001, one CPU
+  thread, torch2.14.1/Python3.14.6/macOS arm64. Best epoch1: train BCE0.5787993,
+  validation BCE0.5837003/Brier0.1996981; initial validation BCE0.6932856, constant
+  baseline BCE0.6931392. Later epochs overfit (epoch20 validation BCE1.3042101),
+  and were correctly discarded. Validation selects the epoch, so these21 rounds
+  are tuning evidence, not independent strength qualification.
+- Experimental model `bootstrap-v1-92fe043b432e`,120324 weight bytes, SHA-256
+  `92fe043b432e4a3699a1c4eabda20fa24ae33528259ca2c9429c6ec1620a87de`.
+  All162 Python/TS probes passed; maximum absolute value error
+  2.384185791015625e-7 against fixed5e-5 tolerance. The gate checks completed
+  training, actual model checksum and schema; artifact metadata cannot relax it.
+- Measured training/export region0.6283s, excluding Python imports and data
+  preparation. Warm TS prediction microbenchmark:1000 calls in36.785ms on local
+  Node26.11.1, excluding position encoding/validation. Neither measurement is a
+  phone latency or full search guarantee. Prepared/model directories, reports,
+  parity/profile results and environment freeze are preserved in canonical
+  `.local/prepared-bootstrap-2026-10-17` and
+  `.local/bootstrap-model-2026-10-17`; artifacts remain ignored by Git.
+- Full local verification:190 Vitest+53 Node+4 Python tests (247 total), zero
+  Svelte errors/warnings, public production/offline and separate worker smoke
+  builds passed. Public JS/CSS/offline version remains `ef3756aba643a909`.
+  CI includes a small CPU training/repeatability/TS parity job, not long training.
+- Checkpoint9 complete and bootstrap portion of10 started. Model policies in
+  simulation, resumable opponent-pool learning and fresh-seed strength/tactical
+  qualification remain. No model is registered in the worker or public app;
+  Single player remains In development. Usage: [local training](BOT_TRAINING.md).

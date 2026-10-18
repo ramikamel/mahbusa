@@ -1,10 +1,11 @@
 # Mahbusa single-player engine roadmap
 
-Revised October 16, 2026: evaluation runs automatically through self-play; no
+Revised October 17, 2026: evaluation runs automatically through self-play; no
 annotation or expert-lab work is required from the user. The start page and engine
-checkpoints 2–8 plus automatic outcome data are complete. Next is the local
-training environment, model encoding/export and inference parity; actual trained
-strength and public bot play remain later checkpoints.
+checkpoints 2–9 plus automatic outcome data are complete. A first experimental
+model is trained and passes Python/TypeScript inference parity. Next is resumable
+model self-play and opponent pools; qualified strength and public bot play remain
+later checkpoints.
 
 ## Product requirements
 
@@ -61,7 +62,8 @@ Seeded simulation uses tested SHA-256 counter streams, unbiased bounded draws,
 independent action/dice streams and recorded seeds. Production crypto dice remain
 unchanged. Use [automatic self-play](SELF_PLAY.md) to generate reproducible local
 outcome data with the strongest current policy on both sides. This supplies data;
-it does not update weights until the learner is implemented.
+it does not update weights itself. The [local learner](BOT_TRAINING.md) prepares
+checked round-separated shards, trains and exports experimental weights.
 
 ## Commit checkpoints and dependencies
 
@@ -79,7 +81,7 @@ it does not update weights until the learner is implemented.
    random control in the initial diagnostic; this is not strength qualification.
 6a. **Done:** automatic completed-round outcome samples and streaming JSONL,
     dataset checksums/provenance, cutoff/failure protection and strategy mirror
-    evaluation. No annotations needed and no model trained yet.
+    evaluation. No annotations needed; this checkpoint itself only generates data.
 7. **Done:** full-width dice-aware search, bounded local value cache, completed-
    depth iterative updates, deterministic/time budgets and measured performance.
    [Search usage](BOT_SEARCH.md) documents the experimental reference policy and
@@ -88,9 +90,13 @@ it does not update weights until the learner is implemented.
    cancellation/replacement/disposal and stale-reply protection. Real Chrome
    lifecycle smoke passed; [worker usage](BOT_WORKER.md) records the API and
    caller revision/cancellation duties. Public bot remains disabled.
-9. Local training environment, shards, model encoding/export and TS parity.
-10. Bootstrap from automatic outcome data; train a candidate, freeze each model
-    version and resume self-play against current/old/strategy opponent pools.
+9. **Done:** local CPU training environment, round-separated weighted shards,
+   canonical104-feature encoding, checked120324-byte model export and TS parity.
+   [Training usage](BOT_TRAINING.md) describes the CLI and experimental boundary.
+10. **Started:** first100-round outcome bootstrap trained; best validation epoch
+    frozen locally. Still pending: model policies in simulation, resumable training
+    and self-play against current/old/strategy opponent pools. The bootstrap is
+    unqualified and is not registered in the worker or public app.
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible

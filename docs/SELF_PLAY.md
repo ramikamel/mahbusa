@@ -2,7 +2,8 @@
 
 The engine plays both sides and labels its own positions from the final round
 winner. No lab, annotations or manual move review is required. These are outcome
-samples for the future learner; running the command does not train weights.
+samples for the [local learner](BOT_TRAINING.md); running this command does not
+train weights.
 
 ```sh
 pnpm selfplay:bot --seed local-batch-001 --rounds 100 --out .local/local-batch-001
@@ -60,5 +61,5 @@ expected and cannot demonstrate improvement. Later search/trained candidates
 must beat frozen previous versions on held-out seeds under equal budgets before
 promotion. Keep training, validation and final confirmation round seeds separate;
 do not leak adjacent positions from one round across these splits. The remaining
-worker, training/parity and device qualification steps are in the
+model self-play, strength qualification and device acceptance steps are in the
 [roadmap](BOT_ROADMAP.md). Public Single player remains In development until then.
