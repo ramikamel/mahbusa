@@ -1,0 +1,96 @@
+import {mkdir,open,readFile,writeFile,rename} from 'node:fs/promises';
+import {createReadStream} from 'node:fs';
+import {createInterface} from 'node:readline';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {resolve,join,dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {encodePreRoll,INPUT_SIZE,FEATURE_SCHEMA_VERSION} from '../src/lib/bot/encoding.ts';
+import {RULES_VERSION} from '../src/lib/bot/versions.ts';
+import {RNG_VERSION} from '../src/lib/bot/seeded.ts';
+
+const usage='Usage: node scripts/prepare-training.mjs --dataset DIR --out NEW_DIR [--seed SPLIT_SEED]';
+const sha=value=>createHash('sha256').update(value).digest('hex');
+const integer=(n,min,max)=>Number.isSafeInteger(n)&&n>=min&&n<=max;
+const digest=s=>typeof s==='string'&&/^[a-f0-9]{64}$/.test(s);
+const pair=(v,max)=>Array.isArray(v)&&v.length===2&&[v[0],v[1]].every(n=>integer(n,0,max));
+const message=e=>e instanceof Error?e.message:String(e);
+async function fingerprint(path){let bytes=0;const hash=createHash('sha256');for await(const chunk of createReadStream(path)){bytes+=chunk.length;hash.update(chunk);}return {bytes,sha256:hash.digest('hex')};}
+async function prepare(values){
+  const dataset=resolve(values.dataset),out=resolve(values.out),splitSeed=values.seed;
+  const sourceBytes=await readFile(join(dataset,'manifest.json')),source=JSON.parse(sourceBytes);
+  if(source.format!=='mahbusa-self-play-dataset'||source.version!==1||source.status!=='complete'
+    ||source.rulesVersion!==RULES_VERSION||source.rngVersion!==RNG_VERSION||!integer(source.rounds,2,10000)
+    ||source.attemptedRounds!==source.rounds||source.completedRounds!==source.rounds||!Array.isArray(source.incompleteRounds)||source.incompleteRounds.length
+    ||!integer(source.maxTurns,1,100000)||!integer(source.examples,1,1000000000)
+    ||typeof source.seed!=='string'||!source.seed||source.seed.length>256||typeof source.policy!=='string'||!source.policy||source.policy.length>80
+    ||typeof source.sourceRevision!=='string'||!/^[a-f0-9]{40}$/.test(source.sourceRevision)||typeof source.sourceDirty!=='boolean'
+    ||source.dataset?.path!=='rounds.jsonl'||!digest(source.dataset.sha256)||!integer(source.dataset.bytes,1,Number.MAX_SAFE_INTEGER))throw Error('Invalid or incomplete self-play manifest.');
+  const gitOptions={cwd:fileURLToPath(new URL('..',import.meta.url)),encoding:'utf8'};
+  const sourceRevision=execFileSync('git',['rev-parse','HEAD'],gitOptions).trim();
+  const sourceDirty=!!execFileSync('git',['status','--porcelain'],gitOptions).trim();
+  await mkdir(dirname(out),{recursive:true});await mkdir(out);
+  const manifest={format:'mahbusa-training-data',version:1,status:'running',featureSchemaVersion:FEATURE_SCHEMA_VERSION,
+    rulesVersion:RULES_VERSION,inputSize:INPUT_SIZE,recordSize:106,endian:'little',splitVersion:'round-sha256-v1',splitSeed,
+    sourceRevision,sourceDirty,sourceDataset:{manifestSha256:sha(sourceBytes),...source},rounds:[],
+    train:{path:'train.f32',rounds:0,examples:0},validation:{path:'validation.f32',rounds:0,examples:0}};
+  const handles={};let input,lines;
+  try{
+    await writeFile(join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
+    for(const split of ['train','validation'])handles[split]=await open(join(out,manifest[split].path),'wx');
+    const inputHash=createHash('sha256');let consumed=0,totalExamples=0;
+    input=createReadStream(join(dataset,'rounds.jsonl'));
+    input.on('data',chunk=>{consumed+=chunk.length;inputHash.update(chunk);});
+    lines=createInterface({input,crlfDelay:Infinity});
+    for await(const line of lines){
+      const row=JSON.parse(line),r=row.result,index=manifest.rounds.length;
+      const expectedSeed=sha(JSON.stringify(['self-play-v1',source.seed,index]));
+      if(row.format!=='mahbusa-self-play-round'||row.version!==1||row.index!==index||index>=source.rounds
+        ||r?.status!=='complete'||r.seed!==expectedSeed||r.aColor!==index%2||![0,1].includes(r.winner)
+        ||!Array.isArray(r.policies)||r.policies.length!==2||r.policies.some(p=>p!==source.policy)
+        ||!pair(r.score,4)||r.score[r.winner]<3||r.score[1-r.winner]>=3||!integer(r.turns,1,source.maxTurns)
+        ||!integer(r.games,1,5)||!Array.isArray(row.examples)||row.examples.length!==r.turns)throw Error('Invalid/duplicate/incomplete self-play round.');
+      const winnerColor=r.winner===0?r.aColor:1-r.aColor;
+      const fraction=createHash('sha256').update(JSON.stringify(['training-split-v1',splitSeed,r.seed])).digest().readUInt32BE(0)/4294967296;
+      const split=fraction<.2?'validation':'train',record=Buffer.alloc(row.examples.length*106*4);let offset=0;
+      for(const example of row.examples){
+        const state=example.state;
+        if(!state||Object.keys(state).sort().join(',')!=='active,position,score'
+          ||example.target!==(state.active===winnerColor?1:-1))throw Error('Invalid pre-roll state or final-round target.');
+        const encoded=encodePreRoll(state);
+        for(const value of encoded){record.writeFloatLE(value,offset);offset+=4;}
+        record.writeFloatLE(example.target===1?1:0,offset);record.writeFloatLE(1/row.examples.length,offset+4);offset+=8;
+      }
+      await handles[split].writeFile(record);
+      manifest.rounds.push({index,seed:r.seed,split,examples:row.examples.length});
+      manifest[split].examples+=row.examples.length;manifest[split].rounds++;totalExamples+=row.examples.length;
+      process.stderr.write('Prepared round '+(index+1)+'/'+source.rounds+'\n');
+    }
+    if(consumed!==source.dataset.bytes||inputHash.digest('hex')!==source.dataset.sha256)throw Error('Source dataset checksum mismatch.');
+    if(manifest.rounds.length!==source.rounds||totalExamples!==source.examples)throw Error('Source dataset count mismatch.');
+    if(!manifest.train.rounds||!manifest.validation.rounds)throw Error('Both training and validation rounds are required.');
+    manifest.status='complete';
+  }catch(error){manifest.status='failed';manifest.error=message(error);}
+  finally{
+    lines?.close();input?.destroy();
+    for(const handle of Object.values(handles))try{await handle.close();}catch(error){manifest.status='failed';manifest.error=message(error);}
+  }
+  for(const split of ['train','validation'])try{Object.assign(manifest[split],await fingerprint(join(out,manifest[split].path)));}
+  catch(error){manifest.status='failed';manifest.error=message(error);}
+  await writeFile(join(out,'manifest.tmp'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
+  await rename(join(out,'manifest.tmp'),join(out,'manifest.json'));
+  process.stdout.write(JSON.stringify(manifest,null,2)+'\n');
+  if(manifest.status==='failed'){process.stderr.write(manifest.error+'\n');process.exitCode=1;}
+}
+try{
+  const args=process.argv.slice(2),values={seed:'mahbusa-training-split-v1'},seen=new Set();
+  if(args.length===1&&args[0]==='--help')console.log(usage);
+  else{
+    for(let i=0;i<args.length;i+=2){const key=args[i]?.slice(2),value=args[i+1];
+      if(!args[i].startsWith('--')||!['dataset','out','seed'].includes(key)||seen.has(key)||!value||value.startsWith('--'))throw Error(usage);
+      seen.add(key);values[key]=value;
+    }
+    if(!values.dataset||!values.out||values.seed.length>256)throw Error(usage);
+    await prepare(values);
+  }
+}catch(error){process.stderr.write(message(error)+'\n');process.exitCode=1;}

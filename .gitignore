@@ -9,3 +9,5 @@ dist/
 artifacts/
 coverage/
 .local/
+__pycache__/
+*.pyc
