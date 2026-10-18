@@ -6,7 +6,7 @@ import type { PreRollState, TurnInput, TurnPlan } from './types';
 import { rankStrategyTurns } from './rank-strategy.ts';
 import { createSeededRandom } from './seeded.ts';
 import type { SeededRandom } from './seeded';
-export const RULES_VERSION = 'mahbusa-engine-v1';
+export {RULES_VERSION} from './versions.ts';
 export type BotPolicy = { id: string; choose(input: TurnInput & {score: Pair}, random: SeededRandom): TurnPlan };
 export const firstPolicy: BotPolicy = {id:'first-legal-v1',choose:input=>generateTurns(input)[0]};
 export const randomPolicy: BotPolicy = {id:'random-legal-v1',choose(input,random){

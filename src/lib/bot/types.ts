@@ -38,4 +38,5 @@ export type SearchReply = {
 export type ModelManifest = {
   formatVersion: 1; id: string; rulesVersion: string; featureSchemaVersion: string;
   inputSize: number; hiddenSizes: number[]; outputSize: 1; sha256: string;
+  architecture: 'dense-relu-sigmoid-v1'; byteLength: number; status: 'experimental';
 };
