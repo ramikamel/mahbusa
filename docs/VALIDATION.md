@@ -745,3 +745,7 @@ viewport. Rechecked the affected behaviors.
   and unregistered; treating it as ready would risk weak play or untested device
   behavior. Bitwise reproducibility is limited to the same environment; claiming
   identical exports across Torch/platform changes would risk unreproducible runs.
+- First remote run rejected the YAML before scheduling jobs: unquoted pip
+  `--only-binary=:all:` contained a colon followed by a space. A real YAML parser
+  reproduced line31's syntax error before the fix. A folded scalar now preserves
+  the command and parses successfully; the corrected workflow is rerun remotely.
