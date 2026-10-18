@@ -55,6 +55,18 @@ describe('worker search boundary',()=>{
     for(const mutate of invalid){const state=request().state;mutate(state);expect(()=>validateSearchState(state)).toThrow();}
     expect(()=>validateSearchState({...botFixtures.forcedRelease(),score:[0,0]})).not.toThrow();
   });
+  it('rejects sparse score and dice arrays before a winning board can publish progress',()=>{
+    const sparseScore:[number,number]=[2,0];delete (sparseScore as number[])[1];
+    const inputs=[{...botFixtures.bearOff(),score:sparseScore},
+      {...request().state,score:Array(2) as [number,number]},
+      {...request().state,remaining:Array(1) as number[]},
+      {...request().state,remaining:[1,...Array(1)] as number[]}];
+    for(const state of inputs){
+      expect(()=>validateSearchState(state)).toThrow();
+      const replies:SearchReply[]=[];runSearchRequest({...request(),state},r=>replies.push(r));
+      expect(replies).toHaveLength(1);expect(replies[0].type).toBe('error');
+    }
+  });
 });
 describe('browser-safe checked replay',()=>{
   it('rejects incomplete, illegal and falsified metadata from unknown messages',()=>{

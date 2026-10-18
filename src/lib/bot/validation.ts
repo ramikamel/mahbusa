@@ -7,7 +7,7 @@ export function record(value:unknown):Record<string,unknown>{
   return value as Record<string,unknown>;
 }
 function pair(value:unknown,max:number):value is [number,number]{
-  return Array.isArray(value)&&value.length===2&&value.every(n=>Number.isSafeInteger(n)&&n>=0&&n<=max);
+  return Array.isArray(value)&&value.length===2&&[value[0],value[1]].every(n=>Number.isSafeInteger(n)&&n>=0&&n<=max);
 }
 export function validatePosition(value:unknown):asserts value is Position {
   const pos=record(value);
@@ -30,7 +30,7 @@ export function validateSearchState(value:unknown):asserts value is SearchReques
   if(state.active!==0&&state.active!==1)throw new Error('Invalid active player.');
   if(!pair(state.score,2))throw new Error('Invalid in-progress score.');
   const dice=state.remaining;
-  if(!Array.isArray(dice)||dice.length>4||dice.some(d=>!Number.isInteger(d)||d<1||d>6)
+  if(!Array.isArray(dice)||dice.length>4||[...dice].some(d=>!Number.isInteger(d)||d<1||d>6)
     ||(dice.length>2&&new Set(dice).size!==1))throw new Error('Invalid remaining dice.');
   validatePosition(state.position);
   for(const player of [0,1] as const){

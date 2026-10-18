@@ -665,3 +665,20 @@ viewport. Rechecked the affected behaviors.
   warnings, public production/offline build passed. Public JS/CSS hashes and
   offline version `ef3756aba643a909` match the prior checkpoint. Separate worker
   smoke build also passed and is included in GitHub CI.
+- October17 final review resumed after an interrupted reviewer turn. Independent
+  review reran the full225 tests/type checks and a separate native worker build,
+  and exercised observer replacement followed by an exception. It found a sparse
+  array validation gap: array iteration skipped missing score/dice slots. This
+  was treated as a correctness issue and fixed with failing worker/controller
+  regressions before the fix; explicit slot/dense dice validation now rejects
+  those states before search/fallback. Final227 tests (183 Vitest+44 Node), type
+  checks and both build paths pass. No review findings remain deferred.
+- Review scope remains explicit: app caller revision/cancellation wiring is
+  checkpoint12; learned quality/parity/promotion is later model work; public
+  offline worker/model assets and actual iPhone/Safari/background scheduling are
+  checkpoint13. Public bot remains disabled, so these are not enablement claims.
+- October17 rebuilt Chrome smoke also passed6/6 after the validation fix, using
+  native Chrome controls because the extension connection was unavailable. The
+  actual search completed in4011ms with2 progress updates and201 heartbeat ticks;
+  the interface ping worked while thinking. Cancellation/reset/retry, both
+  watchdog cases, native worker crash/retry and disposal all passed again.

@@ -133,4 +133,14 @@ describe('failed worker or invalid messages',()=>{
     for(const options of [{budgetMs:0},{watchdogMs:4000},{watchdogMs:Infinity},{modelId:''}])expect(()=>createBotController(options)).toThrow();
     const {controller,workers}=setup();expect((await controller.search(state(),-1)).status).toBe('error');expect(workers).toHaveLength(0);
   });
+  it('rejects sparse inputs without starting a worker or accepting a malformed pass fallback',async()=>{
+    const {controller,workers}=setup();
+    const score:[number,number]=[2,0];delete (score as number[])[1];
+    for(const input of [{...botFixtures.bearOff(),score},{...state(),remaining:Array(1) as number[]}]){
+      const pending=controller.search(input,1);
+      expect(workers).toHaveLength(0);
+      expect(await pending).toMatchObject({status:'error'});
+    }
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });
