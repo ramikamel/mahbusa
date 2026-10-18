@@ -733,3 +733,15 @@ viewport. Rechecked the affected behaviors.
   simulation, resumable opponent-pool learning and fresh-seed strength/tactical
   qualification remain. No model is registered in the worker or public app;
   Single player remains In development. Usage: [local training](BOT_TRAINING.md).
+- Fresh independent whole-branch review found no Critical or Important issues;
+  independently reran9 Node preparation/parity and4 real Python integration tests.
+  One minor is deferred: an unexpected `manifestSha256` field in a source manifest
+  can overwrite the computed source-manifest checksum when metadata is spread.
+  The standard producer emits no such field; actual dataset bytes, labels,
+  split checks and shard checksums remain enforced. A future correction should
+  assign the computed field last and add a regression for the extra property.
+- Review scope rulings: playing strength, resumable opponent pools and device/
+  public enablement remain later checkpoints because this model is experimental
+  and unregistered; treating it as ready would risk weak play or untested device
+  behavior. Bitwise reproducibility is limited to the same environment; claiming
+  identical exports across Torch/platform changes would risk unreproducible runs.
