@@ -16,6 +16,7 @@ warnings.filterwarnings('ignore', message="Failed to initialize NumPy: No module
 import torch
 from torch import nn
 from data import INPUT_SIZE, SCHEMA, RULES, load_prepared
+from checkpoints import environment, finite_tree, load_resume, load_warm_start, save_resume, split_history
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -40,35 +41,67 @@ def metrics(model, data):
 def train(args):
     torch.set_num_threads(1)
     torch.use_deterministic_algorithms(True)
-    torch.manual_seed(args.seed)
     manifest, data_hash, data = load_prepared(args.data)
+    resume, warm = getattr(args, 'resume', None), getattr(args, 'warm_start', None)
+    if resume and warm:
+        raise ValueError('Resume and warm start are mutually exclusive.')
+    restored, resume_from = load_resume(resume, data_hash) if resume else (None, None)
+    for name, key, default in [('seed', 'seed', 20261017), ('batch_size', 'batchSize', 256), ('learning_rate', 'learningRate', .001)]:
+        value = getattr(args, name)
+        if restored and value is not None and value != restored['config'][key]:
+            raise ValueError('Resume configuration cannot change: ' + name)
+        setattr(args, name, restored['config'][key] if restored else default if value is None else value)
+    first_epoch = restored['epoch'] if restored else 0
+    total_epochs = first_epoch + args.epochs
+    if total_epochs > 1000:
+        raise ValueError('Cumulative epoch limit is 1000.')
+    torch.manual_seed(args.seed)
+    model = nn.Sequential(nn.Linear(INPUT_SIZE, 128), nn.ReLU(), nn.Linear(128, 128), nn.ReLU(), nn.Linear(128, 1))
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+    generator = torch.Generator().manual_seed(args.seed)
+    history = split_history(restored['splitHistory'] if restored else [], manifest['rounds'])
+    initialization = restored['initialization'] if restored else {'mode': 'fresh'}
+    if warm:
+        history, initialization = load_warm_start(warm, model, manifest['rounds'])
+    if restored:
+        # Validate both states before claiming a new output directory.
+        model.load_state_dict(restored['best_state'], strict=True)
+        model.load_state_dict(restored['state_dict'], strict=True)
+        expected_group = optimizer.state_dict()['param_groups']
+        optimizer.load_state_dict(restored['optimizer_state'])
+        if optimizer.state_dict()['param_groups'] != expected_group:
+            raise ValueError('Resume optimizer configuration changed.')
+        for parameter, state in optimizer.state.items():
+            if any(state[key].shape != parameter.shape for key in ['exp_avg', 'exp_avg_sq']):
+                raise ValueError('Invalid optimizer tensor shape.')
+        generator.set_state(restored['generator_state'])
+        torch.set_rng_state(restored['torch_rng_state'])
     out = Path(args.out).resolve()
     out.parent.mkdir(parents=True, exist_ok=True)
     out.mkdir()  # Exclusive claim: never replace an earlier run.
     source_revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     source_dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())
     report = {'format': 'mahbusa-training-run', 'version': 1, 'status': 'running', 'device': 'cpu',
-              'seed': args.seed, 'epochs': args.epochs, 'batchSize': args.batch_size, 'learningRate': args.learning_rate,
+              'seed': args.seed, 'epochs': total_epochs, 'batchSize': args.batch_size, 'learningRate': args.learning_rate,
+              'mode': 'resume' if restored else initialization['mode'], 'initialization': initialization,
+              'splitHistory': history, **({'resumeFrom': resume_from} if restored else {}),
               'torchVersion': torch.__version__, 'pythonVersion': sys.version, 'platform': platform.platform(),
               'sourceRevision': source_revision, 'sourceDirty': source_dirty, 'preparedManifestSha256': data_hash,
               'sourceDatasetSha256': manifest['sourceDataset']['dataset']['sha256'],
               'splitSeed': manifest['splitSeed'], 'featureSchemaVersion': SCHEMA, 'rulesVersion': RULES,
               'trainRounds': manifest['train']['rounds'], 'validationRounds': manifest['validation']['rounds'],
               'trainExamples': manifest['train']['examples'], 'validationExamples': manifest['validation']['examples'],
-              'history': []}
+              'history': restored['history'] if restored else []}
     began = time.monotonic()
     try:
         write_json(out / 'training.json', report)
-        model = nn.Sequential(nn.Linear(INPUT_SIZE, 128), nn.ReLU(), nn.Linear(128, 128), nn.ReLU(), nn.Linear(128, 1))
-        optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
         training, validation = data['train'], data['validation']
         mean_weight = training[:, INPUT_SIZE + 1].mean()
-        report['initial'] = {'train': metrics(model, training), 'validation': metrics(model, validation)}
-        best_loss = report['initial']['validation']['bce']
-        best = {k: v.detach().clone() for k, v in model.state_dict().items()}
-        report['bestEpoch'] = 0
-        generator = torch.Generator().manual_seed(args.seed)
-        for epoch in range(1, args.epochs + 1):
+        report['initial'] = restored['initial'] if restored else {'train': metrics(model, training), 'validation': metrics(model, validation)}
+        best_loss = restored['bestLoss'] if restored else report['initial']['validation']['bce']
+        best = restored['best_state'] if restored else {k: v.detach().clone() for k, v in model.state_dict().items()}
+        report['bestEpoch'] = restored['bestEpoch'] if restored else 0
+        for epoch in range(first_epoch + 1, total_epochs + 1):
             order = torch.randperm(len(training), generator=generator)
             for start in range(0, len(training), args.batch_size):
                 batch = training[order[start:start + args.batch_size]]
@@ -86,7 +119,17 @@ def train(args):
                 best_loss = row['validation']['bce']
                 best = {k: v.detach().clone() for k, v in model.state_dict().items()}
                 report['bestEpoch'] = epoch
-            print(f"Epoch {epoch}/{args.epochs}: validation BCE {row['validation']['bce']:.6f}", file=sys.stderr)
+            snapshot = {'format': 'mahbusa-epoch-state', 'version': 1, 'epoch': epoch,
+                        'preparedManifestSha256': data_hash, 'environment': environment(),
+                        'config': {'seed': args.seed, 'batchSize': args.batch_size, 'learningRate': args.learning_rate},
+                        'state_dict': model.state_dict(), 'optimizer_state': optimizer.state_dict(),
+                        'generator_state': generator.get_state(), 'torch_rng_state': torch.get_rng_state(),
+                        'best_state': best, 'bestEpoch': report['bestEpoch'], 'bestLoss': best_loss,
+                        'initial': report['initial'], 'history': report['history'], 'splitHistory': history,
+                        'initialization': initialization}
+            finite_tree(snapshot)
+            report['resumeCheckpoint'] = save_resume(out, snapshot)
+            print(f"Epoch {epoch}/{total_epochs}: validation BCE {row['validation']['bce']:.6f}", file=sys.stderr)
         model.load_state_dict(best)
         model.eval()
         report['selected'] = {'train': metrics(model, training), 'validation': metrics(model, validation)}
@@ -132,12 +175,16 @@ def main():
     parser.add_argument('--data', required=True)
     parser.add_argument('--out', required=True)
     parser.add_argument('--epochs', type=int, default=20)
-    parser.add_argument('--batch-size', type=int, default=256)
-    parser.add_argument('--seed', type=int, default=20261017)
-    parser.add_argument('--learning-rate', type=float, default=.001)
+    parser.add_argument('--batch-size', type=int)
+    parser.add_argument('--seed', type=int)
+    parser.add_argument('--learning-rate', type=float)
+    continuation = parser.add_mutually_exclusive_group()
+    continuation.add_argument('--resume')
+    continuation.add_argument('--warm-start')
     args = parser.parse_args()
-    if (not 1 <= args.epochs <= 1000 or not 1 <= args.batch_size <= 65536 or not 0 <= args.seed < 2**32
-            or not math.isfinite(args.learning_rate) or not 0 < args.learning_rate <= 1):
+    if (not 1 <= args.epochs <= 1000 or (args.batch_size is not None and not 1 <= args.batch_size <= 65536)
+            or (args.seed is not None and not 0 <= args.seed < 2**32)
+            or (args.learning_rate is not None and (not math.isfinite(args.learning_rate) or not 0 < args.learning_rate <= 1))):
         parser.error('Invalid finite/bounded training option.')
     try:
         train(args)

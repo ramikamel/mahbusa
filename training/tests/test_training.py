@@ -116,7 +116,12 @@ class TrainingIntegration(unittest.TestCase):
         import train
         out = self.base / 'failed-export'
         args = argparse.Namespace(data=self.base / 'data', out=out, epochs=1, batch_size=256, seed=123, learning_rate=.001)
-        with patch.object(train.torch, 'save', side_effect=OSError('injected export write failure')):
+        real_save = train.torch.save
+        def save(value, path, *args, **kwargs):
+            if Path(path).name == 'checkpoint.pt':
+                raise OSError('injected export write failure')
+            return real_save(value, path, *args, **kwargs)
+        with patch.object(train.torch, 'save', side_effect=save):
             with contextlib.redirect_stdout(io.StringIO()):
                 with self.assertRaisesRegex(RuntimeError, 'export write failure'):
                     train.train(args)
