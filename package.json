@@ -13,6 +13,7 @@
     "selfplay:bot": "node scripts/self-play-bot.mjs",
     "prepare:training": "node scripts/prepare-training.mjs",
     "verify:model-parity": "node scripts/verify-model-parity.mjs",
+    "check:teacher-ranking": "node scripts/check-teacher-ranking.mjs",
     "check:bot-tactics": "node scripts/check-bot-tactics.mjs",
     "test:offline": "node --test tests/offline.node.test.mjs",
     "build": "vite build && node scripts/offline.mjs",

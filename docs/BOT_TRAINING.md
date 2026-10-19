@@ -179,3 +179,49 @@ from playing quality.
 Next: further outcome/TD learning iterations, stronger pools, fresh-seed strength comparisons
 and tactical regressions. Worker registration, phone timing and public enablement
 follow qualification. See [the roadmap](BOT_ROADMAP.md).
+
+## Strategy-value distillation
+
+Outcome-only bootstraps have not learned competitive move selection. The next
+controlled alternative teaches the existing network the strategy evaluator on
+legal complete-turn alternatives:
+
+```sh
+pnpm prepare:training --dataset .local/pool-data --out .local/teacher-shards --seed pool-learning-split-2026-10-18 --teacher strategy --turns-per-round 16
+.local/training-venv/bin/python -B training/train.py --data .local/teacher-shards --out .local/teacher-model --epochs 20 --seed 20261019
+pnpm verify:model-parity --model .local/teacher-model
+pnpm check:teacher-ranking --data .local/teacher-shards --model .local/teacher-model --out .local/teacher-ranking.json
+```
+
+Source manifests, completed outcomes, states and checksums are still checked.
+For each round, up to16 evenly spaced pre-roll positions receive independent
+seeded dice; neither future dice nor the eventual winner selects these rolls.
+Every legal complete-turn continuation supplies the teacher value from its next
+active player's perspective, transformed from[-1,1] to[0,1]. Round wins are exact
+in search and need no network target. A game win instead teaches the updated
+score and next game's starting player. Each round has equal total weight.
+
+Prepared version2 identifies `strategy-soft-value-v1`, teacher version, sampling
+and limits. It retains the same104features/106Float32-record layout and whole-
+round20% split. Source outcomes are validated but are not the distillation
+labels. Existing outcome preparation remains version1 with binary targets.
+Python verifies soft-label semantics and a checked held-out-turn sidecar before
+creating output. Resume and warm-start ancestry apply to either objective.
+
+A distilled export explicitly returns `heuristic` values. They approximate a
+provisional strategy score, not round-win probabilities. Existing `bce`/`brier`
+metric keys describe soft-target cross-entropy/squared teacher-target error here;
+they do not measure outcome calibration. The artifact gate
+rejects mismatched training/manifest semantics; legacy outcome exports retain
+round-win semantics. Architecture, parity tolerance and public registry stay
+unchanged.
+
+Ranking diagnostics regenerate validation afterstates/targets and compare their
+actual bytes with the numeric validation shard. All roots must belong to the
+recorded held-out rounds, use the independent dice and remain outside the model's
+training ancestry. The diagnostic replays selected moves through public rules,
+counts agreement including teacher ties, reports multi-choice agreement, mean/
+maximum teacher regret and avoidable mother exposures. Single-choice/terminal
+turns can inflate overall agreement; inspect choice counts and actual matches.
+No ranking score or lower soft BCE qualifies playing strength. Long local
+experiments and paired matches remain separate from ordinary CI.

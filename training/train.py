@@ -1,4 +1,4 @@
-"""CPU outcome-value bootstrap. No game rules, position encoding or promotion."""
+"""CPU outcome-value bootstrap or strategy-value distillation. No game rules, position encoding or promotion."""
 import argparse
 import hashlib
 import json
@@ -42,6 +42,8 @@ def train(args):
     torch.set_num_threads(1)
     torch.use_deterministic_algorithms(True)
     manifest, data_hash, data = load_prepared(args.data)
+    target_kind = manifest['teacher']['target'] if manifest.get('teacher') else 'round-outcome-v1'
+    value_kind = 'heuristic' if manifest.get('teacher') else 'round-win-expectation'
     resume, warm = getattr(args, 'resume', None), getattr(args, 'warm_start', None)
     if resume and warm:
         raise ValueError('Resume and warm start are mutually exclusive.')
@@ -77,6 +79,7 @@ def train(args):
     source_revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     source_dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())
     report = {'format': 'mahbusa-training-run', 'version': 1, 'status': 'running', 'device': 'cpu',
+              'targetKind': target_kind, 'valueKind': value_kind, **({'teacher': manifest['teacher']} if manifest.get('teacher') else {}),
               'seed': args.seed, 'epochs': total_epochs, 'batchSize': args.batch_size, 'learningRate': args.learning_rate,
               'mode': 'resume' if restored else initialization['mode'], 'initialization': initialization,
               'splitHistory': history, **({'resumeFrom': resume_from} if restored else {}),
@@ -142,7 +145,7 @@ def train(args):
             checksum = hashlib.sha256(binary).hexdigest()
             model_id = 'bootstrap-v1-' + checksum[:12]
             model_manifest = {'formatVersion': 1, 'id': model_id, 'rulesVersion': RULES, 'featureSchemaVersion': SCHEMA,
-                              'inputSize': INPUT_SIZE, 'hiddenSizes': [128, 128], 'outputSize': 1,
+                              'valueKind': value_kind, 'inputSize': INPUT_SIZE, 'hiddenSizes': [128, 128], 'outputSize': 1,
                               'architecture': 'dense-relu-sigmoid-v1', 'byteLength': len(binary), 'status': 'experimental', 'sha256': checksum}
             indices = torch.linspace(0, len(validation) - 1, min(128, len(validation))).long()
             probes = torch.cat([validation[indices, :INPUT_SIZE], torch.zeros(1, INPUT_SIZE), torch.ones(1, INPUT_SIZE),

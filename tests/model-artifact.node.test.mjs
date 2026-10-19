@@ -39,3 +39,15 @@ test('resolver requires paths only for model entrants and keeps existing policy 
   }
   for(const [name,path] of [['model',undefined],['model',''],['unknown',undefined],['model',dir+'-missing']])await assert.rejects(resolvePolicy(name,path));
 }));
+test('distilled models carry heuristic values and refuse mismatched target semantics',async()=>fixture(async({dir,manifest})=>{
+  const report=JSON.parse(await readFile(join(dir,'training.json')));
+  report.targetKind='strategy-soft-value-v1';report.valueKind='heuristic';report.teacher={id:'strategy-v1'};
+  await writeFile(join(dir,'training.json'),JSON.stringify(report));
+  await assert.rejects(loadModelArtifact(dir),/semantics/);
+  manifest.valueKind='heuristic';await writeFile(join(dir,'model.json'),JSON.stringify(manifest));
+  const loaded=await loadModelArtifact(dir);
+  const {initialPosition}=await import('../src/lib/engine.ts');
+  assert.equal(loaded.model.evaluate({position:initialPosition(),active:0,score:[0,0]}).kind,'heuristic');
+  report.targetKind='unknown';await writeFile(join(dir,'training.json'),JSON.stringify(report));
+  await assert.rejects(loadModelArtifact(dir),/semantics/);
+}));

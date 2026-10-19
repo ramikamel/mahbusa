@@ -38,3 +38,23 @@ test('game wins teach the updated score/start, exact round wins need no predicto
   assert.equal(rows[0].state.active,0);assert.deepEqual(rows[0].state.position,initialPosition());
   assert.deepEqual(teacherAfterstates({...input,score:[1,0]}),[]);
 });
+test('ranking agrees with tied teacher choices and rejects illegal policy moves',async()=>{
+  const {evaluateTeacherRanking}=await import('../scripts/lib/teacher-ranking.mjs');
+  const {strategyPolicy}=await import('../src/lib/bot/simulation.ts');
+  const roots=[0,1].map(active=>({input:{position:initialPosition(),active,score:[0,0],remaining:[2,4]}}));
+  const result=evaluateTeacherRanking(strategyPolicy,roots);
+  assert.equal(result.agreement,1);assert.equal(result.meanTeacherRegret,0);assert.equal(result.turns,2);
+  assert.throws(()=>evaluateTeacherRanking({id:'illegal',choose:()=>({moves:[]})},roots));
+  const tied={id:'tie',choose:input=>generateTurns(input).at(-1)};
+  const tieResult=evaluateTeacherRanking(tied,[{input:{position:initialPosition(),active:0,score:[0,0],remaining:[1]}}]);
+  assert.equal(tieResult.agreement,1);
+});
+test('blocked turns and forced release remain legal teacher examples',()=>{
+  const points=Array.from({length:24},()=>({count:[0,0],top:null}));
+  points[8]={count:[15,0],top:0};points[7]={count:[0,2],top:1};points[6]={count:[0,2],top:1};
+  const input={position:{points,off:[0,11]},active:0,score:[1,2],remaining:[1,2]};
+  assert.equal(generateTurns(input)[0].moves.length,0);
+  const rows=teacherAfterstates(input);assert.equal(rows.length,1);
+  assert.deepEqual(rows[0].state,{position:input.position,active:1,score:[1,2]});
+  assert.equal(rows[0].target,(evaluateStrategy(rows[0].state).value+1)/2);
+});

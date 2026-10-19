@@ -11,6 +11,7 @@ export async function loadDenseModel(raw:unknown,source:Uint8Array):Promise<Dens
     ||m.architecture!=='dense-relu-sigmoid-v1'||m.status!=='experimental'||m.inputSize!==INPUT_SIZE
     ||!Array.isArray(m.hiddenSizes)||m.hiddenSizes.length!==2||m.hiddenSizes[0]!==128||m.hiddenSizes[1]!==128
     ||m.outputSize!==1||m.byteLength!==MODEL_BYTES||typeof m.sha256!=='string'||!/^[a-f0-9]{64}$/.test(m.sha256)
+    ||(m.valueKind!==undefined&&m.valueKind!=='heuristic'&&m.valueKind!=='round-win-expectation')
     ||m.id!=='bootstrap-v1-'+m.sha256.slice(0,12))throw new Error('Unsupported model manifest.');
   const manifest=structuredClone(m) as ModelManifest;
   if(!(source instanceof Uint8Array)||source.byteLength!==MODEL_BYTES)throw new Error('Invalid model byte length.');
@@ -40,5 +41,5 @@ export async function loadDenseModel(raw:unknown,source:Uint8Array):Promise<Dens
     const probability=Math.fround(logit<0?exp/(1+exp):1/(1+exp));
     return 2*probability-1;
   }
-  return {id:manifest.id,predict,evaluate:state=>({kind:'round-win-expectation',value:predict(encodePreRoll(state))})};
+  return {id:manifest.id,predict,evaluate:state=>({kind:manifest.valueKind??'round-win-expectation',value:predict(encodePreRoll(state))})};
 }

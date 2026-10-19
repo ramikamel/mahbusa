@@ -119,3 +119,16 @@ test('teacher options reject unknown targets, unbounded sampling and stray optio
     const result=run(['--dataset','absent','--out','absent',...flags]);assert.equal(result.status,1);assert.match(result.stderr,/Usage|Teacher/);
   }
 });
+test('ranking validation rejects rehashed root/shard mismatches and training roots',async()=>fixture(async({dataset,out})=>{
+  const result=run(['--dataset',dataset,'--out',out,'--seed','fixture-split','--teacher','strategy','--turns-per-round','3']);assert.equal(result.status,0,result.stderr);
+  const {loadTeacherValidation}=await import('../scripts/lib/teacher-ranking.mjs');
+  const loaded=await loadTeacherValidation(out);assert.equal(loaded.roots.length,6);
+  const m=JSON.parse(await readFile(join(out,'manifest.json'))),path=join(out,m.validationTurns.path),original=await readFile(path);
+  for(const mutate of [r=>{r[0].roundIndex=0;},r=>{r[0].input.remaining=[6,6,6,6];},r=>{r[0].input.score=[2,2];}]){
+    const rows=original.toString().trim().split('\n').map(JSON.parse);mutate(rows);
+    const bytes=Buffer.from(rows.map(r=>JSON.stringify(r)+'\n').join(''));
+    await writeFile(path,bytes);m.validationTurns.bytes=bytes.length;m.validationTurns.sha256=hash(bytes);
+    await writeFile(join(out,'manifest.json'),JSON.stringify(m));
+    await assert.rejects(loadTeacherValidation(out));
+  }
+}));

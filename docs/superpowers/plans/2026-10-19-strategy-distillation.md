@@ -43,6 +43,6 @@ report contracts, and experiments require frozen code. No parallel agents needed
 
 ## Progress
 
-- [ ] Teacher data
-- [ ] Learner and ranking report
+- [x] Teacher data
+- [x] Learner and ranking report
 - [ ] Actual experiment, documentation and integration
