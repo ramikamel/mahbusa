@@ -284,3 +284,11 @@ objective history is refused before output. Interrupted epoch writes retain the
 last committed pointer; split and uninterrupted runs recover identical last
 weights, RNGs and history even when the selected best precedes the last epoch.
 Warm starts allow a new objective with a fresh optimizer but keep split ancestry.
+
+
+The first matched played-turn experiment trained204229afterstates/184659pairs.
+The ranked model agreed with strategy on48.1% of held-out multi-choice turns,
+versus36.8% for the pointwise control. Both had zero avoidable mother exposures
+on the1408-root holdout. In fixed matches they won10/200 and8/200 against strategy;
+that difference is inconclusive, and neither candidate is qualified. Full
+identities, paired comparison and measurements are in the validation record.

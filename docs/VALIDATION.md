@@ -988,3 +988,91 @@ viewport. Rechecked the affected behaviors.
   manifests, epoch states, parity, tactical/ranking/pilot results. Public behavior
   is unchanged. Review was a local author pass; no independent reviewer this
   checkpoint. No deferred code findings.
+
+
+## October 19, 2026 — Played-turn corrections and explicit ranking
+
+- Frozen source `8a49d8d3a609f362ba22898f0b12d78fc98db42e`, clean. Opt-in sourcev3/roundv2
+  captures actual rolled inputs before each policy choice; recording preserves
+  dice/action streams and outcomes and owns observer data. The500-round pool
+  uses frozen4a172/strategy and strategy/frozen4a172 (weights2/2) plus strategy
+  mirrors(weight1). Seed `corrective-played-data-2026-10-19`, max2000turns;
+  all500complete, no cutoffs,108573pre-roll/rolled observations. Source SHA
+  `43ec0fd1ad3858abcab6c0aa7923a1bff0827e0b4cb3f5ab4181a339681d101c`, bytes152460636.
+- Preparation uses `corrective-played-split-2026-10-19`,16evenly spaced **actual
+  played rolls** per round. Preparedv3 has412training rounds/167176afterstates,
+  88validation rounds/37053afterstates and1408validation roots. Manifest SHA
+  `9c4a0e5eda0ea75398fd30271754528bdb79fe4bd9def8d956a468ca4604ecc0`;
+  train SHA `b50b0e5f2209eaa43cf9b7465bf89021e7f6d1147c666fa7cb3f39f5f9eb649f`,
+  validation SHA `faae5e44da8a1a954f1cace3d83a43a28db91571220185512ec8b25756eb8ef3`.
+  Preferences151116train/33543validation; pair SHAs
+  `d175c525f2bb7e97d2576fad62e6f0a6c76ca25edc6543d9536d488b67ec395b` /
+  `acabbd305e0d238f1c0df7976fbfbc420fc41679c2af9def23751bd9d8ee6511`.
+- Each turn's signs return continuation values to the chooser. Best-vs-worse
+  pairs use Float32 teacher targets, exclude ties(gap<=1e-7) and roots with exact
+  round wins, and keep indices inside their complete-turn/round/split. Python
+  reconstructs expected pair bytes from groups/targets/round weights. A deliberate
+  mutation disabling that reconstruction check made corruption regressions fail;
+  restored checks pass. Node additionally regenerates legal validation groups.
+- Matched local CPU controls warm-start from selected4a172 weights: same data,
+  seed20261019,batch256,lr0.001,20epochs; weight0(pointwise) vs1(ranked). Pair
+  shuffle uses its own seeded/restored RNG; pointwise minibatches stay matched.
+  Config/metric/RNG corruption is refused before output. Exact1+1vs2 retains
+  last weights/RNG/history with selected best before last; injected failed epoch3
+  preserves epoch2 and recovers exact full3 state. Zero-weight paired data gives
+  identical weights to legacy pointwise learning on identical examples.
+- control: `bootstrap-v1-050016c17e31`, SHA
+  `050016c17e31371605e5d194bc36820b3d44ffbfe3cacc48afc219ba075ebc1b`, selected epoch20/20;
+  validation BCE0.282721877, ranking loss0.267874360,
+  pair accuracy83.6240%, objective0.282721877;
+  elapsed5.496s. Split ancestry1000rounds. All162 parity
+  probes pass, fixed5e-5 tolerance; all3 saved mother cases pass.
+- ranked: `bootstrap-v1-ad76d11802bd`, SHA
+  `ad76d11802bd48e1f9d11735710f0caab50cd47ffebf3ea975c6d8e8539743ad`, selected epoch4/20;
+  validation BCE0.331815928, ranking loss0.076354496,
+  pair accuracy93.2415%, objective0.408170424;
+  elapsed9.620s. Split ancestry1000rounds. All162 parity
+  probes pass, fixed5e-5 tolerance; all3 saved mother cases pass.
+- Held-out policy replay on1408roots/88rounds (1102multi-choice turns):
+
+  | Model | Multi-choice agreement | Mean teacher regret | Avoidable mother exposure |
+  | --- | ---: | ---: | ---: |
+  | parent | 34.3920% | 0.008587290 | 0 |
+  | control | 36.7514% | 0.006522493 | 0 |
+  | ranked | 48.0944% | 0.003543851 | 0 |
+
+  These roots are checkpoint-selection holdouts, not untouched strength tests.
+  Higher pair accuracy and lower mean regret did not qualify actual play.
+- control fixed pilot: seed`corrective-control-pilot-2026-10-19`,100color-swapped
+  pairs/200completed rounds,max2000,no cutoffs. NN/strategy rounds won
+  [8, 192],points[74, 700],mother losses[53, 4],
+  score4.00%,95% paired interval
+  [0.000%,17.581%];43573turns,
+  465games,2425passes. Decision ms[17652.63062500024, 31858.45144400046],
+  max ms[114.65079100000003, 143.40129199999865],wall57.806s.
+  Report SHA `0a287afe485ff277ca8ef3de2acaf072a66f1a95a87c77f155e3ea379e27a156`.
+- ranked fixed pilot: seed`corrective-control-pilot-2026-10-19`,100color-swapped
+  pairs/200completed rounds,max2000,no cutoffs. NN/strategy rounds won
+  [10, 190],points[104, 676],mother losses[34, 2],
+  score5.00%,95% paired interval
+  [0.000%,18.581%];46827turns,
+  491games,2378passes. Decision ms[19636.395999999608, 27500.769439999156],
+  max ms[70.25849999999991, 102.16733299999987],wall55.281s.
+  Report SHA `c9e87ccf36d2efd863c3a9f2b605e6c53d3c143669cd0b95da7ec16c7dc0cab8`.
+- Common-seed ranked-minus-control round score difference1.00%; fixed100pair
+  Hoeffding95% interval[-26.162%,28.162%],
+  with each color-averaged difference bounded[-1,1]. No optional stopping or
+  weight tuning followed the matches. Comparison remains inconclusive. Models
+  and ranking diagnostics ran concurrently; clocks are local diagnostics, not
+  equal-runtime/device qualification.
+- **Rejected both for promotion.** Preference training improved held-out choice
+  agreement48.1%vs36.8% and recorded fewer mother losses34vs53, but10vs8round
+  wins/200 does not establish stronger play. Both remain far below strategy.
+  Previous-parent3/200 used a different seed, so it is not a controlled strength
+  comparison. The reliable strategy evaluator remains the reference; next work
+  should evaluate strategy-guided search and diagnose concrete multi-turn losses
+  before simply adding more imitation batches. Public bot/registry/UI stay disabled.
+- Full local verification:197Vitest+85Node+20CPU Python tests (302 total), zero
+  Svelte errors/warnings, unchanged public/offline version`ef3756aba643a909` and
+  worker smoke build. No paid compute, new dependencies, human labels or Python
+  game rules. All source/shards/models/reports are ignored `.local/corrective-*`.

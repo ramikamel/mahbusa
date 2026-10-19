@@ -26,39 +26,42 @@
 training/data.py,teacher-ranking.mjs; tests/teacher-data.node.test.mjs,self-play tests.
 **Interfaces:** `recordTurns?:boolean`, sourcev3/rowv2 `turns`, `playedRolls(seed,count)`,
 `validateRecordedTurns(row)`, explicit `even-played-turns-v1` teacher sampling.
-- [ ] RED observer ownership/unchanged seeds, actual rolls including doubles,
+- [x] RED observer ownership/unchanged seeds, actual rolls including doubles,
   aligned recorded rows, CLI/preparation roundtrip and altered state/dice rejection.
-- [ ] Implement opt-in records and checked sampling; legacy data stays unchanged.
-- [ ] Node/Vitest/Python/type guards pass; commit.
+- [x] Implement opt-in records and checked sampling; legacy data stays unchanged.
+- [x] Node/Vitest/Python/type guards pass; commit.
 
 ### Task 2: Checked best-turn pair shards
 **Files:** new scripts/lib/teacher-pairs.mjs,prepare-training.mjs,teacher-ranking.mjs,
 new training/ranking.py,training/data.py; Node/Python tests.
 **Interfaces:** `teacherGroup(input)`, `buildRoundPairs(groups,startRow)` -> metadata,
 bytes; preparedv3 with per-split pair metadata; `load_pairs(...)` numeric validation.
-- [ ] RED literal sign/tie/terminal pairs, both orientations, binary bytes,
+- [x] RED literal sign/tie/terminal pairs, both orientations, binary bytes,
   rehashed index/group/sign/gap/weight corruption, legal validation regeneration.
-- [ ] Implement generation/reader/report checks and zero-pair refusal. No Python rules.
-- [ ] Full targeted suites pass; commit.
+- [x] Implement generation/reader/report checks and zero-pair refusal. No Python rules.
+- [x] Full targeted suites pass; commit.
 
 ### Task 3: Deterministic ranking objective and continuation
 **Files:** training/ranking.py,train.py,checkpoints.py,training/tests/test_ranking.py,
 usage docs.
 **Interfaces:** `--ranking-weight 0..10`, metrics/objective, checkpoint config.
-- [ ] RED gradient orientation and weighted loss, actual CPU loss/paired metrics,
+- [x] RED gradient orientation and weighted loss, actual CPU loss/paired metrics,
   exact1+1==2 and best selection, warm starts, changed/invalid config refused.
-- [ ] Implement additional pair order/minibatch slices without changing Adam step
+- [x] Implement additional pair order/minibatch slices without changing Adam step
   count; preserve weight0 legacy trajectories and heuristic parity/export gates.
-- [ ] Full tests/type/public/offline/worker smoke pass; commit.
+- [x] Full tests/type/public/offline/worker smoke pass; commit.
 
 ### Task 4: Controlled real experiment, review and integration
 **Files:** docs/BOT_TRAINING.md,SELF_PLAY.md,BOT_ROADMAP.md,VALIDATION.md.
 **Interfaces:** Task1 collectedv3 -> Task2 pairedv3 -> Task3 controls -> existing benchmarks.
-- [ ] Freeze code;500rounds pool2/2/1;16roots/round; same parent/options20epochs
+- [x] Freeze code;500rounds pool2/2/1;16roots/round; same parent/options20epochs
   weight0vs1; parent/control/candidate ranking, parity/tactics,100paired matches
   each on one fixed new seed. Preserve results, record actual acceptance/rejection.
-- [ ] Full verification and one fresh review; fix important findings RED->GREEN,
-  collect rulings, commit evidence, merge/push and matching-head CI.
+- [x] Record full local verification, preserve evidence and commit experiment docs.
+
+## Final review and integration
+One fresh whole-branch review after all task commits; fix Important/Critical
+findings RED->GREEN, collect rulings, then merge/push and matching-head CI.
 
 All tasks are sequential: records define groups, groups define loss/continuation,
 and frozen artifacts precede comparisons. The final review can run alongside

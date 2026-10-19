@@ -121,6 +121,13 @@ checked round-separated shards, trains and exports experimental weights.
     strategy-control rounds and is rejected. Next: teacher corrections on the
     candidate's own encountered positions plus explicit best-turn preferences,
     with fresh-seed matches. Pointwise value imitation alone is insufficient.
+    Played-roll corrections and explicit best-turn preference training are now
+    implemented and tested. The matched500-round experiment improved held-out
+    choice agreement48.1%vs36.8%, but won only10/200 vs the pointwise control's
+    8/200 against strategy on the same seeds; strength improvement is inconclusive.
+    Both candidates are rejected. Strategy remains the reliable reference;
+    prioritize strategy-guided search and diagnosis of concrete multi-turn losses
+    before more unqualified imitation-only batches.
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible
