@@ -749,3 +749,64 @@ viewport. Rechecked the affected behaviors.
   `--only-binary=:all:` contained a colon followed by a space. A real YAML parser
   reproduced line31's syntax error before the fix. A folded scalar now preserves
   the command and parses successfully; the corrected workflow is rerun remotely.
+
+## Frozen model opponents and outcome loop — October18,2026
+
+- Added experimental `nn-greedy-v1/<full weight SHA-256>` policy using existing
+  depth0 search/continuation, preserving every complete legal turn, handover
+  perspective, updated game score/starter, exact round wins and deterministic
+  ties. No public worker/model registration or UI change.
+- Both Node CLIs resolve models through the parity CLI's extracted shared gate:
+  completed training identity, actual owned/checksummed weights, schema and fixed
+  prediction tolerance. Reports store consumed weights/model manifest/training
+  report/parity-file hashes. Corrupt or incomplete artifacts/stray model flags
+  fail before output creation. Disk edits after load cannot change loaded weights.
+- Previous deferred checksum-spread minor is fixed: an extra source manifest
+  digest can no longer replace the checksum of consumed bytes. Regression ran
+  RED with the all-zero override, then GREEN with the computed digest assigned
+  after source metadata.
+- Fixed diagnostic seed `frozen-model-pilot-2026-10-18`,100 paired color-swapped
+  trials/200 first-to-three rounds,2000turn limit, source
+  `1a0e3cc99b686da0f86e6dc6fc046f682c673c9f` clean. A: bootstrap weights
+  `92fe043b432e4a3699a1c4eabda20fa24ae33528259ca2c9429c6ec1620a87de`;
+  B: `strategy-v1-greedy`. All200 completed, no cutoffs. Model2wins vs strategy198,
+  points39–739, mother losses134–0,32949turns,431games,1517passes. Model paired
+  win rate1%, conservative95% interval[0%,14.581%]. No repeated-look promotion.
+  This bootstrap is clearly unsuitable for release despite improved validation
+  loss. Strategy remains the stronger development reference; public bot disabled.
+- Diagnostic timing: model14.732s total decision time/max29.103ms, strategy33.573s/
+  max254.668ms, wall55.299s on local Node26.11.1. Both rank complete turns, but
+  evaluation cost differs; this is not equal-runtime, phone or search qualification.
+  Local report `.local/frozen-model-pilot-2026-10-18.json`, SHA-256
+  `7a4ffde699fb3d5388810574f7550c061c28ae8f622c290bdfa851a3dfae5fe7`.
+- Replayed four pilot rounds with matching decision trace hashes and captured
+  three actual model moves exposing its own mother with20/70/17 legal safe
+  alternatives. Strategy kept two checkers at the starting point in each case.
+  Inputs, dice, selected turns and strategy alternatives are saved locally as
+  `.local/frozen-model-diagnostics-2026-10-18.json`; these are automatic diagnostic
+  fixtures for the next learning/tactical iteration, without manual annotations.
+- Model-mirror seed `frozen-model-data-2026-10-18`:20/20 completed rounds,2017
+  labelled positions,1414610raw bytes, SHA-256
+  `ac63f8dda0a14ddd29fb67c92ce435c9922ae5e7d8a86142f2bfb453d2e3a64a`.
+  Prepared with split seed `frozen-model-split-2026-10-18`:17training rounds/1562
+  examples and3validation rounds/455examples. Generation/preparation/training
+  source `0f8d411e1084d89095c0b1da16edce1835eb5bfa`, clean.
+- Second candidate trained from fresh initialization, seed20261018,20epochs,
+  batch256/lr0.001, same CPU environment as the bootstrap. Selected epoch9,
+  validation BCE0.3976493/Brier0.1279614 versus initial0.6926548 and constant
+  baseline0.6931238; train BCE0.4155675. Model
+  `bootstrap-v1-fb8ba94e4fbb`, weight SHA-256
+  `fb8ba94e4fbb2d5c6f38240ac987805a56ab7484cc80e46cf9a415599db81d5e`.
+  All162 parity probes pass, max absolute error2.384185791015625e-7. This proves
+  model→outcomes→prepared shards→learner→checked model, not improved play: it
+  learned only from a weak model's20 mirror rounds and used validation to select
+  the epoch. It is not a resumed run, mixed pool, champion or qualified candidate.
+- All experiment artifacts are preserved under canonical `.local/` with their
+  frozen-model names; datasets/models remain ignored. Resumable training and
+  stronger current/old/strategy pools remain checkpoint10 work. Mother-protection
+  regressions and fresh-seed strength tests must gate future promotion.
+- Full local verification:195 Vitest+62 Node+4 Python tests (261 total), type
+  checking0errors/0warnings, production/offline and worker smoke builds passed.
+  Actual CPU-export integration invokes both model CLIs; real Node tests complete
+  model mirrors, verify labels and prepare whole-round shards. Public app assets
+  and offline version remain `ef3756aba643a909`.

@@ -100,6 +100,11 @@ checked round-separated shards, trains and exports experimental weights.
     Model-mirror outcomes feed the learner. Still pending: resumable training and
     self-play against current/old/strategy opponent pools. The bootstrap is
     unqualified and is not registered in the worker or public app.
+    Its first100-pair diagnostic won2/200 rounds against strategy with134 mother
+    losses. Strategy remains the reference. Saved automatic mother-exposure
+    cases must guide learning/tactical regressions; loss improvements alone
+    are insufficient. A20-round model-mirror batch completed the data-to-second-
+    candidate loop, without demonstrating stronger play.
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible

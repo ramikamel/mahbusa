@@ -108,6 +108,12 @@ record full artifact hashes before play. The resulting version1 dataset prepares
 and trains through the same commands above; each run still starts from fresh
 seeded weights, rather than restoring an earlier optimizer.
 
+The first model's actual pilot won only2/200 rounds against strategy, with134
+mother losses. Strategy remains the stronger reference. A second candidate was
+trained from20 model-mirror rounds to verify the loop, and is also unqualified.
+More outcome data and lower loss cannot by themselves establish improvement;
+saved tactical cases and frozen-opponent matches must test the learned choices.
+
 Next: resumable outcome/self-play learning against current/old/strategy pools,
 then fresh-seed strength comparisons
 and tactical regressions. Worker registration, phone timing and public enablement
