@@ -7,6 +7,16 @@ import type { BotPolicy, RoundResult } from '../src/lib/bot/simulation';
 import { generateSelfPlayRound } from '../src/lib/bot/self-play';
 
 const stable = ({timing, ...result}:RoundResult) => result;
+it('mixed policies keep entrant color mapping and completed-round outcome labels',()=>{
+  for(const index of [0,1]){
+    const round=generateSelfPlayRound({seed:'mixed-fixture',index,policies:[firstPolicy,strategyPolicy]});
+    expect(round.result.status).toBe('complete');expect(round.result.policies).toEqual([firstPolicy.id,strategyPolicy.id]);
+    const color=round.result.winner===0?index%2:1-index%2;
+    expect(round.examples.length).toBe(round.result.turns);
+    for(const example of round.examples)expect(example.target).toBe(example.state.active===color?1:-1);
+  }
+  expect(()=>generateSelfPlayRound({seed:'x',index:0,policy:firstPolicy,policies:[firstPolicy,strategyPolicy]})).toThrow();
+});
 describe('owned pre-roll observations', () => {
   it('observes every real turn before dice, including winner-started fresh games', () => {
     const states:PreRollState[]=[];

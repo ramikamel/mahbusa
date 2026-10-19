@@ -161,6 +161,25 @@ class ContinuationIntegration(unittest.TestCase):
         self.assertFalse(marker.exists(), 'Checkpoint object code executed.')
         self.assertFalse((self.base / 'unsafe-output').exists())
 
+    def test_pool_outcomes_reach_actual_warm_start_learner(self):
+        pool = self.base / 'pool.json'
+        pool.write_text(json.dumps({'format': 'mahbusa-opponent-pool', 'version': 1,
+            'entrants': [{'key': 'strategy', 'policy': 'strategy'}, {'key': 'current', 'policy': 'model', 'model': 'parent'}],
+            'matchups': [{'a': 'strategy', 'b': 'strategy', 'weight': 1}, {'a': 'strategy', 'b': 'current', 'weight': 1}]}))
+        source, prepared = self.base / 'pool-source', self.base / 'pool-data'
+        for command in [
+            [NODE, 'scripts/self-play-bot.mjs', '--pool', str(pool), '--seed', 'pool-fixture', '--rounds', '6', '--out', str(source)],
+            [NODE, 'scripts/prepare-training.mjs', '--dataset', str(source), '--out', str(prepared), '--seed', 'fixture-split'],
+        ]:
+            result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=60)
+            self.assertEqual(result.returncode, 0, result.stderr)
+        result = self.run_train('pool-candidate', '--warm-start', str(self.parent), data=prepared)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual(len(report['splitHistory']), 12)
+        self.assertEqual(report['validationRounds'], 2)
+        self.assertEqual(json.loads((prepared / 'manifest.json').read_text())['sourceDataset']['version'], 2)
+
 
 if __name__ == '__main__':
     unittest.main()

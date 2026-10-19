@@ -8,6 +8,7 @@ import {fileURLToPath} from 'node:url';
 import {encodePreRoll,INPUT_SIZE,FEATURE_SCHEMA_VERSION} from '../src/lib/bot/encoding.ts';
 import {RULES_VERSION} from '../src/lib/bot/versions.ts';
 import {RNG_VERSION} from '../src/lib/bot/seeded.ts';
+import {validatePoolSnapshot,selectPoolPolicies} from './lib/opponent-pool.mjs';
 
 const usage='Usage: node scripts/prepare-training.mjs --dataset DIR --out NEW_DIR [--seed SPLIT_SEED]';
 const sha=value=>createHash('sha256').update(value).digest('hex');
@@ -19,13 +20,15 @@ async function fingerprint(path){let bytes=0;const hash=createHash('sha256');for
 async function prepare(values){
   const dataset=resolve(values.dataset),out=resolve(values.out),splitSeed=values.seed;
   const sourceBytes=await readFile(join(dataset,'manifest.json')),source=JSON.parse(sourceBytes);
-  if(source.format!=='mahbusa-self-play-dataset'||source.version!==1||source.status!=='complete'
+  if(source.format!=='mahbusa-self-play-dataset'||![1,2].includes(source.version)||source.status!=='complete'
     ||source.rulesVersion!==RULES_VERSION||source.rngVersion!==RNG_VERSION||!integer(source.rounds,2,10000)
     ||source.attemptedRounds!==source.rounds||source.completedRounds!==source.rounds||!Array.isArray(source.incompleteRounds)||source.incompleteRounds.length
     ||!integer(source.maxTurns,1,100000)||!integer(source.examples,1,1000000000)
     ||typeof source.seed!=='string'||!source.seed||source.seed.length>256||typeof source.policy!=='string'||!source.policy||source.policy.length>80
     ||typeof source.sourceRevision!=='string'||!/^[a-f0-9]{40}$/.test(source.sourceRevision)||typeof source.sourceDirty!=='boolean'
     ||source.dataset?.path!=='rounds.jsonl'||!digest(source.dataset.sha256)||!integer(source.dataset.bytes,1,Number.MAX_SAFE_INTEGER))throw Error('Invalid or incomplete self-play manifest.');
+  const pool=source.version===2?validatePoolSnapshot(source.pool):null;
+  if(pool&&source.policy!=='pool-v1/'+pool.sha256)throw Error('Pool identity mismatch.');
   const gitOptions={cwd:fileURLToPath(new URL('..',import.meta.url)),encoding:'utf8'};
   const sourceRevision=execFileSync('git',['rev-parse','HEAD'],gitOptions).trim();
   const sourceDirty=!!execFileSync('git',['status','--porcelain'],gitOptions).trim();
@@ -45,9 +48,10 @@ async function prepare(values){
     for await(const line of lines){
       const row=JSON.parse(line),r=row.result,index=manifest.rounds.length;
       const expectedSeed=sha(JSON.stringify(['self-play-v1',source.seed,index]));
+      const expectedPolicies=pool?selectPoolPolicies(pool,source.seed,index):[source.policy,source.policy];
       if(row.format!=='mahbusa-self-play-round'||row.version!==1||row.index!==index||index>=source.rounds
         ||r?.status!=='complete'||r.seed!==expectedSeed||r.aColor!==index%2||![0,1].includes(r.winner)
-        ||!Array.isArray(r.policies)||r.policies.length!==2||r.policies.some(p=>p!==source.policy)
+        ||!Array.isArray(r.policies)||r.policies.length!==2||r.policies.some((p,i)=>p!==expectedPolicies[i])
         ||!pair(r.score,4)||r.score[r.winner]<3||r.score[1-r.winner]>=3||!integer(r.turns,1,source.maxTurns)
         ||!integer(r.games,1,5)||!Array.isArray(row.examples)||row.examples.length!==r.turns)throw Error('Invalid/duplicate/incomplete self-play round.');
       const winnerColor=r.winner===0?r.aColor:1-r.aColor;
