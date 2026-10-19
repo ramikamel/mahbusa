@@ -1,7 +1,7 @@
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {join,resolve} from 'node:path';
-import {TEACHER,teacherDice,teacherAfterstates} from './teacher-data.mjs';
+import {TEACHER,teacherDice,teacherAfterstates,playedRolls} from './teacher-data.mjs';
 import {encodePreRoll} from '../../src/lib/bot/encoding.ts';
 import {rankStrategyTurns} from '../../src/lib/bot/rank-strategy.ts';
 import {createGame,startPoint} from '../../src/lib/engine.ts';
@@ -15,7 +15,7 @@ export async function loadTeacherValidation(directory){
   if(m?.format!=='mahbusa-training-data'||m.version!==2||m.status!=='complete'||m.rulesVersion!=='mahbusa-engine-v1'
     ||m.featureSchemaVersion!=='mahbusa-pre-roll-v1'||m.inputSize!==104||m.recordSize!==106||m.endian!=='little'
     ||m.splitVersion!=='round-sha256-v1'||typeof m.splitSeed!=='string'||!m.splitSeed.length||m.splitSeed.length>256
-    ||Object.entries(TEACHER).some(([k,v])=>m.teacher?.[k]!==v)||!integer(m.teacher?.turnsPerRound,1,128)
+    ||Object.entries(TEACHER).some(([k,v])=>k!=='sampling'&&m.teacher?.[k]!==v)||!['even-turns-independent-roll-v1','even-played-turns-v1'].includes(m.teacher?.sampling)||!integer(m.teacher?.turnsPerRound,1,128)
     ||!Array.isArray(m.rounds)||!integer(m.rounds.length,2,10000))throw Error('Invalid teacher data manifest.');
   const seen=new Set();
   for(const [i,r] of m.rounds.entries()){
@@ -39,11 +39,12 @@ export async function loadTeacherValidation(directory){
   const roots=bytes.toString().trimEnd().split('\n').map(JSON.parse);let cursor=0,offset=0;
   for(const r of m.rounds.filter(r=>r.split==='validation')){
     const count=Math.min(r.sourceTurns,m.teacher.turnsPerRound);let examples=0;
+    const rolls=m.teacher.sampling==='even-played-turns-v1'?playedRolls(r.seed,r.sourceTurns):null;
     for(let i=0;i<count;i++){
       const root=roots[cursor++],index=count===1?0:Math.floor(i*(r.sourceTurns-1)/(count-1));
       if(root?.roundIndex!==r.index||root.roundSeed!==r.seed||root.turnIndex!==index)throw Error('Validation root is outside its held-out round.');
       // Check independent dice and regenerate numeric targets from this exact input.
-      const expectedDice=teacherDice(r.seed,index);
+      const expectedDice=rolls?rolls[index]:teacherDice(r.seed,index);
       if(JSON.stringify(root.input?.remaining)!==JSON.stringify(expectedDice))throw Error('Teacher root dice mismatch.');
       for(const example of teacherAfterstates(root.input)){
         const record=Buffer.alloc(106*4);encodePreRoll(example.state).forEach((v,j)=>record.writeFloatLE(v,j*4));

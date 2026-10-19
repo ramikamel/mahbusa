@@ -8,7 +8,7 @@ import {fileURLToPath} from 'node:url';
 import {encodePreRoll,INPUT_SIZE,FEATURE_SCHEMA_VERSION} from '../src/lib/bot/encoding.ts';
 import {RULES_VERSION} from '../src/lib/bot/versions.ts';
 import {RNG_VERSION} from '../src/lib/bot/seeded.ts';
-import {TEACHER,teacherInputs,teacherAfterstates} from './lib/teacher-data.mjs';
+import {TEACHER,teacherInputs,teacherAfterstates,validateRecordedTurns} from './lib/teacher-data.mjs';
 import {validatePoolSnapshot,selectPoolPolicies} from './lib/opponent-pool.mjs';
 
 const usage='Usage: node scripts/prepare-training.mjs --dataset DIR --out NEW_DIR [--seed SPLIT_SEED] [--teacher strategy --turns-per-round 16]';
@@ -21,14 +21,15 @@ async function fingerprint(path){let bytes=0;const hash=createHash('sha256');for
 async function prepare(values){
   const dataset=resolve(values.dataset),out=resolve(values.out),splitSeed=values.seed;
   const sourceBytes=await readFile(join(dataset,'manifest.json')),source=JSON.parse(sourceBytes);
-  if(source.format!=='mahbusa-self-play-dataset'||![1,2].includes(source.version)||source.status!=='complete'
+  if(source.format!=='mahbusa-self-play-dataset'||![1,2,3].includes(source.version)||source.status!=='complete'
     ||source.rulesVersion!==RULES_VERSION||source.rngVersion!==RNG_VERSION||!integer(source.rounds,2,10000)
     ||source.attemptedRounds!==source.rounds||source.completedRounds!==source.rounds||!Array.isArray(source.incompleteRounds)||source.incompleteRounds.length
     ||!integer(source.maxTurns,1,100000)||!integer(source.examples,1,1000000000)
     ||typeof source.seed!=='string'||!source.seed||source.seed.length>256||typeof source.policy!=='string'||!source.policy||source.policy.length>80
     ||typeof source.sourceRevision!=='string'||!/^[a-f0-9]{40}$/.test(source.sourceRevision)||typeof source.sourceDirty!=='boolean'
     ||source.dataset?.path!=='rounds.jsonl'||!digest(source.dataset.sha256)||!integer(source.dataset.bytes,1,Number.MAX_SAFE_INTEGER))throw Error('Invalid or incomplete self-play manifest.');
-  const pool=source.version===2?validatePoolSnapshot(source.pool):null;
+  if(source.version===3&&source.turnRecording!=='rolled-turn-input-v1')throw Error('Invalid turn recording version.');
+  const pool=source.version===2||source.version===3&&source.pool?validatePoolSnapshot(source.pool):null;
   if(pool&&source.policy!=='pool-v1/'+pool.sha256)throw Error('Pool identity mismatch.');
   const gitOptions={cwd:fileURLToPath(new URL('..',import.meta.url)),encoding:'utf8'};
   const sourceRevision=execFileSync('git',['rev-parse','HEAD'],gitOptions).trim();
@@ -38,7 +39,7 @@ async function prepare(values){
     rulesVersion:RULES_VERSION,inputSize:INPUT_SIZE,recordSize:106,endian:'little',splitVersion:'round-sha256-v1',splitSeed,
     sourceRevision,sourceDirty,sourceDataset:{...source,manifestSha256:sha(sourceBytes)},rounds:[],
     train:{path:'train.f32',rounds:0,examples:0},validation:{path:'validation.f32',rounds:0,examples:0}};
-  if(values.teacher){manifest.teacher={...TEACHER,turnsPerRound:values.turnsPerRound};manifest.validationTurns={path:'validation-turns.jsonl',turns:0};}
+  if(values.teacher){manifest.teacher={...TEACHER,...(source.version===3?{sampling:'even-played-turns-v1'}:{}),turnsPerRound:values.turnsPerRound};manifest.validationTurns={path:'validation-turns.jsonl',turns:0};}
   const handles={};let input,lines,audit;
   try{
     await writeFile(join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
@@ -52,11 +53,12 @@ async function prepare(values){
       const row=JSON.parse(line),r=row.result,index=manifest.rounds.length;
       const expectedSeed=sha(JSON.stringify(['self-play-v1',source.seed,index]));
       const expectedPolicies=pool?selectPoolPolicies(pool,source.seed,index):[source.policy,source.policy];
-      if(row.format!=='mahbusa-self-play-round'||row.version!==1||row.index!==index||index>=source.rounds
+      if(row.format!=='mahbusa-self-play-round'||row.version!==(source.version===3?2:1)||row.index!==index||index>=source.rounds
         ||r?.status!=='complete'||r.seed!==expectedSeed||r.aColor!==index%2||![0,1].includes(r.winner)
         ||!Array.isArray(r.policies)||r.policies.length!==2||r.policies.some((p,i)=>p!==expectedPolicies[i])
         ||!pair(r.score,4)||r.score[r.winner]<3||r.score[1-r.winner]>=3||!integer(r.turns,1,source.maxTurns)
         ||!integer(r.games,1,5)||!Array.isArray(row.examples)||row.examples.length!==r.turns)throw Error('Invalid/duplicate/incomplete self-play round.');
+      if(source.version===3)validateRecordedTurns(row);
       const winnerColor=r.winner===0?r.aColor:1-r.aColor;
       const fraction=createHash('sha256').update(JSON.stringify(['training-split-v1',splitSeed,r.seed])).digest().readUInt32BE(0)/4294967296;
       const split=fraction<.2?'validation':'train';

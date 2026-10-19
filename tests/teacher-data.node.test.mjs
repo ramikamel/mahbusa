@@ -58,3 +58,17 @@ test('blocked turns and forced release remain legal teacher examples',()=>{
   assert.deepEqual(rows[0].state,{position:input.position,active:1,score:[1,2]});
   assert.equal(rows[0].target,(evaluateStrategy(rows[0].state).value+1)/2);
 });
+test('recorded turns retain actual seeded dice and reject mismatches',async()=>{
+  const {generateSelfPlayRound}=await import('../src/lib/bot/self-play.ts');
+  const {firstPolicy}=await import('../src/lib/bot/simulation.ts');
+  const {validateRecordedTurns,playedRolls}=await import('../scripts/lib/teacher-data.mjs');
+  const row=generateSelfPlayRound({seed:'played-turn-fixture',index:0,policy:firstPolicy,recordTurns:true});
+  assert.equal(row.version,2);validateRecordedTurns(row);
+  assert.deepEqual(row.turns.map(t=>t.remaining),playedRolls(row.result.seed,row.result.turns));
+  const roots=teacherInputs(row,3);
+  assert.deepEqual(roots.map(r=>r.input),[row.turns[0],row.turns[Math.floor((row.turns.length-1)/2)],row.turns.at(-1)]);
+  const wrongDice=structuredClone(row);wrongDice.turns[0].remaining=[6,6,6,6];
+  assert.throws(()=>validateRecordedTurns(wrongDice));
+  const wrongState=structuredClone(row);wrongState.turns[0].score=[2,2];
+  assert.throws(()=>validateRecordedTurns(wrongState));
+});

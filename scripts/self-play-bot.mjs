@@ -10,7 +10,7 @@ import {createSeededRandom,RNG_VERSION} from '../src/lib/bot/seeded.ts';
 import {resolvePolicy} from './lib/resolve-policy.mjs';
 import {loadOpponentPool,selectPoolPolicies} from './lib/opponent-pool.mjs';
 
-const usage='Usage: node scripts/self-play-bot.mjs [--seed VALUE] [--rounds 1..10000] [--max-turns 1..100000] [--policy strategy|search|model] [--model DIR] [--pool FILE] --out NEW_DIRECTORY';
+const usage='Usage: node scripts/self-play-bot.mjs [--seed VALUE] [--rounds 1..10000] [--max-turns 1..100000] [--policy strategy|search|model] [--model DIR] [--pool FILE] [--record-turns true] --out NEW_DIRECTORY';
 const message=error=>error instanceof Error?error.message:String(error);
 async function fingerprint(path){
   const hash=createHash('sha256');let bytes=0;
@@ -26,7 +26,7 @@ async function generate(values){
   const sourceDirty=!!execFileSync('git',['status','--porcelain','--untracked-files=normal'],gitOptions).trim();
   // Claim a new directory exclusively; never change any existing dataset.
   await mkdir(dirname(out),{recursive:true});await mkdir(out);
-  const manifest={format:'mahbusa-self-play-dataset',version:pool?2:1,status:'running',seed,rounds,maxTurns,
+  const manifest={format:'mahbusa-self-play-dataset',version:values['record-turns']?3:pool?2:1,...(values['record-turns']?{turnRecording:'rolled-turn-input-v1'}:{}),status:'running',seed,rounds,maxTurns,
     policy:pool?'pool-v1/'+pool.snapshot.sha256:policy.id,...(pool?{pool:pool.snapshot}:{}),
     ...(modelArtifact?{modelArtifact}:{}),rngVersion:RNG_VERSION,rulesVersion:RULES_VERSION,sourceRevision,sourceDirty,
     startedAt:new Date().toISOString(),attemptedRounds:0,completedRounds:0,examples:0,incompleteRounds:[],
@@ -37,7 +37,7 @@ async function generate(values){
     handle=await open(join(out,'rounds.jsonl'),'wx');
     for(let index=0;index<rounds;index++){
       const entrants=pool?selectPoolPolicies(pool.snapshot,seed,index).map(id=>pool.policies.get(id)):null;
-      const round=generateSelfPlayRound({seed,index,maxTurns,...(pool?{policies:entrants}:{policy})});
+      const round=generateSelfPlayRound({seed,index,maxTurns,recordTurns:values['record-turns']==='true',...(pool?{policies:entrants}:{policy})});
       manifest.attemptedRounds++;
       if(round.result.status==='complete'){
         await handle.writeFile(JSON.stringify(round)+'\n');
@@ -67,10 +67,11 @@ try{
     const seen=new Set();
     for(let i=0;i<args.length;i+=2){
       const key=args[i]?.slice(2),value=args[i+1];
-      if(!args[i].startsWith('--')||!['seed','rounds','max-turns','out','policy','model','pool'].includes(key)||seen.has(key)||!value||value.startsWith('--'))throw new Error('Invalid or duplicate argument. '+usage);
+      if(!args[i].startsWith('--')||!['seed','rounds','max-turns','out','policy','model','pool','record-turns'].includes(key)||seen.has(key)||!value||value.startsWith('--'))throw new Error('Invalid or duplicate argument. '+usage);
       seen.add(key);values[key]=value;
     }
     if(values.pool&&(seen.has('policy')||seen.has('model')))throw Error('Pool and mirror-policy options are mutually exclusive.');
+    if(values['record-turns']!==undefined&&values['record-turns']!=='true')throw Error('Invalid record-turns option. '+usage);
     if(!values.out||!['strategy','search','model'].includes(values.policy)||!/^\d+$/.test(values.rounds)||!/^\d+$/.test(values['max-turns'])
       ||!Number.isInteger(Number(values.rounds))||Number(values.rounds)<1||Number(values.rounds)>10000
       ||!Number.isInteger(Number(values['max-turns']))||Number(values['max-turns'])<1||Number(values['max-turns'])>100000)throw new Error('Invalid self-play option. '+usage);

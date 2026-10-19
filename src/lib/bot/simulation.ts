@@ -19,7 +19,7 @@ export type RoundResult = {
   motherLosses:Pair; diceHash:string; traceHash:string;
   timing:{decisionMs:Pair;maxDecisionMs:Pair};
 };
-export type RoundOptions = { seed:string; aColor:Player; policies:[BotPolicy,BotPolicy]; maxTurns?:number; onPreRoll?:(state:PreRollState)=>void };
+export type RoundOptions = { seed:string; aColor:Player; policies:[BotPolicy,BotPolicy]; maxTurns?:number; onPreRoll?:(state:PreRollState)=>void; onTurn?:(input:TurnInput & {score:Pair})=>void };
 
 import { replayPlan } from './replay.ts';
 export { replayPlan } from './replay.ts';
@@ -48,6 +48,7 @@ export function simulateRound(options:RoundOptions):RoundResult {
   while(turns<maxTurns){
     const actor=role(game.active);
     const input={position:structuredClone(game.position),active:game.active,score:[...game.score] as Pair,remaining:[...game.remaining]};
+    options.onTurn?.(structuredClone(input));
     const started=performance.now(),plan=policies[actor].choose(input,actions[actor]);
     const elapsed=performance.now()-started;decisionMs[actor]+=elapsed;maxDecisionMs[actor]=Math.max(maxDecisionMs[actor],elapsed);
     game=replayPlan(game,plan);turns++;

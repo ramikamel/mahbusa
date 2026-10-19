@@ -40,7 +40,7 @@ def load_prepared(directory):
     if m['version'] == 2:
         if (not isinstance(teacher, dict) or set(teacher) != {'id', 'target', 'sampling', 'turnsPerRound'}
                 or teacher.get('id') != 'strategy-v1' or teacher.get('target') != 'strategy-soft-value-v1'
-                or teacher.get('sampling') != 'even-turns-independent-roll-v1'
+                or teacher.get('sampling') not in ['even-turns-independent-roll-v1', 'even-played-turns-v1']
                 or not integer(teacher.get('turnsPerRound'), 1, 128)):
             raise ValueError('Unsupported teacher semantics.')
     elif teacher is not None or 'validationTurns' in m:

@@ -79,3 +79,20 @@ describe('automatic self-play outcome data', () => {
     for(const seed of ['', 'x'.repeat(257)]) expect(()=>generateSelfPlayRound({seed,index:0,maxTurns:1})).toThrow();
   });
 });
+it('records actual owned rolled turns without changing outcomes or RNG streams',()=>{
+  const base={seed:'played-turn-fixture',index:0,policy:firstPolicy};
+  const ordinary=generateSelfPlayRound(base),recorded=generateSelfPlayRound({...base,recordTurns:true});
+  expect(stable(recorded.result)).toEqual(stable(ordinary.result));
+  expect(recorded.version).toBe(2);expect(recorded.turns?.length).toBe(recorded.examples.length);
+  for(const [i,turn]of recorded.turns!.entries()){
+    const {remaining,...state}=turn;expect(state).toEqual(recorded.examples[i].state);
+    expect([2,4]).toContain(remaining.length);
+  }
+  const clean=simulateRound({seed:'observer-owned',aColor:0,policies:[firstPolicy,firstPolicy]});
+  const observed=simulateRound({seed:'observer-owned',aColor:0,policies:[firstPolicy,firstPolicy],onTurn:input=>{
+    input.position.points[0].count[0]=99;input.remaining.length=0;input.score[0]=99;
+  }});
+  expect(stable(observed)).toEqual(stable(clean));
+  const cutoff=generateSelfPlayRound({...base,recordTurns:true,maxTurns:1});
+  expect(cutoff.examples).toEqual([]);expect(cutoff.turns).toEqual([]);
+});

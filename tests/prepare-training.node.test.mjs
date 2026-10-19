@@ -132,3 +132,24 @@ test('ranking validation rejects rehashed root/shard mismatches and training roo
     await assert.rejects(loadTeacherValidation(out));
   }
 }));
+test('recorded self-play CLI prepares actual rolled teacher roots and rejects rehashed dice corruption',async()=>{
+  const dir=await mkdtemp(join(tmpdir(),'mahbusa-played-'));
+  try{
+    const dataset=join(dir,'source'),out=join(dir,'data');
+    const generated=spawnSync(process.execPath,[fileURLToPath(new URL('../scripts/self-play-bot.mjs',import.meta.url)),
+      '--seed','prep-fixture','--rounds','6','--record-turns','true','--out',dataset],{encoding:'utf8',timeout:30000});
+    assert.equal(generated.status,0,generated.stderr);const source=JSON.parse(generated.stdout);assert.equal(source.version,3);
+    const args=['--dataset',dataset,'--out',out,'--seed','fixture-split','--teacher','strategy','--turns-per-round','3'];
+    const prepared=run(args);assert.equal(prepared.status,0,prepared.stderr);
+    assert.equal(JSON.parse(prepared.stdout).teacher.sampling,'even-played-turns-v1');
+    const {loadTeacherValidation}=await import('../scripts/lib/teacher-ranking.mjs');
+    const {roots}=await loadTeacherValidation(out);
+    const rounds=(await readFile(join(dataset,'rounds.jsonl'),'utf8')).trim().split('\n').map(JSON.parse);
+    assert.deepEqual(roots[0].input,rounds[4].turns[0]);
+    rounds[0].turns[0].remaining=[6,6,6,6];
+    const bytes=Buffer.from(rounds.map(r=>JSON.stringify(r)+'\n').join(''));
+    source.dataset.bytes=bytes.length;source.dataset.sha256=hash(bytes);
+    await writeFile(join(dataset,'manifest.json'),JSON.stringify(source));await writeFile(join(dataset,'rounds.jsonl'),bytes);
+    assert.equal(run([...args.slice(0,3),out+'-bad',...args.slice(4)]).status,1);
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
