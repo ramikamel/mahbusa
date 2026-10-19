@@ -810,3 +810,13 @@ viewport. Rechecked the affected behaviors.
   Actual CPU-export integration invokes both model CLIs; real Node tests complete
   model mirrors, verify labels and prepare whole-round shards. Public app assets
   and offline version remain `ef3756aba643a909`.
+- Fresh independent whole-branch review found no Critical, Important or Minor
+  issues. It reran40 focused Vitest,18 Node and4 Python tests, verified the pilot
+  report checksum/metrics, loaded actual model-mirror shards in Python, checked
+  the candidate's prepared-manifest hash and passed its162 parity probes.
+- Scope rulings: optimizer resume and mixed opponent pools remain subsequent
+  checkpoint10 work; treating this fresh-initialization mirror loop as resumable
+  training would lose optimizer/pool continuity. Competitive strength, phone
+  performance and public qualification remain later gates; treating diagnostics
+  as release evidence would ship weak play and untested device behavior. This
+  work continued the already authorized roadmap without requiring new input.
