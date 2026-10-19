@@ -59,6 +59,18 @@ class TrainingIntegration(unittest.TestCase):
         checked = json.loads(parity.stdout)
         self.assertGreater(checked['count'], 10)
         self.assertLessEqual(checked['maxAbsoluteError'], 0.00005)
+        # An actual exported network must become an opponent, not only a predictor.
+        benchmark = subprocess.run([NODE, str(ROOT / 'scripts/benchmark-bot.mjs'), '--pairs', '1', '--max-turns', '1',
+                                    '--a', 'model', '--a-model', str(a)], cwd=ROOT, capture_output=True, text=True, timeout=30)
+        self.assertEqual(benchmark.returncode, 2, benchmark.stderr)
+        self.assertEqual(json.loads(benchmark.stdout)['policies'][0], 'nn-greedy-v1/' + manifest['sha256'])
+        dataset = self.base / 'model-cutoff'
+        self_play = subprocess.run([NODE, str(ROOT / 'scripts/self-play-bot.mjs'), '--rounds', '1', '--max-turns', '1',
+                                    '--policy', 'model', '--model', str(a), '--out', str(dataset)],
+                                   cwd=ROOT, capture_output=True, text=True, timeout=30)
+        self.assertEqual(self_play.returncode, 2, self_play.stderr)
+        self.assertEqual(json.loads(self_play.stdout)['modelArtifact']['weightsSha256'], manifest['sha256'])
+        self.assertEqual((dataset / 'rounds.jsonl').read_bytes(), b'')
         repeated = self.run_train(b)
         self.assertEqual(repeated.returncode, 0, repeated.stderr)
         self.assertEqual((b / 'weights.bin').read_bytes(), weights)
