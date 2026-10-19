@@ -176,7 +176,8 @@ It remains experimental and rejected for promotion. See the actual counts/hashes
 and [validation record](VALIDATION.md); these checks separate pipeline correctness
 from playing quality.
 
-Next: further outcome/TD learning iterations, stronger pools, fresh-seed strength comparisons
+Next: strategy-guided learning, teacher corrections on candidate-encountered positions,
+explicit move-ranking preferences, and fresh-seed strength comparisons
 and tactical regressions. Worker registration, phone timing and public enablement
 follow qualification. See [the roadmap](BOT_ROADMAP.md).
 
@@ -225,3 +226,11 @@ maximum teacher regret and avoidable mother exposures. Single-choice/terminal
 turns can inflate overall agreement; inspect choice counts and actual matches.
 No ranking score or lower soft BCE qualifies playing strength. Long local
 experiments and paired matches remain separate from ordinary CI.
+
+
+The first500-round teacher experiment improved held-out multi-choice agreement
+from24.9% to30.4% and avoided all33 prior mother-exposure mistakes on that holdout.
+It still won only3/200 strategy-control rounds, with65mother losses; it is rejected
+for promotion. Pointwise imitation needs further work on actual encountered
+positions and explicit best-turn preferences. See the validation record for exact
+hashes/counts; all datasets/models remain local.

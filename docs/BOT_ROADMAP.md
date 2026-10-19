@@ -1,6 +1,6 @@
 # Mahbusa single-player engine roadmap
 
-Revised October 18, 2026: evaluation runs automatically through self-play; no
+Revised October 19, 2026: evaluation runs automatically through self-play; no
 annotation or expert-lab work is required from the user. The start page and engine
 checkpoints 2–9 plus automatic outcome data are complete. A first experimental
 model is trained and passes Python/TypeScript inference parity. Frozen model
@@ -114,6 +114,13 @@ checked round-separated shards, trains and exports experimental weights.
     saved mother cases but won0/200 strategy-control rounds. It is rejected for
     promotion. Next learning must test strategy-informed ranking/priors or
     stronger search; more outcome-only mirror training is not assumed sufficient.
+    Strategy-value distillation is now implemented and measured:193523 legal
+    afterstates, checked heuristic exports, held-out turn agreement/regret and
+    mother diagnostics. Multi-choice agreement improved24.9%->30.4% and avoidable
+    mother exposures33->0 on1616held-out turns; the candidate still won only3/200
+    strategy-control rounds and is rejected. Next: teacher corrections on the
+    candidate's own encountered positions plus explicit best-turn preferences,
+    with fresh-seed matches. Pointwise value imitation alone is insufficient.
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible

@@ -45,4 +45,4 @@ report contracts, and experiments require frozen code. No parallel agents needed
 
 - [x] Teacher data
 - [x] Learner and ranking report
-- [ ] Actual experiment, documentation and integration
+- [x] Actual experiment, documentation and integration

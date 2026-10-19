@@ -925,3 +925,66 @@ viewport. Rechecked the affected behaviors.
   data reaches the CPU warm-start learner in CI integration. Public bundle and
   offline version remain `ef3756aba643a909`. Ignored artifacts use
   `.local/pool-learning-*` names and are preserved in the canonical checkout.
+
+
+## October 19, 2026 — Strategy-value distillation
+
+- Frozen implementation/source `396756e67a8c2b277e6fa5f7f05b1cc8a99b3ea2`, clean. Prepared the
+  existing500-round frozen-pool dataset with the same round split and16 evenly
+  spaced independent-roll roots per round. All source states/outcomes/checksums
+  are checked before substitution with teacher afterstates; no manual labels.
+- Prepared version2 manifest SHA `54ef3fa5c949aea976ef546fe3658a09cf781ed631d69f7132af4f712b85ef97`.
+  Training399 rounds/156376 afterstates,
+  validation101 rounds/37147 afterstates.
+  Train shard SHA `2b961d96964450ae33de0919c8661b669284e9abf79bb6126d583231da1c10ac`;
+  validation shard SHA `09774b1bf674fa606ff0e77eed5a230a2b0f84261d792d68d99a9edcc20e9938`.
+  Validation1616roots SHA `24302e107da396d270325eea0ddcdb5a0c393daedc77a6b6882076197fd591a3`.
+  Prepared bytes remain104features+target+weight; equal total weight per round.
+- Fresh CPU1thread20epochs, seed20261019, batch256/lr0.001; selected epoch
+  20, elapsed4.602s. Candidate `bootstrap-v1-4a1729641fe4`,
+  full weights SHA `4a1729641fe4c4d193399333ff3ef31d3e09d90098178b5e8e828f70c01f475b`. Selected validation soft BCE
+  0.380118638, squared teacher-target error
+  0.005681937; initial BCE
+  0.692090154. These are heuristic imitation errors,
+  not round-win calibration. Resume/warm starts and split ancestry remain checked.
+- All162 TS/Python parity probes pass, max absolute error
+  8.94069671631e-07, fixed tolerance5e-5.
+  Manifest/report identify heuristic output; legacy outcome models still load.
+  All3 saved mother cases pass. No public registry/worker enablement.
+- Actual policy replay on1616held-out roots/101rounds, including1271multi-choice
+  turns and89exact-win turns. Prior699aa vs distilled4a172:
+  all-turn agreement 662/1616 (40.9653%) ->
+  732/1616 (45.2970%); multi-choice agreement
+  317/1271 (24.9410%) ->
+  387/1271 (30.4485%); mean teacher regret
+  0.041601044 -> 0.012857637, maximum
+  1.826380933 -> 0.989165178; avoidable mother
+  exposures 33 -> 0.
+  Ties count as agreement; forced/single-choice turns can inflate the all-turn
+  metric. Validation selected the checkpoint and is not a strength holdout.
+- Fixed pilot seed `teacher-strategy-pilot-2026-10-19`,100color-swapped pairs/200completed
+  rounds,max2000,no cutoffs. NN/strategy rounds won[3, 197],
+  points[47, 713],mother losses[65, 1],
+  paired score1.50%, conservative95% interval
+  [0.000%,15.081%].
+  40323turns/450games/1753passes,
+  decision ms[10495.216112999628, 36830.039718999855],
+  max decision ms[78.32724999999482, 200.39329099999986],wall55.526s.
+  Ranking ran concurrently at the start; local clocks are diagnostic, not device
+  timing qualification. Pilot report SHA `b735dfb145f27e674880c1d736691ed3bfda16b747e704af924254a3ac366966`.
+- **Rejected promotion:** imitation on held-out roots improved but playing
+  strength remains far below strategy. Different match seeds from the previous
+  0/200 pilot do not establish a controlled strength improvement. Zero mother
+  exposures on this holdout did not prevent65mother losses in actual play.
+  Next: collect teacher corrections on the candidate's own encountered positions
+  and train explicit best-turn preferences; test on fresh seeds. Do not select
+  a public model from lower pointwise loss or this tuning holdout.
+- Validation:196Vitest+81Node+14Python tests (291 total), Svelte0errors/0warnings,
+  public/offline and worker smoke builds. Real teacher preparation feeds the CPU
+  learner, heuristic export, checked held-out ranking and exact continuation.
+  Rehashed root/target mismatch, train-split roots and mismatched value semantics
+  are refused. Public/offline version stays `ef3756aba643a909`.
+- Artifacts remain ignored under `.local/teacher-*`, including source/shard/model
+  manifests, epoch states, parity, tactical/ranking/pilot results. Public behavior
+  is unchanged. Review was a local author pass; no independent reviewer this
+  checkpoint. No deferred code findings.
