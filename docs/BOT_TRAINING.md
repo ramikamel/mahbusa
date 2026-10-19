@@ -170,6 +170,12 @@ immediate wins. Exit0 passes all cases,2 reports tactical failures,1 reports an
 invalid artifact/input. Existing outputs are not overwritten. No legal move is
 filtered or policy altered; passing these cases alone never qualifies strength.
 
+The first500-round mixed-pool continuation matched uninterrupted learning exactly
+and passed all three saved mother cases, but lost all200 strategy-control rounds.
+It remains experimental and rejected for promotion. See the actual counts/hashes
+and [validation record](VALIDATION.md); these checks separate pipeline correctness
+from playing quality.
+
 Next: further outcome/TD learning iterations, stronger pools, fresh-seed strength comparisons
 and tactical regressions. Worker registration, phone timing and public enablement
 follow qualification. See [the roadmap](BOT_ROADMAP.md).

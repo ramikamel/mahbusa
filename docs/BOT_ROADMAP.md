@@ -110,6 +110,10 @@ checked round-separated shards, trains and exports experimental weights.
     forced-exposure/winning exceptions. Further learning/TD iterations and
     orchestration remain; tactical and fresh-seed qualification must precede
     a development/public bot, regardless of lower prediction loss.
+    The500-round frozen pool trained a resumable candidate that passed all three
+    saved mother cases but won0/200 strategy-control rounds. It is rejected for
+    promotion. Next learning must test strategy-informed ranking/priors or
+    stronger search; more outcome-only mirror training is not assumed sufficient.
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible

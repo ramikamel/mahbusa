@@ -820,3 +820,88 @@ viewport. Rechecked the affected behaviors.
   performance and public qualification remain later gates; treating diagnostics
   as release evidence would ship weak play and untested device behavior. This
   work continued the already authorized roadmap without requiring new input.
+
+## Resumable pool learning and tactical diagnostics — October18,2026
+
+- Added complete-epoch numeric snapshots with atomic checksum pointers, separate
+  from selected playing exports. Resume restores last model/Adam/Torch/shuffle
+  RNG while retaining best weights/history. Identical data/config/environment
+  are required. Checked warm starts restore selected weights on new data with
+  a fresh optimizer; split ancestry refuses reassigning any old round across
+  train/validation. Legacy selected exports remain playable and can be recreated
+  with original data/options to obtain continuation metadata.
+- Real CPU tests cover split/uninterrupted equality with best-before-last,
+  snapshot write failure retaining the previous pointer and exact recovery,
+  corrupt/path/environment/config/data refusal, selected-weight warm-start
+  metrics, split leakage and safe object loading. The latter ran RED under a
+  deliberate unsafe-loader mutation (a temp sentinel was executed), then GREEN
+  with weights_only=True restored. Failed/running training may recover a committed
+  epoch, but remains unusable by the playing artifact gate.
+- Frozen pool config resolves relative model paths before output, hashes actual
+  artifacts and snapshot definition, and samples independent per-index weighted
+  matchups without consuming dice/action RNG. Source v2 records actual opponents;
+  preparation recomputes each expected matchup and refuses forged rows even with
+  a recomputed JSONL checksum. Old mirror v1 behavior/hashes remain unchanged.
+  Prepared Float32 format remains v1; Python consumes no pool/game rules.
+- New check:bot-tactics diagnostic commits the three automatically saved inputs,
+  replays real selected turns and checks legal alternatives. Forced exposure and
+  immediate game wins are explicit passing exceptions. This reports failures
+  without filtering moves or automatically promoting a model.
+- Recreated the original100-round bootstrap with the new learner using identical
+  seed/options. Selected weight SHA reproduced exactly:
+  `92fe043b432e4a3699a1c4eabda20fa24ae33528259ca2c9429c6ec1620a87de`.
+  Baseline/generation source `99f24b84bfa35e6135944ea79bf05893b57ceadb`, clean.
+- Pool seed `pool-learning-data-2026-10-18`:500/500 completed rounds, no cutoffs,
+  112323 outcome examples,79177950bytes, dataset SHA-256
+  `8e8c33df6568fa10489d1f1df87897ccb5f41d201dcff8ad546f3a0e88879546`.
+  Resolved pool hash
+  `2ba245afdebc954583a6505b7d51b4ba3b687444df6437d9fd8be75ffac50ac3`;
+  weights2/1/1 yielded257 strategy mirrors,114 strategy/current-fb8ba94e4fbb
+  and129 strategy/old-92fe043b432e rounds. Roles identify experimental versions,
+  not accepted champions.
+- Split seed `pool-learning-split-2026-10-18`:399training rounds/89104examples,
+  101validation rounds/23219examples. Prepared/training/pilot source
+  `3196b4b56d5f485f523581bf298c811d437a764f`, clean. Warm-start5epochs from the
+  recreated baseline, seed20261018,batch256,lr0.001, then resume5more. Separate
+  uninterrupted10epoch warm-start run produced identical selected bytes and full
+  metric history. Last epoch5 was resumed even though selected best was epoch2.
+  Split history carries600 unique rounds across the parent/new batches.
+- Selected candidate `bootstrap-v1-699aa9f69861`, SHA-256
+  `699aa9f69861d0fd7bebdcc82ba242a2bc1e05738812f2e091f5f2c6dcbd3c8f`.
+  Best epoch2/10, validation BCE0.4045413/Brier0.1300263 versus initial0.5675360
+  and constant baseline0.6931251; train BCE0.3015023. All162 Python/TS parity
+  probes pass, max absolute error5.662441253662109e-7. Validation selects weights
+  and is tuning evidence, not untouched strength confirmation.
+- Original model passed0/3 mother cases; candidate passed3/3. Fixture SHA
+  `7ef32f012462241e39c08a386f68de8262c0fa7dd0db98ebcf111c64dc82834f`.
+  This narrow success did not generalize to strong play.
+- Fixed pilot `pool-learning-pilot-2026-10-18`,100 color-swapped pairs/200rounds,
+  max2000turns, no cutoffs: candidate0wins–strategy200, points23–741, mother
+  losses85–0. Paired score0%, conservative95% interval[0%,13.581%],35793turns,
+  425games,1451passes. Report SHA-256
+  `3dfd4573f00b6425a4d74b4fddb3330406f2681c8de01cf48b3b38655ae71533`.
+  Candidate9.558s decision time/max42.033ms, strategy38.451s/max224.078ms,
+  wall55.672s. Different evaluation runtimes; not equal-budget or phone testing.
+  Previous pilot used different seeds, so lower mother-loss counts do not by
+  themselves establish improvement over the bootstrap. Candidate rejected for
+  promotion; strategy remains the stronger reference and public bot stays off.
+- The continuation/data infrastructure is verified; a small outcome-only network
+  still does not provide sound complete-turn ranking. Next learning experiments
+  must test strategy-informed ranking/priors or stronger look-ahead, with tactical
+  regressions and frozen-opponent comparisons, rather than promote on lower BCE
+  or assume more mirror data alone solves move choice. Further TD/orchestration
+  and full qualification remain. Dataset-generation recovery is separate future
+  work; current --pool starts a new exclusive dataset.
+- Additional local diagnostic varied search while keeping the candidate frozen:
+  depth1/1000nodes against strategy,4pairs/8completed rounds, seed
+  `pool-model-search-probe-2026-10-18`. Candidate0–8, points1–30,mother losses4–0;
+  535turns retained depth0 and203 completed depth1. Decision time49.587s vs1.636s,
+  wall51.560s. This tiny unequal-runtime probe is not qualification and does not
+  prove a larger search budget would fix the learned evaluator. Script/report
+  are local `.local/probe-pool-model-search-2026-10-18.mjs` and
+  `.local/pool-model-search-probe-2026-10-18.json`.
+- Full local verification:196 Vitest+72 Node+11 Python tests (279 total), zero
+  type errors/warnings, public/offline and worker smoke builds pass. Actual pool
+  data reaches the CPU warm-start learner in CI integration. Public bundle and
+  offline version remain `ef3756aba643a909`. Ignored artifacts use
+  `.local/pool-learning-*` names and are preserved in the canonical checkout.
