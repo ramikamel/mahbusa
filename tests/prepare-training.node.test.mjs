@@ -89,3 +89,33 @@ test('source metadata cannot replace the checksum of the consumed manifest bytes
   const result=run(['--dataset',dataset,'--out',out,'--seed','fixture-split']);assert.equal(result.status,0,result.stderr);
   assert.equal(JSON.parse(result.stdout).sourceDataset.manifestSha256,hash(content));
 }));
+test('teacher preparation keeps source checks/splits and writes soft afterstates plus checked validation roots',async()=>fixture(async({dataset,out,rounds})=>{
+  const flags=['--dataset',dataset,'--out',out,'--seed','fixture-split','--teacher','strategy','--turns-per-round','3'];
+  const result=run(flags);assert.equal(result.status,0,result.stderr);
+  const m=JSON.parse(result.stdout);assert.equal(m.version,2);assert.equal(m.teacher.target,'strategy-soft-value-v1');
+  assert.equal(m.teacher.turnsPerRound,3);
+  const {teacherInputs,teacherAfterstates}=await import('../scripts/lib/teacher-data.mjs');
+  for(const split of ['train','validation']){
+    const bytes=await readFile(join(out,m[split].path));let offset=0;
+    for(const row of m.rounds.filter(r=>r.split===split)){
+      const expected=teacherInputs(rounds[row.index],3).flatMap(r=>teacherAfterstates(r.input));
+      assert.equal(row.examples,expected.length);
+      for(const example of expected){
+        assert.equal(bytes.readFloatLE(offset+104*4),Math.fround(example.target));
+        assert.equal(bytes.readFloatLE(offset+105*4),Math.fround(1/expected.length));offset+=106*4;
+      }
+    }
+    assert.equal(offset,bytes.length);
+  }
+  const raw=await readFile(join(out,m.validationTurns.path));assert.equal(hash(raw),m.validationTurns.sha256);
+  const roots=raw.toString().trim().split('\n').map(JSON.parse);assert.equal(roots.length,6);
+  assert.deepEqual(roots.map(r=>r.roundIndex),[4,4,4,5,5,5]);
+  assert.deepEqual(roots[0].input,teacherInputs(rounds[4],3)[0].input);
+  assert.equal(run([...flags.slice(0,3),out+'-again',...flags.slice(4)]).status,0);
+  assert.equal(JSON.parse(await readFile(join(out+'-again','manifest.json'))).train.sha256,m.train.sha256);
+}));
+test('teacher options reject unknown targets, unbounded sampling and stray options',()=>{
+  for(const flags of [['--teacher','random'],['--turns-per-round','3'],['--teacher','strategy','--turns-per-round','0'],['--teacher','strategy','--turns-per-round','129']]){
+    const result=run(['--dataset','absent','--out','absent',...flags]);assert.equal(result.status,1);assert.match(result.stderr,/Usage|Teacher/);
+  }
+});

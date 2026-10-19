@@ -8,9 +8,10 @@ import {fileURLToPath} from 'node:url';
 import {encodePreRoll,INPUT_SIZE,FEATURE_SCHEMA_VERSION} from '../src/lib/bot/encoding.ts';
 import {RULES_VERSION} from '../src/lib/bot/versions.ts';
 import {RNG_VERSION} from '../src/lib/bot/seeded.ts';
+import {TEACHER,teacherInputs,teacherAfterstates} from './lib/teacher-data.mjs';
 import {validatePoolSnapshot,selectPoolPolicies} from './lib/opponent-pool.mjs';
 
-const usage='Usage: node scripts/prepare-training.mjs --dataset DIR --out NEW_DIR [--seed SPLIT_SEED]';
+const usage='Usage: node scripts/prepare-training.mjs --dataset DIR --out NEW_DIR [--seed SPLIT_SEED] [--teacher strategy --turns-per-round 16]';
 const sha=value=>createHash('sha256').update(value).digest('hex');
 const integer=(n,min,max)=>Number.isSafeInteger(n)&&n>=min&&n<=max;
 const digest=s=>typeof s==='string'&&/^[a-f0-9]{64}$/.test(s);
@@ -33,14 +34,16 @@ async function prepare(values){
   const sourceRevision=execFileSync('git',['rev-parse','HEAD'],gitOptions).trim();
   const sourceDirty=!!execFileSync('git',['status','--porcelain'],gitOptions).trim();
   await mkdir(dirname(out),{recursive:true});await mkdir(out);
-  const manifest={format:'mahbusa-training-data',version:1,status:'running',featureSchemaVersion:FEATURE_SCHEMA_VERSION,
+  const manifest={format:'mahbusa-training-data',version:values.teacher?2:1,status:'running',featureSchemaVersion:FEATURE_SCHEMA_VERSION,
     rulesVersion:RULES_VERSION,inputSize:INPUT_SIZE,recordSize:106,endian:'little',splitVersion:'round-sha256-v1',splitSeed,
     sourceRevision,sourceDirty,sourceDataset:{...source,manifestSha256:sha(sourceBytes)},rounds:[],
     train:{path:'train.f32',rounds:0,examples:0},validation:{path:'validation.f32',rounds:0,examples:0}};
-  const handles={};let input,lines;
+  if(values.teacher){manifest.teacher={...TEACHER,turnsPerRound:values.turnsPerRound};manifest.validationTurns={path:'validation-turns.jsonl',turns:0};}
+  const handles={};let input,lines,audit;
   try{
     await writeFile(join(out,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
     for(const split of ['train','validation'])handles[split]=await open(join(out,manifest[split].path),'wx');
+    if(values.teacher)audit=await open(join(out,manifest.validationTurns.path),'wx');
     const inputHash=createHash('sha256');let consumed=0,totalExamples=0;
     input=createReadStream(join(dataset,'rounds.jsonl'));
     input.on('data',chunk=>{consumed+=chunk.length;inputHash.update(chunk);});
@@ -56,18 +59,31 @@ async function prepare(values){
         ||!integer(r.games,1,5)||!Array.isArray(row.examples)||row.examples.length!==r.turns)throw Error('Invalid/duplicate/incomplete self-play round.');
       const winnerColor=r.winner===0?r.aColor:1-r.aColor;
       const fraction=createHash('sha256').update(JSON.stringify(['training-split-v1',splitSeed,r.seed])).digest().readUInt32BE(0)/4294967296;
-      const split=fraction<.2?'validation':'train',record=Buffer.alloc(row.examples.length*106*4);let offset=0;
+      const split=fraction<.2?'validation':'train';
+      // Validate every source example even when teacher sampling omits it.
       for(const example of row.examples){
         const state=example.state;
         if(!state||Object.keys(state).sort().join(',')!=='active,position,score'
           ||example.target!==(state.active===winnerColor?1:-1))throw Error('Invalid pre-roll state or final-round target.');
+        encodePreRoll(state);
+      }
+      const roots=values.teacher?teacherInputs(row,values.turnsPerRound):[];
+      const examples=values.teacher?roots.flatMap(r=>teacherAfterstates(r.input)):row.examples;
+      if(!integer(examples.length,1,100000))throw Error('Invalid teacher example count.');
+      if(audit&&split==='validation')for(const root of roots){
+        await audit.writeFile(JSON.stringify({roundIndex:index,roundSeed:r.seed,turnIndex:root.index,input:root.input})+'\n');
+        manifest.validationTurns.turns++;
+      }
+      const record=Buffer.alloc(examples.length*106*4);let offset=0;
+      for(const example of examples){
+        const state=example.state;
         const encoded=encodePreRoll(state);
         for(const value of encoded){record.writeFloatLE(value,offset);offset+=4;}
-        record.writeFloatLE(example.target===1?1:0,offset);record.writeFloatLE(1/row.examples.length,offset+4);offset+=8;
+        record.writeFloatLE(values.teacher?example.target:example.target===1?1:0,offset);record.writeFloatLE(1/examples.length,offset+4);offset+=8;
       }
       await handles[split].writeFile(record);
-      manifest.rounds.push({index,seed:r.seed,split,examples:row.examples.length});
-      manifest[split].examples+=row.examples.length;manifest[split].rounds++;totalExamples+=row.examples.length;
+      manifest.rounds.push({index,seed:r.seed,split,examples:examples.length,...(values.teacher?{sourceTurns:row.examples.length}:{})});
+      manifest[split].examples+=examples.length;manifest[split].rounds++;totalExamples+=row.examples.length;
       process.stderr.write('Prepared round '+(index+1)+'/'+source.rounds+'\n');
     }
     if(consumed!==source.dataset.bytes||inputHash.digest('hex')!==source.dataset.sha256)throw Error('Source dataset checksum mismatch.');
@@ -77,9 +93,11 @@ async function prepare(values){
   }catch(error){manifest.status='failed';manifest.error=message(error);}
   finally{
     lines?.close();input?.destroy();
-    for(const handle of Object.values(handles))try{await handle.close();}catch(error){manifest.status='failed';manifest.error=message(error);}
+    for(const handle of [...Object.values(handles),...(audit?[audit]:[])])try{await handle.close();}catch(error){manifest.status='failed';manifest.error=message(error);}
   }
   for(const split of ['train','validation'])try{Object.assign(manifest[split],await fingerprint(join(out,manifest[split].path)));}
+  catch(error){manifest.status='failed';manifest.error=message(error);}
+  if(manifest.validationTurns)try{Object.assign(manifest.validationTurns,await fingerprint(join(out,manifest.validationTurns.path)));}
   catch(error){manifest.status='failed';manifest.error=message(error);}
   await writeFile(join(out,'manifest.tmp'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
   await rename(join(out,'manifest.tmp'),join(out,'manifest.json'));
@@ -91,10 +109,13 @@ try{
   if(args.length===1&&args[0]==='--help')console.log(usage);
   else{
     for(let i=0;i<args.length;i+=2){const key=args[i]?.slice(2),value=args[i+1];
-      if(!args[i].startsWith('--')||!['dataset','out','seed'].includes(key)||seen.has(key)||!value||value.startsWith('--'))throw Error(usage);
+      if(!args[i].startsWith('--')||!['dataset','out','seed','teacher','turns-per-round'].includes(key)||seen.has(key)||!value||value.startsWith('--'))throw Error(usage);
       seen.add(key);values[key]=value;
     }
-    if(!values.dataset||!values.out||values.seed.length>256)throw Error(usage);
+    if(!values.dataset||!values.out||values.seed.length>256||values.teacher&&values.teacher!=='strategy'
+      ||seen.has('turns-per-round')&&!values.teacher)throw Error(usage);
+    values.turnsPerRound=Number(values['turns-per-round']??16);
+    if(!integer(values.turnsPerRound,1,128))throw Error(usage);
     await prepare(values);
   }
 }catch(error){process.stderr.write(message(error)+'\n');process.exitCode=1;}
