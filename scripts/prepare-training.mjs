@@ -32,7 +32,7 @@ async function prepare(values){
   await mkdir(dirname(out),{recursive:true});await mkdir(out);
   const manifest={format:'mahbusa-training-data',version:1,status:'running',featureSchemaVersion:FEATURE_SCHEMA_VERSION,
     rulesVersion:RULES_VERSION,inputSize:INPUT_SIZE,recordSize:106,endian:'little',splitVersion:'round-sha256-v1',splitSeed,
-    sourceRevision,sourceDirty,sourceDataset:{manifestSha256:sha(sourceBytes),...source},rounds:[],
+    sourceRevision,sourceDirty,sourceDataset:{...source,manifestSha256:sha(sourceBytes)},rounds:[],
     train:{path:'train.f32',rounds:0,examples:0},validation:{path:'validation.f32',rounds:0,examples:0}};
   const handles={};let input,lines;
   try{

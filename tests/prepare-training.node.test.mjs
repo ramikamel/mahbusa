@@ -83,3 +83,9 @@ test('preparation validates required/duplicate/unknown arguments',()=>{
   assert.equal(run(['--help']).status,0);
   for(const args of [[],['--dataset','x'],['--out','x'],['--wat','x'],['--dataset','x','--dataset','y'],['--seed','x'.repeat(257)]])assert.equal(run(args).status,1);
 });
+test('source metadata cannot replace the checksum of the consumed manifest bytes',async()=>fixture(async({dataset,out,manifest})=>{
+  const content=JSON.stringify({...manifest,manifestSha256:'0'.repeat(64)});
+  await writeFile(join(dataset,'manifest.json'),content);
+  const result=run(['--dataset',dataset,'--out',out,'--seed','fixture-split']);assert.equal(result.status,0,result.stderr);
+  assert.equal(JSON.parse(result.stdout).sourceDataset.manifestSha256,hash(content));
+}));
