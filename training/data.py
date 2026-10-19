@@ -30,14 +30,14 @@ def load_prepared(directory):
     directory = Path(directory)
     raw_manifest = (directory / 'manifest.json').read_bytes()
     m = json.loads(raw_manifest)
-    if (m.get('format') != 'mahbusa-training-data' or m.get('version') not in [1, 2] or m.get('status') != 'complete'
+    if (m.get('format') != 'mahbusa-training-data' or m.get('version') not in [1, 2, 3] or m.get('status') != 'complete'
             or m.get('featureSchemaVersion') != SCHEMA or m.get('rulesVersion') != RULES
             or m.get('inputSize') != INPUT_SIZE or m.get('recordSize') != RECORD_SIZE
             or m.get('endian') != 'little' or m.get('splitVersion') != 'round-sha256-v1'
             or not isinstance(m.get('splitSeed'), str) or not 1 <= len(m['splitSeed']) <= 256):
         raise ValueError('Invalid or incomplete prepared training manifest.')
     teacher = m.get('teacher')
-    if m['version'] == 2:
+    if m['version'] in [2, 3]:
         if (not isinstance(teacher, dict) or set(teacher) != {'id', 'target', 'sampling', 'turnsPerRound'}
                 or teacher.get('id') != 'strategy-v1' or teacher.get('target') != 'strategy-soft-value-v1'
                 or teacher.get('sampling') not in ['even-turns-independent-roll-v1', 'even-played-turns-v1']
@@ -45,6 +45,8 @@ def load_prepared(directory):
             raise ValueError('Unsupported teacher semantics.')
     elif teacher is not None or 'validationTurns' in m:
         raise ValueError('Outcome schema cannot contain teacher data.')
+    if m['version'] != 3 and 'pairs' in m:
+        raise ValueError('Preference pairs require prepared version3.')
     source = m.get('sourceDataset', {})
     if (source.get('status') != 'complete' or source.get('rulesVersion') != RULES
             or not digest(source.get('manifestSha256')) or not digest(source.get('dataset', {}).get('sha256'))):
@@ -105,4 +107,7 @@ def load_prepared(directory):
                 raise ValueError('Round weights do not match round length.')
             offset += row['examples']
         data[split] = tensor
+    if m['version'] == 3:
+        from ranking import load_pairs
+        data['pairs'] = load_pairs(m, directory, data)
     return m, sha(raw_manifest), data

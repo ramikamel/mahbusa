@@ -144,6 +144,14 @@ test('recorded self-play CLI prepares actual rolled teacher roots and rejects re
     assert.equal(JSON.parse(prepared.stdout).teacher.sampling,'even-played-turns-v1');
     const {loadTeacherValidation}=await import('../scripts/lib/teacher-ranking.mjs');
     const {roots}=await loadTeacherValidation(out);
+    const pairArgs=[...args.slice(0,3),out+'-pairs',...args.slice(4),'--ranking','true'];
+    const paired=run(pairArgs);assert.equal(paired.status,0,paired.stderr);
+    const pm=JSON.parse(paired.stdout);assert.equal(pm.version,3);assert.ok(pm.pairs.train.count>0);
+    assert.equal((await loadTeacherValidation(out+'-pairs')).roots.length,6);
+    const pairFile=join(out+'-pairs',pm.pairs.validation.path),pairBytes=await readFile(pairFile);
+    pairBytes.writeFloatLE(-pairBytes.readFloatLE(8),8);pm.pairs.validation.sha256=hash(pairBytes);
+    await writeFile(pairFile,pairBytes);await writeFile(join(out+'-pairs','manifest.json'),JSON.stringify(pm));
+    await assert.rejects(loadTeacherValidation(out+'-pairs'),/preference/);
     const rounds=(await readFile(join(dataset,'rounds.jsonl'),'utf8')).trim().split('\n').map(JSON.parse);
     assert.deepEqual(roots[0].input,rounds[4].turns[0]);
     rounds[0].turns[0].remaining=[6,6,6,6];
