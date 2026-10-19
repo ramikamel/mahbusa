@@ -51,3 +51,11 @@ def load_pairs(manifest, directory, data):
         values=torch.frombuffer(bytearray(raw),dtype=torch.float32).reshape(count,6)[:,2:].clone()
         result[split]={'indices':indices,'values':values}
     return result
+
+
+def preference_loss(pair_logits, values, normalizer=None):
+    """Gap-weighted logistic preference in the original chooser's perspective."""
+    delta=pair_logits[:,0]*values[:,0]-pair_logits[:,1]*values[:,1]
+    importance=values[:,2]*values[:,3]
+    normalizer=importance.mean() if normalizer is None else normalizer
+    return (torch.nn.functional.softplus(values[:,2]-delta)*importance).mean()/normalizer

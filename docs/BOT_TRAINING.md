@@ -234,3 +234,53 @@ It still won only3/200 strategy-control rounds, with65mother losses; it is rejec
 for promotion. Pointwise imitation needs further work on actual encountered
 positions and explicit best-turn preferences. See the validation record for exact
 hashes/counts; all datasets/models remain local.
+
+## Corrections on played turns and preference training
+
+To correct a frozen candidate on the turns it actually encounters, collect a pool
+with that model and strategy, saving the rolled inputs before each choice:
+
+```sh
+pnpm selfplay:bot --pool .local/corrective-pool.json --seed corrective-data-001 --rounds 500 --record-turns true --out .local/corrective-source-001
+pnpm prepare:training --dataset .local/corrective-source-001 --seed corrective-split-001 --teacher strategy --turns-per-round 16 --ranking true --out .local/corrective-shards-001
+.local/training-venv/bin/python -B training/train.py --data .local/corrective-shards-001 --warm-start .local/teacher-model --ranking-weight 1 --seed 20261019 --epochs 20 --out .local/corrective-ranked-001
+.local/training-venv/bin/python -B training/train.py --data .local/corrective-shards-001 --warm-start .local/teacher-model --ranking-weight 0 --seed 20261019 --epochs 20 --out .local/corrective-control-001
+pnpm check:teacher-ranking --data .local/corrective-shards-001 --model .local/corrective-ranked-001 --out .local/corrective-ranking-001.json
+```
+
+Source version3/round version2 record owned `turns` with the actual expanded dice,
+position, active and score. Preparation checks all recorded inputs against the
+pre-roll observations and seeded dice, including opening ties through public
+rules. Teacher sampling uses `even-played-turns-v1` for these datasets; ordinary
+sources retain independent-roll sampling. Outcomes/cutoffs/provenance checks
+remain. Recording does not change simulation dice/actions/results. The callback
+gets an owned input, so an observer cannot change play.
+
+`--ranking true` requires teacher data and creates prepared version3. It retains
+the same numeric example layout, plus turn-group signs/terminal flags and checked
+24-byte binary preferences in each split. Each nonterminal root pairs its best
+rounded teacher value with all strictly worse alternatives (gap>1e-7). Ties and
+roots with an exact round win contribute no preference. Signs convert the next
+active perspective back to the chooser, including next-game starts. Raw pair
+weights sum to1 per round. Both splits must contain preferences.
+
+Python reconstructs every pair from group boundaries, signs and numeric targets;
+rehashed changes to row indices, sign, gap or weights are rejected. Held-out
+ranking additionally regenerates legal continuations, group metadata and pair
+bytes. Group metadata is not a Python implementation of game rules.
+
+The optional loss adds gap-weighted logistic preferences on signed logits to
+pointwise BCE. `--ranking-weight` is finite0..10, defaults1 on preparedv3 and0 on
+legacy data; a positive value requires paired data. Larger teacher gaps have
+higher importance. A separate seeded/restored pair RNG preserves the pointwise
+shuffle across matched controls and adds no Adam steps. Zero weight reproduces
+legacy pointwise weights on identical examples. Metrics add `ranking`,
+`pairAccuracy` and `objective`; validation objective (BCE+weight*ranking) selects
+the checkpoint. These remain heuristic imitation metrics, not win probabilities.
+
+Resume inherits and checks ranking weight and both shuffle RNGs, retaining last
+optimizer state and best-objective history. Missing pair RNG or inconsistent
+objective history is refused before output. Interrupted epoch writes retain the
+last committed pointer; split and uninterrupted runs recover identical last
+weights, RNGs and history even when the selected best precedes the last epoch.
+Warm starts allow a new objective with a fresh optimizer but keep split ancestry.

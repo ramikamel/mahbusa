@@ -16,6 +16,7 @@ warnings.filterwarnings('ignore', message="Failed to initialize NumPy: No module
 import torch
 from torch import nn
 from data import INPUT_SIZE, SCHEMA, RULES, load_prepared
+from ranking import preference_loss
 from checkpoints import environment, finite_tree, load_resume, load_warm_start, restore_adam, save_resume, split_history
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +26,7 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2, allow_nan=False) + '\n')
 
 
-def metrics(model, data):
+def metrics(model, data, pairs=None, ranking_weight=0):
     with torch.no_grad():
         logits = model(data[:, :INPUT_SIZE]).flatten()
         target, weight = data[:, INPUT_SIZE], data[:, INPUT_SIZE + 1]
@@ -33,6 +34,13 @@ def metrics(model, data):
         probability = torch.sigmoid(logits)
         result = {'bce': ((bce * weight).sum() / weight.sum()).item(),
                   'brier': (((probability - target).square() * weight).sum() / weight.sum()).item()}
+        if pairs is not None:
+            pair_logits = logits[pairs['indices']]
+            values = pairs['values']
+            result['ranking'] = preference_loss(pair_logits, values).item()
+            delta = pair_logits[:, 0]*values[:, 0] - pair_logits[:, 1]*values[:, 1]
+            result['pairAccuracy'] = (delta > 0).float().mean().item()
+            result['objective'] = result['bce'] + ranking_weight*result['ranking']
         if not all(math.isfinite(v) for v in result.values()):
             raise ValueError('Training produced nonfinite metrics.')
         return result
@@ -48,11 +56,13 @@ def train(args):
     if resume and warm:
         raise ValueError('Resume and warm start are mutually exclusive.')
     restored, resume_from = load_resume(resume, data_hash) if resume else (None, None)
-    for name, key, default in [('seed', 'seed', 20261017), ('batch_size', 'batchSize', 256), ('learning_rate', 'learningRate', .001)]:
-        value = getattr(args, name)
-        if restored and value is not None and value != restored['config'][key]:
+    for name, key, default in [('seed', 'seed', 20261017), ('batch_size', 'batchSize', 256), ('learning_rate', 'learningRate', .001), ('ranking_weight', 'rankingWeight', 1 if manifest['version'] == 3 else 0)]:
+        value = getattr(args, name, None)
+        if restored and value is not None and value != restored['config'].get(key, 0):
             raise ValueError('Resume configuration cannot change: ' + name)
-        setattr(args, name, restored['config'][key] if restored else default if value is None else value)
+        setattr(args, name, restored['config'].get(key, 0) if restored else default if value is None else value)
+    if not math.isfinite(args.ranking_weight) or not 0 <= args.ranking_weight <= 10 or args.ranking_weight and 'pairs' not in data:
+        raise ValueError('Positive ranking weight requires paired version3 data; weight must be finite0..10.')
     first_epoch = restored['epoch'] if restored else 0
     total_epochs = first_epoch + args.epochs
     if total_epochs > 1000:
@@ -61,6 +71,7 @@ def train(args):
     model = nn.Sequential(nn.Linear(INPUT_SIZE, 128), nn.ReLU(), nn.Linear(128, 128), nn.ReLU(), nn.Linear(128, 1))
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     generator = torch.Generator().manual_seed(args.seed)
+    pair_generator = torch.Generator().manual_seed(args.seed ^ 0x52414E4B)
     history = split_history(restored['splitHistory'] if restored else [], manifest['rounds'])
     initialization = restored['initialization'] if restored else {'mode': 'fresh'}
     if warm:
@@ -71,6 +82,8 @@ def train(args):
         model.load_state_dict(restored['state_dict'], strict=True)
         batches = (len(data['train']) + args.batch_size - 1) // args.batch_size
         restore_adam(optimizer, restored['optimizer_state'], first_epoch, batches)
+        if args.ranking_weight:
+            pair_generator.set_state(restored['pair_generator_state'])
         generator.set_state(restored['generator_state'])
         torch.set_rng_state(restored['torch_rng_state'])
     out = Path(args.out).resolve()
@@ -80,7 +93,7 @@ def train(args):
     source_dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT, text=True).strip())
     report = {'format': 'mahbusa-training-run', 'version': 1, 'status': 'running', 'device': 'cpu',
               'targetKind': target_kind, 'valueKind': value_kind, **({'teacher': manifest['teacher']} if manifest.get('teacher') else {}),
-              'seed': args.seed, 'epochs': total_epochs, 'batchSize': args.batch_size, 'learningRate': args.learning_rate,
+              'rankingWeight': args.ranking_weight, 'seed': args.seed, 'epochs': total_epochs, 'batchSize': args.batch_size, 'learningRate': args.learning_rate,
               'mode': 'resume' if restored else initialization['mode'], 'initialization': initialization,
               'splitHistory': history, **({'resumeFrom': resume_from} if restored else {}),
               'torchVersion': torch.__version__, 'pythonVersion': sys.version, 'platform': platform.platform(),
@@ -95,42 +108,61 @@ def train(args):
         write_json(out / 'training.json', report)
         training, validation = data['train'], data['validation']
         mean_weight = training[:, INPUT_SIZE + 1].mean()
-        report['initial'] = restored['initial'] if restored else {'train': metrics(model, training), 'validation': metrics(model, validation)}
-        best_loss = restored['bestLoss'] if restored else report['initial']['validation']['bce']
+        pairs = data.get('pairs', {})
+        def measure(split):
+            return metrics(model, data[split], pairs.get(split), args.ranking_weight)
+        def selection_loss(values):
+            return values.get('objective', values['bce'])
+        pair_training = pairs.get('train')
+        batches = (len(training) + args.batch_size - 1) // args.batch_size
+        if args.ranking_weight:
+            pair_count = len(pair_training['indices'])
+            pair_normalizer = (pair_training['values'][:, 2]*pair_training['values'][:, 3]).mean()
+        report['initial'] = restored['initial'] if restored else {'train': measure('train'), 'validation': measure('validation')}
+        best_loss = restored['bestLoss'] if restored else selection_loss(report['initial']['validation'])
         best = restored['best_state'] if restored else {k: v.detach().clone() for k, v in model.state_dict().items()}
         report['bestEpoch'] = restored['bestEpoch'] if restored else 0
         for epoch in range(first_epoch + 1, total_epochs + 1):
             order = torch.randperm(len(training), generator=generator)
-            for start in range(0, len(training), args.batch_size):
+            if args.ranking_weight:
+                pair_order = torch.randperm(pair_count, generator=pair_generator)
+            for step, start in enumerate(range(0, len(training), args.batch_size)):
                 batch = training[order[start:start + args.batch_size]]
                 optimizer.zero_grad(set_to_none=True)
                 logits = model(batch[:, :INPUT_SIZE]).flatten()
                 per_sample = nn.functional.binary_cross_entropy_with_logits(logits, batch[:, INPUT_SIZE], reduction='none')
                 loss = (per_sample * batch[:, INPUT_SIZE + 1]).mean() / mean_weight
+                if args.ranking_weight:
+                    a, b = step*pair_count//batches, (step+1)*pair_count//batches
+                    if b > a:
+                        chosen = pair_order[a:b]
+                        pair_logits = model(training[pair_training['indices'][chosen].flatten(), :INPUT_SIZE]).reshape(-1, 2)
+                        rank_loss = preference_loss(pair_logits, pair_training['values'][chosen], pair_normalizer)
+                        loss = loss + args.ranking_weight*rank_loss*((b-a)*batches/pair_count)
                 if not torch.isfinite(loss):
                     raise ValueError('Nonfinite training loss.')
                 loss.backward()
                 optimizer.step()
-            row = {'epoch': epoch, 'train': metrics(model, training), 'validation': metrics(model, validation)}
+            row = {'epoch': epoch, 'train': measure('train'), 'validation': measure('validation')}
             report['history'].append(row)
-            if row['validation']['bce'] < best_loss:
-                best_loss = row['validation']['bce']
+            if selection_loss(row['validation']) < best_loss:
+                best_loss = selection_loss(row['validation'])
                 best = {k: v.detach().clone() for k, v in model.state_dict().items()}
                 report['bestEpoch'] = epoch
             snapshot = {'format': 'mahbusa-epoch-state', 'version': 1, 'epoch': epoch,
                         'preparedManifestSha256': data_hash, 'environment': environment(),
-                        'config': {'seed': args.seed, 'batchSize': args.batch_size, 'learningRate': args.learning_rate},
+                        'config': {'seed': args.seed, 'batchSize': args.batch_size, 'learningRate': args.learning_rate, 'rankingWeight': args.ranking_weight},
                         'state_dict': model.state_dict(), 'optimizer_state': optimizer.state_dict(),
                         'generator_state': generator.get_state(), 'torch_rng_state': torch.get_rng_state(),
                         'best_state': best, 'bestEpoch': report['bestEpoch'], 'bestLoss': best_loss,
                         'initial': report['initial'], 'history': report['history'], 'splitHistory': history,
-                        'initialization': initialization}
+                        'initialization': initialization, **({'pair_generator_state': pair_generator.get_state()} if args.ranking_weight else {})}
             finite_tree(snapshot)
             report['resumeCheckpoint'] = save_resume(out, snapshot)
             print(f"Epoch {epoch}/{total_epochs}: validation BCE {row['validation']['bce']:.6f}", file=sys.stderr)
         model.load_state_dict(best)
         model.eval()
-        report['selected'] = {'train': metrics(model, training), 'validation': metrics(model, validation)}
+        report['selected'] = {'train': measure('train'), 'validation': measure('validation')}
         with torch.no_grad():
             prevalence = ((training[:, INPUT_SIZE] * training[:, INPUT_SIZE + 1]).sum() / training[:, INPUT_SIZE + 1].sum()).item()
             prevalence = min(1 - 1e-6, max(1e-6, prevalence))
@@ -176,12 +208,14 @@ def main():
     parser.add_argument('--batch-size', type=int)
     parser.add_argument('--seed', type=int)
     parser.add_argument('--learning-rate', type=float)
+    parser.add_argument('--ranking-weight', type=float)
     continuation = parser.add_mutually_exclusive_group()
     continuation.add_argument('--resume')
     continuation.add_argument('--warm-start')
     args = parser.parse_args()
     if (not 1 <= args.epochs <= 1000 or (args.batch_size is not None and not 1 <= args.batch_size <= 65536)
             or (args.seed is not None and not 0 <= args.seed < 2**32)
+            or (args.ranking_weight is not None and (not math.isfinite(args.ranking_weight) or not 0 <= args.ranking_weight <= 10))
             or (args.learning_rate is not None and (not math.isfinite(args.learning_rate) or not 0 < args.learning_rate <= 1))):
         parser.error('Invalid finite/bounded training option.')
     try:

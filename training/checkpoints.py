@@ -98,10 +98,14 @@ def load_resume(directory, data_hash):
             or not integer(config.get('batchSize'), 1, 65536) or not isinstance(config.get('learningRate'), (float, int))
             or not 0 < config['learningRate'] <= 1):
         raise ValueError('Invalid resume configuration.')
+    ranking_weight = config.get('rankingWeight', 0)
+    if type(ranking_weight) not in (float, int) or not math.isfinite(ranking_weight) or not 0 <= ranking_weight <= 10:
+        raise ValueError('Invalid resume ranking weight.')
     finite_tree(state)
     history, initial = state.get('history'), state.get('initial')
     if not isinstance(history, list) or len(history) != p['epoch'] or not isinstance(initial, dict):
         raise ValueError('Invalid resume metric history.')
+    ranked = ranking_weight > 0 or 'objective' in initial.get('validation', {})
     losses = []
     for index, row in enumerate([{'epoch': 0, **initial}, *history]):
         if row.get('epoch') != index:
@@ -110,7 +114,11 @@ def load_resume(directory, data_hash):
             metrics = row.get(split, {})
             if any(type(metrics.get(key)) not in (float, int) or not math.isfinite(metrics[key]) or metrics[key] < 0 for key in ['bce', 'brier']):
                 raise ValueError('Invalid resume metrics.')
-        losses.append(row['validation']['bce'])
+            if ranked:
+                if (any(type(metrics.get(k)) not in (float, int) or not math.isfinite(metrics[k]) or metrics[k] < 0 for k in ['ranking', 'pairAccuracy', 'objective'])
+                        or metrics['pairAccuracy'] > 1 or metrics['objective'] != metrics['bce'] + ranking_weight*metrics['ranking']):
+                    raise ValueError('Invalid resume ranking objective.')
+        losses.append(row['validation']['objective' if ranked else 'bce'])
     best = min(range(len(losses)), key=losses.__getitem__)
     if state.get('bestEpoch') != best or state.get('bestLoss') != losses[best]:
         raise ValueError('Resume best checkpoint does not match history.')

@@ -52,7 +52,7 @@ The CPU loss is weighted pointwise BCE plus `rankingWeight` times gap-weighted
 pairwise `softplus(gap - signedLogitDifference)`. Pair importance is round weight
 multiplied by teacher gap, normalized by its mean. A single deterministic Adam
 step per pointwise minibatch consumes a deterministic contiguous portion of a
-separately shuffled pair order; pair count cannot exceed example count. Existing
+separately shuffled pair order from its own seeded/restored generator; pair count cannot exceed example count. Existing
 optimizer counter semantics remain. `--ranking-weight` is finite0..10, defaults1
 onv3/0otherwise; positive weight requiresv3. Zero supplies the matched control.
 Metrics retain BCE/Brier and add ranking loss, pair accuracy and combined

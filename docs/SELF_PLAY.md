@@ -130,3 +130,10 @@ promotion. Keep training, validation and final confirmation round seeds separate
 do not leak adjacent positions from one round across these splits. The remaining
 model self-play, strength qualification and device acceptance steps are in the
 [roadmap](BOT_ROADMAP.md). Public Single player remains In development until then.
+
+Optional `--record-turns true` writes source manifestv3 and completed roundv2
+with `turns`, the actual rolled input before each policy choice. The manifest
+identifies `rolled-turn-input-v1`. Cutoffs emit no usable examples/turns. Defaults
+retain earlier formats. This supports automatic teacher corrections on candidate-
+encountered positions without annotations; preparation verifies the recorded
+state/dice and uses played-roll sampling. See [preference training](BOT_TRAINING.md).
