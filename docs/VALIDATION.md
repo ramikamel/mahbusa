@@ -1076,3 +1076,17 @@ viewport. Rechecked the affected behaviors.
   Svelte errors/warnings, unchanged public/offline version`ef3756aba643a909` and
   worker smoke build. No paid compute, new dependencies, human labels or Python
   game rules. All source/shards/models/reports are ignored `.local/corrective-*`.
+- One fresh independent whole-branch review found no Critical/Important/Minor
+  issues. It independently ran24Node+20Python tests, validated all500recorded
+  rounds/108573turns (17878doubles), regenerated1408held-out roots, checked actual
+  204229examples/184659pairs and89canonical artifact copies, and checked model/
+  pilot hashes against this record. Three additional random-policy observer
+  mutations preserved traces. Reviewer did not independently rerun full Vitest/
+  type/build guards; those passed in the implementation verification. No fixes
+  or minor deferrals were needed.
+- Recorded decisions: an independent pair RNG keeps pointwise controls matched
+  (cost: another checkpoint state); final review follows task completion to avoid
+  a circular review gate (ordering only). Review scope: frozen local integrity
+  checks do not authenticate coordinated rewrites of artifacts/metadata; device/
+  public qualification remains later work because both candidates are rejected;
+  the next search/training choice remains provisional and may need more research.
