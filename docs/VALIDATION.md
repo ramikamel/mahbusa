@@ -900,7 +900,27 @@ viewport. Rechecked the affected behaviors.
   prove a larger search budget would fix the learned evaluator. Script/report
   are local `.local/probe-pool-model-search-2026-10-18.mjs` and
   `.local/pool-model-search-probe-2026-10-18.json`.
-- Full local verification:196 Vitest+72 Node+11 Python tests (279 total), zero
+- Fresh independent review reran10 Node and7 Python continuation tests and
+  independently checked real5+5/full10 equality, selected epoch2 and600 ancestry
+  entries. It found one Important resume gap: missing Adam entries or reset step
+  counters could pass checksum validation and silently restart optimizer state.
+  A new regression reproduced missing-state acceptance before the fix. Resume
+  now requires exact parameter coverage/configuration, finite matching moment
+  shapes/dtypes, nonnegative second moments, and scalar counters matching the
+  completed epoch/minibatch count before output creation. The regression rejects
+  empty/partial state, reset/wrong/nonscalar counters and negative variance.
+- Review scope rulings: these are local integrity checks rather than authenticated
+  provenance (wholesale rewriting of hashes and artifacts can fabricate history);
+  atomic process recovery does not promise fsync/power-loss durability (unflushed
+  epochs may be lost); warm starts require frozen artifact directories rather
+  than adversarial concurrent rewriting (mutation may invalidate the load or its
+  metadata). Competitive strength, phone behavior and public enablement remain
+  later gates; treating this rejected candidate as qualified would release weak,
+  untested play. No review minors were deferred.
+- Post-review fix verification: all280 tests, type checking and both build paths
+  passed, including intact split/uninterrupted equality and all six malformed
+  Adam variants. No learning weights or recorded experiment outcomes changed.
+- Full local verification:196 Vitest+72 Node+12 Python tests (280 total), zero
   type errors/warnings, public/offline and worker smoke builds pass. Actual pool
   data reaches the CPU warm-start learner in CI integration. Public bundle and
   offline version remain `ef3756aba643a909`. Ignored artifacts use

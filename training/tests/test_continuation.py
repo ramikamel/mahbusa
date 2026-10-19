@@ -161,6 +161,39 @@ class ContinuationIntegration(unittest.TestCase):
         self.assertFalse(marker.exists(), 'Checkpoint object code executed.')
         self.assertFalse((self.base / 'unsafe-output').exists())
 
+    def test_refuses_incomplete_or_reset_adam_state_before_creating_output(self):
+        sys.path.insert(0, str(ROOT / 'training'))
+        import train
+        for kind in ['empty', 'partial', 'zero-step', 'wrong-step', 'nonscalar-step', 'negative-variance']:
+            parent = self.base / ('adam-' + kind)
+            shutil.copytree(self.parent, parent)
+            pointer = json.loads((parent / 'resume.json').read_text())
+            path = parent / pointer['path']
+            state = train.torch.load(path, weights_only=True, map_location='cpu')
+            moments = state['optimizer_state']['state']
+            first = next(iter(moments))
+            if kind == 'empty':
+                moments.clear()
+            elif kind == 'partial':
+                del moments[first]
+            elif kind == 'zero-step':
+                for entry in moments.values():
+                    entry['step'].zero_()
+            elif kind == 'wrong-step':
+                for entry in moments.values():
+                    entry['step'].add_(1)
+            elif kind == 'nonscalar-step':
+                moments[first]['step'] = moments[first]['step'].reshape(1)
+            else:
+                moments[first]['exp_avg_sq'].fill_(-1)
+            train.torch.save(state, path)
+            raw = path.read_bytes()
+            pointer.update(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
+            (parent / 'resume.json').write_text(json.dumps(pointer))
+            result = self.run_train('refused-adam-' + kind, '--resume', str(parent))
+            self.assertNotEqual(result.returncode, 0, kind)
+            self.assertFalse((self.base / ('refused-adam-' + kind)).exists(), kind)
+
     def test_pool_outcomes_reach_actual_warm_start_learner(self):
         pool = self.base / 'pool.json'
         pool.write_text(json.dumps({'format': 'mahbusa-opponent-pool', 'version': 1,

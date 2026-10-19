@@ -144,3 +144,29 @@ def load_warm_start(directory, model, rounds):
     model.load_state_dict(state, strict=True)
     return history, {'mode': 'warm-start', 'parentModelSha256': manifest['sha256'],
                      'parentTrainingReportSha256': sha(report_raw), 'parentManifestSha256': sha(manifest_raw)}
+
+
+def restore_adam(optimizer, raw, epoch, batches_per_epoch):
+    expected = optimizer.state_dict()
+    if (not isinstance(raw, dict) or set(raw) != {'state', 'param_groups'}
+            or raw['param_groups'] != expected['param_groups'] or not isinstance(raw['state'], dict)):
+        raise ValueError('Resume optimizer configuration changed.')
+    identities = expected['param_groups'][0]['params']
+    if any(type(key) is not int for key in raw['state']) or set(raw['state']) != set(identities):
+        raise ValueError('Resume optimizer must cover every parameter exactly.')
+    # CPU Adam uses a Float32 scalar counter; repeated +1 saturates at 2**24.
+    expected_step = min(epoch * batches_per_epoch, 2**24)
+    for identity, parameter in zip(identities, optimizer.param_groups[0]['params']):
+        state = raw['state'][identity]
+        if not isinstance(state, dict) or set(state) != {'step', 'exp_avg', 'exp_avg_sq'}:
+            raise ValueError('Incomplete Adam parameter state.')
+        step = state['step']
+        if (not isinstance(step, torch.Tensor) or step.dtype != torch.float32 or step.ndim != 0
+                or step.item() != expected_step):
+            raise ValueError('Adam step does not match completed epochs/minibatches.')
+        for key in ['exp_avg', 'exp_avg_sq']:
+            value = state[key]
+            if (not isinstance(value, torch.Tensor) or value.shape != parameter.shape or value.dtype != parameter.dtype
+                    or not torch.isfinite(value).all() or (key == 'exp_avg_sq' and (value < 0).any())):
+                raise ValueError('Invalid Adam moment tensor.')
+    optimizer.load_state_dict(raw)

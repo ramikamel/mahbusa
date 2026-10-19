@@ -16,7 +16,7 @@ warnings.filterwarnings('ignore', message="Failed to initialize NumPy: No module
 import torch
 from torch import nn
 from data import INPUT_SIZE, SCHEMA, RULES, load_prepared
-from checkpoints import environment, finite_tree, load_resume, load_warm_start, save_resume, split_history
+from checkpoints import environment, finite_tree, load_resume, load_warm_start, restore_adam, save_resume, split_history
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -67,13 +67,8 @@ def train(args):
         # Validate both states before claiming a new output directory.
         model.load_state_dict(restored['best_state'], strict=True)
         model.load_state_dict(restored['state_dict'], strict=True)
-        expected_group = optimizer.state_dict()['param_groups']
-        optimizer.load_state_dict(restored['optimizer_state'])
-        if optimizer.state_dict()['param_groups'] != expected_group:
-            raise ValueError('Resume optimizer configuration changed.')
-        for parameter, state in optimizer.state.items():
-            if any(state[key].shape != parameter.shape for key in ['exp_avg', 'exp_avg_sq']):
-                raise ValueError('Invalid optimizer tensor shape.')
+        batches = (len(data['train']) + args.batch_size - 1) // args.batch_size
+        restore_adam(optimizer, restored['optimizer_state'], first_epoch, batches)
         generator.set_state(restored['generator_state'])
         torch.set_rng_state(restored['torch_rng_state'])
     out = Path(args.out).resolve()
