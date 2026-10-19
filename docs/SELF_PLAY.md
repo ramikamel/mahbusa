@@ -56,10 +56,57 @@ training and parity-file hashes. It ranks complete turns at depth0. Once loaded,
 disk changes cannot change the opponent halfway through a batch. Existing seed
 derivation, labels, cutoffs and version1 preparation remain unchanged.
 
-This is model-mirror data, not mixed-pool or resumable self-play. Training a second
-candidate from it uses the [existing learner](BOT_TRAINING.md), currently from
-fresh seeded initialization; it does not resume optimizer state or prove that
-the new candidate is stronger. Keep old models and compare frozen versions.
+This mode is model-mirror data. The [learner](BOT_TRAINING.md) also supports exact
+epoch resume or checked warm starts; outcomes and lower loss do not prove that
+a new candidate is stronger. Keep old models and compare frozen versions.
+
+## Frozen opponent pools
+
+Create `.local/training-pool.json` with model paths relative to that file:
+
+```json
+{
+  "format": "mahbusa-opponent-pool",
+  "version": 1,
+  "entrants": [
+    {"key": "strategy", "policy": "strategy"},
+    {"key": "current", "policy": "model", "model": "model-current"},
+    {"key": "old", "policy": "model", "model": "model-old"}
+  ],
+  "matchups": [
+    {"a": "strategy", "b": "strategy", "weight": 2},
+    {"a": "strategy", "b": "current", "weight": 1},
+    {"a": "strategy", "b": "old", "weight": 1}
+  ]
+}
+```
+
+```sh
+pnpm selfplay:bot --pool .local/training-pool.json --seed pool-data-001 --rounds 500 --out .local/pool-data-001
+pnpm prepare:training --dataset .local/pool-data-001 --out .local/pool-shards-001 --seed pool-split-001
+```
+
+`--pool` is mutually exclusive with explicit `--policy` or `--model`. All entrants
+resolve once before output: strategy/search or checked model artifacts. Keys
+must be unique lowercase letters/digits/hyphens, starting with a letter, at most
+32characters. Pools allow1–16 entrants and1–64 distinct directed matchups, with
+integer weights1–100. A model requires its directory; other policies refuse it.
+Weights determine probabilities, not exact batch quotas. Current/old are labels
+for configured versions and never automatically imply a promoted champion.
+
+The manifest stores a path-free resolved definition and SHA-256, raw config hash,
+model provenance and selection version. For each index, an independent seeded
+stream `pool-matchup-v1/<definition hash>/<index>` samples the declared weights;
+it does not consume dice/action RNG. A color still alternates by round index.
+Rows record actual A/B policy IDs and final-round targets under the same rules.
+
+Pool sources are version2. Preparation verifies the snapshot and recomputes each
+index's expected opponents before accepting a row; changing an opponent and
+rehashing the JSONL cannot invent a valid matchup. Numeric shards remain version1
+with whole-round splits and equal-round weights. Old mirror commands/datasets
+stay version1. Any cutoff/failed/running batch remains unusable by preparation.
+The command starts a new exclusive dataset; recovery of dataset generation itself
+is not implemented. Learner epoch recovery is separate.
 
 Progress goes to stderr and the final manifest to stdout. Exit 0/status `complete`
 means every requested round finished. Exit 2/status `incomplete` means cutoffs;

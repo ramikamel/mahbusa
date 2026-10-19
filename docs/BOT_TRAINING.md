@@ -72,10 +72,12 @@ A completed model directory contains:
   BCE and Brier metrics, constant baseline, best epoch and final status.
 - `model.json` and `weights.bin`: versioned experimental manifest and checked
   weights; model ID derives from their SHA-256.
-- `checkpoint.pt`: selected numeric state, epoch and seed. This is not yet an
-  optimizer/opponent-pool resume checkpoint.
+- `checkpoint.pt`: selected numeric state, epoch and seed. Use the epoch recovery
+  files below for optimizer state and exact resume.
 - `parity.json`: Python predictions for real validation inputs and synthetic
   arithmetic probes. Synthetic probes test inference, not legal game states.
+- `resume.json` and `resume/epoch-NNNNNN.pt`: last completed-epoch pointer and
+  numeric weights/Adam/RNG/best/history snapshots. Older epoch files are retained.
 
 The initial model and every epoch compete on validation BCE; the lowest-loss
 checkpoint is exported. Validation therefore tunes model selection and is
@@ -106,7 +108,7 @@ Frozen models now play in [headless benchmarks](BOT_BENCHMARKS.md) and generate
 [model-mirror outcomes](SELF_PLAY.md). Both commands share the parity gate and
 record full artifact hashes before play. The resulting version1 dataset prepares
 and trains through the same commands above; each run still starts from fresh
-seeded weights, rather than restoring an earlier optimizer.
+seeded weights unless a continuation option is supplied.
 
 The first model's actual pilot won only2/200 rounds against strategy, with134
 mother losses. Strategy remains the stronger reference. A second candidate was
@@ -114,7 +116,60 @@ trained from20 model-mirror rounds to verify the loop, and is also unqualified.
 More outcome data and lower loss cannot by themselves establish improvement;
 saved tactical cases and frozen-opponent matches must test the learned choices.
 
-Next: resumable outcome/self-play learning against current/old/strategy pools,
-then fresh-seed strength comparisons
+## Resume and warm start
+
+```sh
+# Continue the last completed epoch, on exactly the same prepared data.
+.local/training-venv/bin/python -B training/train.py --data .local/bootstrap-shards-001 --resume .local/bootstrap-model-001 --out .local/bootstrap-resumed-001 --epochs 5
+
+# Start learning on a new batch from the parent's selected best model.
+.local/training-venv/bin/python -B training/train.py --data .local/pool-shards-001 --warm-start .local/bootstrap-model-001 --out .local/pool-model-001 --epochs 5 --seed 20261018
+.local/training-venv/bin/python -B training/train.py --data .local/pool-shards-001 --resume .local/pool-model-001 --out .local/pool-model-resumed-001 --epochs 5
+```
+
+`--resume` and `--warm-start` are mutually exclusive. Epoch count means additional
+epochs; cumulative total is at most1000. Resume restores the **last** weights,
+Adam state, Torch RNG and shuffle RNG, retaining the global best selected model
+and metric history. It requires identical prepared-manifest hash and exact
+Python/Torch/platform environment. Omitted seed/batch/lr inherit the checkpoint;
+explicit changes are refused. Same-environment split runs match uninterrupted
+weights/history exactly, including when the best epoch precedes the last epoch.
+
+Each completed epoch writes a new checked file before atomically replacing the
+resume pointer. If a process stops during a later epoch, `--resume` can recover
+the previous committed epoch from that running/failed directory. Work since that
+epoch is discarded. This is epoch recovery, not mid-batch recovery. No pointer
+exists if the first epoch never completed; use the original parent or start anew.
+Numeric loading uses `weights_only=True`; malformed/checksum/config/environment
+failures are refused. A resumable training checkpoint is not a playing export:
+the shared artifact gate still requires completed training and matching parity.
+
+Warm start loads selected weights through the Node artifact/parity gate and
+starts a fresh optimizer, RNG, epoch history and validation-best selection on the
+new data. It records exact parent model/report/manifest hashes. New runs preserve
+unique round-to-split ancestry in `splitHistory`; reused seeds cannot move across
+training and validation, even across warm-start generations. This ancestry does
+not turn validation used for selection into an untouched qualification holdout.
+Exports from before this checkpoint remain playable but lack split ancestry;
+recreate them with the original data/options using this learner before warm start.
+
+## Mixed opponents and tactical checks
+
+[Frozen pools](SELF_PLAY.md) now generate version2 source datasets; preparation
+still emits the same version1 numeric shards. No Python pool or game logic is
+needed. Strategy remains the reference while model roles identify frozen
+experimental versions, not accepted champions.
+
+```sh
+pnpm check:bot-tactics --model .local/pool-model-resumed-001 --out .local/pool-model-tactics-001.json
+```
+
+This diagnostic uses three automatically saved mother-exposure inputs. It checks
+actual selected turns against legal alternatives, allowing forced exposure and
+immediate wins. Exit0 passes all cases,2 reports tactical failures,1 reports an
+invalid artifact/input. Existing outputs are not overwritten. No legal move is
+filtered or policy altered; passing these cases alone never qualifies strength.
+
+Next: further outcome/TD learning iterations, stronger pools, fresh-seed strength comparisons
 and tactical regressions. Worker registration, phone timing and public enablement
 follow qualification. See [the roadmap](BOT_ROADMAP.md).

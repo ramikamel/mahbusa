@@ -5,8 +5,8 @@ annotation or expert-lab work is required from the user. The start page and engi
 checkpoints 2–9 plus automatic outcome data are complete. A first experimental
 model is trained and passes Python/TypeScript inference parity. Frozen model
 opponents now play headless matches and generate model-mirror training data.
-Next is resumable model self-play and opponent pools; qualified strength and public bot play remain
-later checkpoints.
+Epoch recovery, checked warm starts and frozen mixed-opponent pools now support
+learning iterations. Candidate strength and public bot play remain unqualified.
 
 ## Product requirements
 
@@ -97,14 +97,19 @@ checked round-separated shards, trains and exports experimental weights.
 10. **Started:** first100-round outcome bootstrap trained; best validation epoch
     frozen locally. Model policies now run in simulation through one checked
     artifact/parity gate, with full weight identities and recorded provenance.
-    Model-mirror outcomes feed the learner. Still pending: resumable training and
-    self-play against current/old/strategy opponent pools. The bootstrap is
+    Model-mirror and checked mixed current/old/strategy outcomes feed the learner.
+    Exact epoch recovery restores optimizer/RNG state; checked warm starts carry
+    selected weights and train/validation split ancestry to new batches. The bootstrap is
     unqualified and is not registered in the worker or public app.
     Its first100-pair diagnostic won2/200 rounds against strategy with134 mother
     losses. Strategy remains the reference. Saved automatic mother-exposure
     cases must guide learning/tactical regressions; loss improvements alone
     are insufficient. A20-round model-mirror batch completed the data-to-second-
     candidate loop, without demonstrating stronger play.
+    Automatic mother-exposure diagnostics now replay three saved failures, with
+    forced-exposure/winning exceptions. Further learning/TD iterations and
+    orchestration remain; tactical and fresh-seed qualification must precede
+    a development/public bot, regardless of lower prediction loss.
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible
