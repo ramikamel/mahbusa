@@ -102,7 +102,13 @@ These are pipeline results from a small strategy-mirror dataset, not evidence
 that the model outplays strategy or search. Full hashes and measurements are in
 [the validation record](VALIDATION.md).
 
-Next: frozen model policies in headless simulation, resumable outcome/self-play
-learning against current/old/strategy pools, then fresh-seed strength comparisons
+Frozen models now play in [headless benchmarks](BOT_BENCHMARKS.md) and generate
+[model-mirror outcomes](SELF_PLAY.md). Both commands share the parity gate and
+record full artifact hashes before play. The resulting version1 dataset prepares
+and trains through the same commands above; each run still starts from fresh
+seeded weights, rather than restoring an earlier optimizer.
+
+Next: resumable outcome/self-play learning against current/old/strategy pools,
+then fresh-seed strength comparisons
 and tactical regressions. Worker registration, phone timing and public enablement
 follow qualification. See [the roadmap](BOT_ROADMAP.md).

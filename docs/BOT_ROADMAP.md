@@ -1,10 +1,11 @@
 # Mahbusa single-player engine roadmap
 
-Revised October 17, 2026: evaluation runs automatically through self-play; no
+Revised October 18, 2026: evaluation runs automatically through self-play; no
 annotation or expert-lab work is required from the user. The start page and engine
 checkpoints 2–9 plus automatic outcome data are complete. A first experimental
-model is trained and passes Python/TypeScript inference parity. Next is resumable
-model self-play and opponent pools; qualified strength and public bot play remain
+model is trained and passes Python/TypeScript inference parity. Frozen model
+opponents now play headless matches and generate model-mirror training data.
+Next is resumable model self-play and opponent pools; qualified strength and public bot play remain
 later checkpoints.
 
 ## Product requirements
@@ -94,8 +95,10 @@ checked round-separated shards, trains and exports experimental weights.
    canonical104-feature encoding, checked120324-byte model export and TS parity.
    [Training usage](BOT_TRAINING.md) describes the CLI and experimental boundary.
 10. **Started:** first100-round outcome bootstrap trained; best validation epoch
-    frozen locally. Still pending: model policies in simulation, resumable training
-    and self-play against current/old/strategy opponent pools. The bootstrap is
+    frozen locally. Model policies now run in simulation through one checked
+    artifact/parity gate, with full weight identities and recorded provenance.
+    Model-mirror outcomes feed the learner. Still pending: resumable training and
+    self-play against current/old/strategy opponent pools. The bootstrap is
     unqualified and is not registered in the worker or public app.
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.

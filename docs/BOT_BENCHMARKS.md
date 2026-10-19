@@ -27,9 +27,11 @@ Options:
 - --seed: nonempty string, maximum 256 characters; default mahbusa-benchmark-v1.
 - --pairs: integer 1–500, default100. Each pair contains two first-to-3 rounds.
 - --max-turns: per-round integer 1–100000, default2000.
-- --a / --b: strategy (default for both), search, random or first.
+- --a / --b: strategy (default for both), search, random, first or model.
   search selects the experimental deterministic depth1/1000-node policy; see
   [search budgets and limits](BOT_SEARCH.md). Its versioned ID records configuration.
+- --a-model / --b-model: required directory when that entrant is model; refused
+  for other policies. A model uses experimental depth0 complete-turn ranking.
 - --out: optional explicit JSON file path. Existing files are not overwritten.
 
 Progress goes to stderr; the complete JSON report goes to stdout and the optional
@@ -61,10 +63,35 @@ No repeated-look stopping/promotion is implemented. Qualification still needs
 held-out automatic regressions/seeds, frozen earlier engine/model versions, fresh
 confirmation seeds and equal runtime budgets.
 
+## Frozen local model opponents
+
+```sh
+pnpm benchmark:bot --seed candidate-vs-strategy-001 --pairs 100 --a model --a-model .local/bootstrap-model-001 --b strategy --out .local/candidate-vs-strategy-001.json
+pnpm benchmark:bot --seed candidate-vs-old-001 --pairs 100 --a model --a-model .local/candidate-002 --b model --b-model .local/bootstrap-model-001 --out .local/candidate-vs-old-001.json
+```
+
+Each model is loaded once, before play, through the same completed-training,
+checksum/schema and fixed-tolerance parity gate used by `verify:model-parity`.
+Invalid or partial artifacts fail before writing a report. The policy ID is
+`nn-greedy-v1/<full weight SHA-256>`, avoiding mutable opponent names. Optional
+`modelArtifacts` holds A/B provenance (null for nonmodel entrants): consumed
+weights, model manifest, training report and parity-file hashes plus actual parity
+result. Later edits on disk cannot change already loaded weights or those hashes.
+Local paths are not included.
+
+The model evaluates every complete-turn continuation at depth0 using the existing
+search logic. Handover negates the opponent's value; game wins update the score
+and retain the winner as next starter. Exact round wins always take precedence.
+Other ties retain generator order. Both models in a comparison are frozen, with
+no training or promotion during matches. Same-model mirrors are consistency
+checks; they cannot establish strength. Model-greedy versus strategy uses the
+same turn generation but different evaluation runtime, so report actual timing
+and treat results as diagnostic rather than equal-runtime qualification.
+
 [Automatic self-play data](SELF_PLAY.md) saves positions without user annotations.
-Dice-aware search is available explicitly; future checkpoints add workers,
-trained evaluation and stronger
-reference opponents. A random
+Dice-aware search and experimental trained evaluation are available explicitly;
+resumable learning, opponent pools and qualified reference versions remain later
+checkpoints. A random
 baseline cannot establish that this bot is strong against an experienced person.
 Long matches stay outside ordinary CI. CI runs seeded correctness tests, the
 actual Node CLI, checked plan replay, cutoff handling and RNG coverage.

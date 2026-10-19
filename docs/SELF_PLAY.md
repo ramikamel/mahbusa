@@ -11,7 +11,7 @@ pnpm selfplay:bot --seed local-batch-001 --rounds 100 --out .local/local-batch-0
 
 Use Node 22.18 or newer. Options: `--seed` (1–256 characters; default
 `mahbusa-self-play-v1`), `--rounds` (1–10000; default 100), `--max-turns`
-(1–100000 per round; default 2000), `--policy strategy|search` (default strategy),
+(1–100000 per round; default 2000), `--policy strategy|search|model` (default strategy),
 and required `--out NEW_DIRECTORY`.
 Existing directories are refused so previous datasets are preserved. Data under
 `.local/` is ignored by Git. Generation runs locally, one round in memory at a
@@ -40,6 +40,26 @@ See [search usage](BOT_SEARCH.md). Search does not change the outcome-label rule
 Given identical source/policy/options, positions, outcomes and trace hashes
 repeat. Wall-clock timings and timestamps can differ, so whole-file checksums
 identify a particular run, not equality of gameplay across runs.
+
+To collect outcomes from a frozen experimental model on both sides:
+
+```sh
+pnpm selfplay:bot --seed model-data-001 --rounds 100 --policy model --model .local/bootstrap-model-001 --out .local/model-data-001
+pnpm prepare:training --dataset .local/model-data-001 --out .local/model-shards-001 --seed model-split-001
+```
+
+`--model` is required only with `--policy model`, and refused for other policies.
+The model passes completed-training, weight/schema/checksum and prediction-parity
+checks before the output directory is created. Its policy ID contains the full
+weight hash; `modelArtifact` in the manifest records the exact consumed model,
+training and parity-file hashes. It ranks complete turns at depth0. Once loaded,
+disk changes cannot change the opponent halfway through a batch. Existing seed
+derivation, labels, cutoffs and version1 preparation remain unchanged.
+
+This is model-mirror data, not mixed-pool or resumable self-play. Training a second
+candidate from it uses the [existing learner](BOT_TRAINING.md), currently from
+fresh seeded initialization; it does not resume optimizer state or prove that
+the new candidate is stronger. Keep old models and compare frozen versions.
 
 Progress goes to stderr and the final manifest to stdout. Exit 0/status `complete`
 means every requested round finished. Exit 2/status `incomplete` means cutoffs;
