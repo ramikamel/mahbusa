@@ -1149,3 +1149,49 @@ viewport. Rechecked the affected behaviors.
   engine/evaluator code was not subjected to a new full independent audit.
   Existing full-suite and independent replay evidence support this research
   record, not future code or public enablement.
+
+### October 20: exact state-key and evaluator-copy optimization
+
+- Froze `tests/fixtures/exact-search-v1.json` before production changes, based
+  on `87ac2bd073170796b3367ec9b5b1d2647795d0b7`: 57 roots, 1631 complete turns,
+  three mother-loss search histories/82 saved decisions. SHA-256
+  `47e3bfa2bded1a12b9ca16648339c70da0684ce1f920994cf689306215230a64`.
+  The corpus includes the original 48 development roots, six nearby mother-loss
+  decisions and three broad doubles. It is not a strength holdout.
+- Regression tests retain complete turn identities/representative ordering,
+  greedy choices and depth1 search at1000/20000nodes/cache10000. All plans replay
+  through checked rules; six real mother roots also match exhaustive enumeration;
+  every saved history decision remains legal. Timings have no CI speed threshold.
+- `src/lib/state.ts` uses exact fixed-width identities for valid24-point boards:
+  counts/off0..15, topnull/0/1, dice1..6, validated score/active/depth. Tests check
+  all768point payloads at each of24locations, all256off pairs, dice multiplicity
+  and90score/active/depth combinations. Internal keys are not persisted formats.
+- Engine traversal and search caches use these keys. Search evaluator inputs
+  retain fully owned point/count/off/score data via schema-specific copies;
+  outer request/progress snapshots still use their existing copying. Rules,
+  legal choices, strategic weights and search controls are unchanged. The new
+  key suite first failed with its helper module absent; the copy case failed
+  with its function absent, then passed. Existing hostile evaluator/observer
+  mutation tests and frozen counters remained green.
+- Sequential clean-source timing, Node26.11.1, one discarded warmup plus three
+  complete sweeps per stage, depth1/20000nodes/cache10000/no clock cutoff:
+  baseline`2d0d85eb758bfe63a92bcd1ab4752731fbed96f8` median13361.153ms;
+  keys`ed74357a376b9c87abf6aa579ab62f463c0cf4f7` median10191.980ms;
+  copies`3bec0a4f1312c43d00c930bbb43363dc9e13077a` median6697.566ms.
+  Final median49.87%less time/~1.99x throughput on this development corpus.
+  All results/counters matched the frozen baseline. Fixed stage order and local
+  clocks are not randomized trials, iPhone guarantees or strength evidence.
+- Reports remain local in both checkouts. SHA-256 before
+  `7ff421d978add243f881ff124ffb1bf48418266e382579b6a6eaf862ce6eca4d`,
+  keys`c70de50e215f7e6d37192771a45d6e1d54dae9422498e76a823c43291cc41800`,
+  after`14b9d235f5efd0dc144554d23f116447922f300fad8745d29115ed7df71759f0`.
+  [Performance usage](BOT_PERFORMANCE.md) records commands and all sweep times.
+- Verification:261Vitest+85Node+20CPU Python tests (366), Svelte0errors/0warnings,
+  production/offline and worker smoke builds passed. Public cache version
+  `f13c630eb2ad2fd9`. Chrome production checks passed separate opening rolls,
+  combined6+2move, Undo, turn handover/automatic next dice and reset. All six
+  native-worker checks passed, with a successful interface ping during search:
+  completion/progress, reset/fresh revision, watchdog fallback, no-progress
+  watchdog/retry, worker-error/retry and disposal. These do not replace actual
+  iPhone checks. Single player remains in development; next is the fresh-seed
+  frozen-budget strength comparison. Forced-turn bypass remains deferred.

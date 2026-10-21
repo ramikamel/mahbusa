@@ -125,18 +125,21 @@ isolation contract; any faster implementation must preserve that protection.
 
 ## Next commit-sized tasks
 
-1. **Freeze a performance/regression corpus.** Preserve the 48 development roots,
+1. **Done: freeze a performance/regression corpus.** Preserve the 48 development roots,
    the three mother-loss histories and a few broad doubles. Verify legal replay,
    complete-turn identity, stable ties, score continuation and evaluator/observer
    mutation isolation. Keep performance measurements outside ordinary CI timing
    assertions. These positions become development data, not qualification data.
-2. **Optimize exact work before increasing tournament cost.** First measure an
+2. **Exact key/copy optimization done; forced-turn bypass deferred.** First measure an
    equivalent compact engine state key and typed board/state copies. Preserve
    every legal turn, representative move ordering, independent oracle agreement
    and public engine behavior. Separately assess bypassing speculative search
    when a policy has only one complete legal result; retain the value-search
    API's existing semantics. No approximate beam or new strategic filter is
    justified by this investigation.
+   The implemented corpus and exact key/copy measurements are recorded in
+   [performance evidence](BOT_PERFORMANCE.md). The measured speedup retains
+   frozen choices and does not establish stronger play.
 3. **Compare frozen search budgets after correctness/performance checks.** Use
    a fixed fresh-seed color-swapped test of the existing 1000-node policy versus
    a larger-budget strategy policy. Record completion rates, changed decisions,

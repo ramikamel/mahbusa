@@ -137,6 +137,14 @@ checked round-separated shards, trains and exports experimental weights.
     the exposing turn; earlier choices need diagnosis. Next: freeze those
     regressions, optimize exact generation/copying, then compare frozen search
     budgets on fresh seeds. [Investigation and next tasks](BOT_SEARCH_INVESTIGATION.md).
+    Exact performance work is now implemented: a frozen 57-position corpus and
+    three mother-loss histories protect original turns/search choices. Compact
+    collision-free keys and owned typed evaluator copies reduced the local
+    median sweep 13.36s to 6.70s with identical plans, values and counters.
+    [Performance evidence](BOT_PERFORMANCE.md) records limits and reproduction.
+    Next: the fixed fresh-seed comparison of larger versus existing search
+    budgets; neither this speedup nor the earlier inconclusive match qualifies
+    stronger play or changes single-player availability.
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible
