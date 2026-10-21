@@ -142,9 +142,16 @@ checked round-separated shards, trains and exports experimental weights.
     collision-free keys and owned typed evaluator copies reduced the local
     median sweep 13.36s to 6.70s with identical plans, values and counters.
     [Performance evidence](BOT_PERFORMANCE.md) records limits and reproduction.
-    Next: the fixed fresh-seed comparison of larger versus existing search
-    budgets; neither this speedup nor the earlier inconclusive match qualifies
-    stronger play or changes single-player availability.
+    The frozen fresh-seed 100-pair budget comparison is complete: 20000-node
+    search won131/200 against1000-node search, paired95% interval[51.92%,79.08%],
+    no cutoffs. Multi-choice depth1 completion was85.20%versus21.48%; mother
+    losses11versus30. This supports larger search against that smaller control,
+    not superiority to greedy or equal-runtime/device qualification.
+    [Protocol and result](BOT_BUDGET_COMPARISON.md). Next: freeze unchanged
+    larger search versus greedy on100fresh color-swapped pairs, with a single
+    prespecified decision and no clock cutoff. Then use actual evidence to
+    select confirmation/equal-runtime work or diagnose losing lines. Do not
+    retune on completed seeds or enable single player before qualification.
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible

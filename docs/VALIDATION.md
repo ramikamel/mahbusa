@@ -1206,3 +1206,43 @@ viewport. Rechecked the affected behaviors.
   unsupported; strength/iPhone qualification remains later work; the reviewer
   inspected browser evidence but did not repeat those UI checks. Author-run
   Chrome and complete local test/build evidence support this checkpoint.
+
+### October 21: controlled search-budget comparison
+
+- Added independent benchmark `--a-search-nodes`/`--b-search-nodes` controls,
+  validated decimal integers1..1000000 on search roles only. Actual effective
+  budgets appear in policy IDs. Default search/model/self-play behavior is
+  unchanged. Real CLI tests reject misplaced, invalid and duplicate controls;
+  the positive test first failed on the absent flags, then passed.
+- Frozen protocol/source before matches:
+  `c84a1e76da69057b9e2947436de758122ee0ae16`, clean, Node26.11.1, seed
+  `strategy-budget-control-2026-10-21`. A depth1/20000nodes/cache10000 versus
+  B depth1/1000nodes/cache10000, same evaluator/rules, no clock cutoff,
+  100 color-swapped pairs/200 first-to-three rounds, max2000turns/round.
+- Four processes partitioned global pair indices modulo4. A short pre-run smoke
+  matched ordinary uninstrumented sequential benchmark traces/dice and all
+  non-clock fields. Completed pairs were saved atomically without replacement;
+  all four workers exited0. Aggregation and a separate verifier regenerated
+  pair seeds, canonical ordering, role mappings, file hashes, counters and metrics.
+- Result:131–69 rounds (65.5%), paired95% Hoeffding interval
+  [51.91898%,79.08102%], zero cutoffs; points517–335, mother losses11–30.
+  53573turns,556games,3055passes. This supports the larger search against the
+  smaller frozen search only. It does not qualify superiority to greedy,
+  equal-runtime performance, experienced-human strength or public enablement.
+- Larger search completed depth1 on23481/26822decisions (87.54%) and changed
+  4226moves (15.76%); smaller8859/26751 (33.12%),460changes (1.72%). Among
+  multi-choice turns:18621/21856 (85.20%) versus4504/20973 (21.48%). Node stops
+  3210versus17823. These are different encountered positions. Full counters and
+  contended desktop timing limits are in [the result](BOT_BUDGET_COMPARISON.md).
+- Immutable artifacts match in both local checkouts under
+  `.local/budget-control-2026-10-21/`. Report SHA-256
+  `3778d006dc5edf4640e1be307b7a4ace71f146e357edeedde4b7f7f6ee6cff10`;
+  verified summary `20e55ab140ea787667d405d030aada3d1c9901b1fabf9b4db8a0a837e28eff00`.
+  The result document records manifest/wrapper hashes; the report includes all
+  100 pair-file hashes. Local research data is not shipped or game persistence.
+- Local verification:261Vitest+88Node+20CPU Python tests (369), Svelte0errors/
+  0warnings, production/offline and worker smoke builds passed. Public cache
+  version remains`f13c630eb2ad2fd9`. No UI/worker production changes or new browser
+  checks in this checkpoint. Single player remains in development.
+- Next: unchanged larger search against greedy on fresh seeds under a frozen
+  single-decision protocol; promotion remains a separate qualification gate.

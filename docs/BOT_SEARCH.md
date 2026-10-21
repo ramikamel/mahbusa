@@ -45,8 +45,10 @@ pnpm benchmark:bot --a search --b strategy --pairs 8 --seed search-pilot-001 --o
 pnpm selfplay:bot --policy search --rounds 2 --seed search-data-001 --out .local/search-data-001
 ```
 
-The CLI `search` policy uses depth1,1000 uncached nodes and10000 cache entries,
-without a clock cutoff. Its ID is
+The CLI `search` policy defaults to depth1,1000 uncached nodes and10000 cache
+entries, without a clock cutoff. Benchmark flags `--a-search-nodes` and
+`--b-search-nodes` independently override nodes for search roles (1..1000000);
+other policy types reject these flags. Self-play retains the default. The default ID is
 `expectimax-v1/strategy-v1/d1/n1000/c10000`. Programmatic `createSearchPolicy`
 accepts different depth/node/cache limits and includes every limit in the ID.
 These are experimental compute budgets, not public difficulty levels. Existing
@@ -71,3 +73,9 @@ search. Its1000-node limit changed only1.58% of decisions; most non-forced turns
 never completed lookahead. A larger-budget development profile and replayed
 mother losses now guide exact performance work before another frozen match.
 See the [investigation and next tasks](BOT_SEARCH_INVESTIGATION.md).
+
+The October21 fixed 100-pair budget comparison favored 20000 over 1000 nodes:
+131–69, paired95% interval [51.92%,79.08%], no cutoffs. This supports additional
+search against that smaller search control, not superiority to greedy or public
+qualification. Defaults remain unchanged. Next is a fresh-seed larger-search
+versus greedy comparison; [full protocol and results](BOT_BUDGET_COMPARISON.md).
