@@ -32,6 +32,10 @@ Options:
   [search budgets and limits](BOT_SEARCH.md). Its versioned ID records configuration.
 - --a-model / --b-model: required directory when that entrant is model; refused
   for other policies. A model uses experimental depth0 complete-turn ranking.
+- --a-search-nodes / --b-search-nodes: optional integer1..1000000 for a search
+  entrant only; default1000. Depth1 and cache10000 remain fixed. The effective
+  node budget is included in the policy ID; these are research controls, not
+  public difficulty settings.
 - --out: optional explicit JSON file path. Existing files are not overwritten.
 
 Progress goes to stderr; the complete JSON report goes to stdout and the optional
@@ -95,6 +99,16 @@ checkpoints. A random
 baseline cannot establish that this bot is strong against an experienced person.
 Long matches stay outside ordinary CI. CI runs seeded correctness tests, the
 actual Node CLI, checked plan replay, cutoff handling and RNG coverage.
+
+For a frozen search-budget comparison:
+
+```sh
+pnpm benchmark:bot --a search --a-search-nodes 20000 --b search --b-search-nodes 1000 --pairs 100 --seed strategy-budget-control-2026-10-21 --out .local/strategy-budget-control-2026-10-21.json
+```
+
+See the [October21 frozen protocol](BOT_BUDGET_COMPARISON.md) before interpreting
+this diagnostic. More compute or a positive small sample does not automatically
+qualify an engine or device latency.
 
 Local reports in .local/ are ignored by Git. No game data or model is saved by the
 website, and no training or public single-player enablement happens here.

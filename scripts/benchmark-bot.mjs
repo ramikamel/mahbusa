@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {runBenchmark} from '../src/lib/bot/benchmark.ts';
 import {resolvePolicy} from './lib/resolve-policy.mjs';
-const usage='Usage: node scripts/benchmark-bot.mjs [--seed VALUE] [--pairs 1..500] [--max-turns N] [--a strategy|search|random|first|model] [--b strategy|search|random|first|model] [--a-model DIR] [--b-model DIR] [--out PATH]';
+const usage='Usage: node scripts/benchmark-bot.mjs [--seed VALUE] [--pairs 1..500] [--max-turns N] [--a strategy|search|random|first|model] [--b strategy|search|random|first|model] [--a-model DIR] [--b-model DIR] [--a-search-nodes 1..1000000] [--b-search-nodes 1..1000000] [--out PATH]';
 try{
   const args=process.argv.slice(2),values={seed:'mahbusa-benchmark-v1',pairs:'100','max-turns':'2000',a:'strategy',b:'strategy'};
   let output;const seen=new Set();
@@ -12,11 +12,12 @@ try{
   else{
     for(let i=0;i<args.length;i+=2){
       const key=args[i]?.slice(2),value=args[i+1];
-      if(!args[i].startsWith('--')||!['seed','pairs','max-turns','a','b','a-model','b-model','out'].includes(key)||seen.has(key)||!value||value.startsWith('--'))throw new Error('Invalid or duplicate argument. '+usage);
+      if(!args[i].startsWith('--')||!['seed','pairs','max-turns','a','b','a-model','b-model','a-search-nodes','b-search-nodes','out'].includes(key)||seen.has(key)||!value||value.startsWith('--'))throw new Error('Invalid or duplicate argument. '+usage);
       seen.add(key);if(key==='out')output=value;else values[key]=value;
     }
     if(!/^\d+$/.test(values.pairs)||!/^\d+$/.test(values['max-turns']))throw new Error('Invalid benchmark option. '+usage);
-    const entrants=await Promise.all([resolvePolicy(values.a,values['a-model']),resolvePolicy(values.b,values['b-model'])]);
+    for(const key of ['a-search-nodes','b-search-nodes'])if(values[key]!==undefined&&!/^\d+$/.test(values[key]))throw new Error('Invalid search-node budget. '+usage);
+    const entrants=await Promise.all(['a','b'].map(role=>resolvePolicy(values[role],values[role+'-model'],values[role+'-search-nodes']===undefined?undefined:Number(values[role+'-search-nodes']))));
     const gitOptions={cwd:fileURLToPath(new URL('..',import.meta.url)),encoding:'utf8'};
     const sourceRevision=execFileSync('git',['rev-parse','HEAD'],gitOptions).trim();
     const sourceDirty=!!execFileSync('git',['status','--porcelain','--untracked-files=normal'],gitOptions).trim();

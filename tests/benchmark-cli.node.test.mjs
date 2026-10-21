@@ -51,6 +51,31 @@ test('benchmark CLI explicitly compares bounded search against frozen greedy',()
   assert.equal(report.policies[1],'strategy-v1-greedy');assert.equal(report.comparison,'control');assert.equal(report.samePolicy,false);
 });
 
+test('benchmark CLI freezes independently selected search-node budgets in both policy IDs',()=>{
+  const result=run(['--pairs','1','--max-turns','1','--a','search','--a-search-nodes','20000','--b','search','--b-search-nodes','1000']);
+  assert.equal(result.status,2,result.stderr);
+  const report=JSON.parse(result.stdout);
+  assert.deepEqual(report.policies,['expectimax-v1/strategy-v1/d1/n20000/c10000','expectimax-v1/strategy-v1/d1/n1000/c10000']);
+  assert.equal(report.samePolicy,false);assert.equal(report.comparison,'control');
+  const reverse=run(['--pairs','1','--max-turns','1','--a','search','--a-search-nodes','1000','--b','search','--b-search-nodes','20000']);
+  assert.equal(reverse.status,2,reverse.stderr);
+  assert.deepEqual(JSON.parse(reverse.stdout).policies,[...report.policies].reverse());
+});
+
+test('benchmark CLI rejects invalid or misplaced search-node controls before writing a report',async()=>{
+  const directory=await mkdtemp(join(tmpdir(),'mahbusa-budget-'));
+  try{
+    const path=join(directory,'report.json');
+    for(const args of [
+      ['--a','search','--a-search-nodes','0'],['--a','search','--a-search-nodes','1000001'],
+      ['--a','search','--a-search-nodes','1.5'],['--a','search','--a-search-nodes','NaN'],
+      ['--a','strategy','--a-search-nodes','1000'],['--b','random','--b-search-nodes','1000'],
+      ['--a','search','--a-search-nodes','1000','--a-search-nodes','2000'],
+    ])assert.equal(run([...args,'--out',path]).status,1);
+    await assert.rejects(readFile(path),{code:'ENOENT'});
+  }finally{await rm(directory,{recursive:true,force:true});}
+});
+
 test('search profile CLI averages the two middle sweeps for an even repetition count',async()=>{
   const directory=await mkdtemp(join(tmpdir(),'mahbusa-profile-'));
   try{
