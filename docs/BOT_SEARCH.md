@@ -64,3 +64,10 @@ not a promotion result. Locally, a4000ms search completed two future turns for
 opening/contact fixtures and one for a174-candidate spread double (about2ms time
 overshoot). The1000-node reference falls back to greedy on that large fixture.
 See [recorded validation](VALIDATION.md) for seeds, exact configuration and limits.
+
+The fixed October19 follow-up completed100 pairs: search107–greedy93, paired95%
+interval[39.92%,67.08%], no cutoffs. This is inconclusive and does not promote
+search. Its1000-node limit changed only1.58% of decisions; most non-forced turns
+never completed lookahead. A larger-budget development profile and replayed
+mother losses now guide exact performance work before another frozen match.
+See the [investigation and next tasks](BOT_SEARCH_INVESTIGATION.md).

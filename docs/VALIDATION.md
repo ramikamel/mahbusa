@@ -1090,3 +1090,51 @@ viewport. Rechecked the affected behaviors.
   checks do not authenticate coordinated rewrites of artifacts/metadata; device/
   public qualification remains later work because both candidates are rejected;
   the next search/training choice remains provisional and may need more research.
+
+### October 19–20: frozen strategy-search investigation
+
+- Protocol committed before execution at clean source
+  `57065dc41a6702572d079ccfd2c75d8e01ce989e`, Node26.11.1. Existing depth1/
+  1000-node/cache10000 strategy search versus greedy strategy, fixed100pairs,
+  seed`strategy-search-control-2026-10-19`, max2000turns. No rule, evaluator,
+  search-control, dependency or public app changes. An instrumented24-turn
+  replay matched the plain search policy's full trace and dice hashes.
+- All200rounds completed, zero cutoffs: search107–greedy93, points442–404,
+  mother losses15–25;55467turns,564games,3503passes. Score53.5%, paired95%
+  Hoeffding interval[39.91898484259381%,67.0810151574062%]. Inconclusive and
+  unequal compute; no promotion. Decision time1246.047s versus18.806s,
+  maximum362.762ms versus82.639ms; wall1274.621s. These local instrumentation
+  clocks do not qualify device latency.
+- Search changed439/27739moves (1.58%):18400node stops,9232completed depth1,
+  107immediate round wins.5842turns had one legal complete result; among21897
+  turns with alternatives,4464 (20.39%) completed lookahead. Wide roots usually
+  retained greedy. There were20432025uncached visits and3355887cache hits;
+  exact raw counters are retained in the checked summary.
+- Prespecified48development roots from the first12corrective source rounds:
+  1000nodes completed23,20000completed45; changed moves8versus11. No time
+  stops at4000ms. Larger-budget median/p95/max56.008/878.905/1100.287ms, on
+  this local sample only. Three additional changed choices are not strength
+  evidence. Original source dataset SHA remains
+  `43ec0fd1ad3858abcab6c0aa7923a1bff0827e0b4cb3f5ab4181a339681d101c`.
+- First three rounds with search mother losses replayed to identical original
+  trace/dice hashes. All legal alternatives on the exposing turn left the
+  mother alone (3/3,1/1,1/1). Exploratory game histories show the earlier turns;
+  this does not prove those losses were inevitable or identify a winning fix.
+  A separate12-root CPU profile identified copying, engine keys and generation
+  as concrete targets; its small local sample includes startup/GC.
+- Local report SHA-256: benchmark
+  `9b7570ee20a63059bd85384bf9733324e26502b23d4893c7679008be2fa448d4`,
+  profile`afca8dcd87e79eda66bfe03a6356f1ba6a8e9d699e0a436f88c4938dac217978`,
+  diagnosis`6c039ec720f696c031ce0bf50df848d41164ab4b20f5c28d8c7d455d96a0bb58`,
+  traceback`5a771c2ef6b068fffe7f74a8045c11068acb834ae080a0727a9b7624b6132395`.
+  Checked summary reconstructs all paired metrics/counters/profile controls and
+  replay links. All25`.local/strategy-search-*` artifacts match in both local
+  checkouts. Checksums are integrity checks, not authenticated provenance.
+- Full verification on October20:197Vitest+85Node+20CPU Python tests (302),
+  Svelte0errors/0warnings, production/offline and worker smoke build passed.
+  Public/offline version remains`ef3756aba643a909`. No new UI to browser-test.
+- Next tasks and reproducible command are in
+  [the investigation](BOT_SEARCH_INVESTIGATION.md): freeze a regression/performance
+  corpus, optimize exact generation/copying while retaining mutation isolation,
+  then compare frozen budgets on fresh seeds. Further imitation-only neural
+  batches are deferred pending a stronger teacher or concrete diagnosed need.

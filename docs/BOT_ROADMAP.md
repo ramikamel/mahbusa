@@ -128,6 +128,15 @@ checked round-separated shards, trains and exports experimental weights.
     Both candidates are rejected. Strategy remains the reliable reference;
     prioritize strategy-guided search and diagnosis of concrete multi-turn losses
     before more unqualified imitation-only batches.
+    The fixed strategy-search follow-up completed 100 pairs: 107/200 rounds won
+    against greedy, with paired 95% interval [39.92%,67.08%]. This is inconclusive
+    and does not promote search. The 1000-node limit changed only 1.58% of moves;
+    just 20.39% of decisions with alternatives completed lookahead. A 48-root
+    development profile at 20000 nodes completed 45/48 versus 23/48, changing
+    three additional decisions. Three replayed mother losses were forced on
+    the exposing turn; earlier choices need diagnosis. Next: freeze those
+    regressions, optimize exact generation/copying, then compare frozen search
+    budgets on fresh seeds. [Investigation and next tasks](BOT_SEARCH_INVESTIGATION.md).
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible
