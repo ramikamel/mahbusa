@@ -108,8 +108,9 @@ All complete legal alternatives exposed it: respectively 3/3, 1/1 and 1/1.
 Two of those turns completed depth 1; one exhausted its node budget.
 
 The exploratory traceback preserves the earlier decisions in each game. For
-example, the preceding non-forced decisions at turns 169, 277 and 138 all fell
-back to depth zero. This identifies useful replay roots for investigating how
+example, earlier non-forced decisions at turns 169, 277 and 138 all fell back
+to depth zero; the nearer decision at turn 171 in the first loss completed
+depth 1. This identifies useful replay roots for investigating how
 the bot becomes trapped; it does **not** prove those choices caused the loss,
 that another line wins, or that all 15 mother losses were unavoidable.
 

@@ -1138,3 +1138,14 @@ viewport. Rechecked the affected behaviors.
   corpus, optimize exact generation/copying while retaining mutation isolation,
   then compare frozen budgets on fresh seeds. Further imitation-only neural
   batches are deferred pending a stronger teacher or concrete diagnosed need.
+- Independent read-only review confirmed all200round results/pair seeds, exact
+  48-root selection, counters/denominators, report/dataset hashes and25matching
+  artifact copies. It independently replayed the three diagnosed rounds with
+  plain search and regenerated their complete exposing-turn alternatives. No
+  Critical/Important findings. One wording clarification was applied: turn169
+  is an earlier fallback, while the nearer turn171 completed depth1.
+- Review scope: future performance changes still need contract/equivalence
+  checks; stronger-play/device qualification is not established; unchanged
+  engine/evaluator code was not subjected to a new full independent audit.
+  Existing full-suite and independent replay evidence support this research
+  record, not future code or public enablement.
