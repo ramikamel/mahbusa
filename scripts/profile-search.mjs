@@ -35,10 +35,11 @@ try{
   process.stderr.write((repetition<0?'Warmup':'Sweep '+(repetition+1))+' complete\n');
  }
  const sorted=[...sweeps].sort((a,b)=>a-b);
+ const medianSweepMs=(sorted[Math.floor((sorted.length-1)/2)]+sorted[Math.floor(sorted.length/2)])/2;
  const report={format:'mahbusa-exact-search-profile',version:1,sourceRevision:revision,sourceDirty:dirty,node:process.version,
   corpusSha256:createHash('sha256').update(bytes).digest('hex'),options:{maxDepth:1,maxNodes:nodes,cacheEntries:10000},repetitions,
   note:'One discarded warmup; sequential sweeps; local diagnostic, no CI speed threshold or device/strength qualification.',
-  sweepsMs:sweeps,medianSweepMs:sorted[Math.floor(sorted.length/2)],results};
+  sweepsMs:sweeps,medianSweepMs,results};
  const path=resolve(values.out);await mkdir(dirname(path),{recursive:true});await writeFile(path,JSON.stringify(report,null,2)+'\n',{flag:'wx'});
  console.log(JSON.stringify({sourceRevision:revision,sourceDirty:dirty,roots:corpus.roots.length,sweepsMs:sweeps,medianSweepMs:report.medianSweepMs}));
 }catch(error){process.stderr.write((error instanceof Error?error.message:String(error))+'\n');process.exitCode=1;}

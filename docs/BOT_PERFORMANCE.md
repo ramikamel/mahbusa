@@ -79,7 +79,7 @@ Local report SHA-256 identities, preserved in both checkouts:
 | `.local/exact-state-keys-2026-10-20.json` | `c70de50e215f7e6d37192771a45d6e1d54dae9422498e76a823c43291cc41800` |
 | `.local/exact-state-after-2026-10-20.json` | `14b9d235f5efd0dc144554d23f116447922f300fad8745d29115ed7df71759f0` |
 
-Local verification: 261 Vitest, 85 Node and 20 CPU Python tests (366 total),
+Local verification: 261 Vitest, 86 Node and 20 CPU Python tests (367 total),
 zero Svelte errors/warnings, production/offline and worker smoke builds passed.
 Chrome checked separate opening rolls, combined-dice movement, Undo, automatic
 next-turn dice and reset. The native worker smoke page passed all six lifecycle
@@ -90,3 +90,10 @@ single-player availability are unchanged.
 The next strength experiment must use fresh seeds and frozen search budgets.
 Skipping speculative work on forced turns remains a separate possible policy
 optimization; this checkpoint leaves that behavior and all search limits intact.
+
+Independent review regenerated every frozen root against the original engine and
+ran 143 relevant tests. No correctness/isolation blockers were found. Its one
+minor reporting issue was corrected with a failing-then-passing real CLI test:
+an even repetition count now averages the two middle sweeps. The published
+three-repetition measurements are unchanged. Browser checks were performed by
+the implementation agent, not independently repeated by the reviewer.

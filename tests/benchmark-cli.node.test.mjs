@@ -50,3 +50,17 @@ test('benchmark CLI explicitly compares bounded search against frozen greedy',()
   assert.match(report.policies[0],/^expectimax-v1\/strategy-v1\/d1\/n1000\/c10000$/);
   assert.equal(report.policies[1],'strategy-v1-greedy');assert.equal(report.comparison,'control');assert.equal(report.samePolicy,false);
 });
+
+test('search profile CLI averages the two middle sweeps for an even repetition count',async()=>{
+  const directory=await mkdtemp(join(tmpdir(),'mahbusa-profile-'));
+  try{
+    const path=join(directory,'report.json');
+    const script=fileURLToPath(new URL('../scripts/profile-search.mjs',import.meta.url));
+    const result=spawnSync(process.execPath,[script,'--out',path,'--nodes','1000','--repetitions','2'],{encoding:'utf8',timeout:120000});
+    assert.equal(result.status,0,result.stderr);
+    const report=JSON.parse(await readFile(path,'utf8'));
+    assert.equal(report.sweepsMs.length,2);
+    assert.equal(report.medianSweepMs,(report.sweepsMs[0]+report.sweepsMs[1])/2);
+    assert.equal(report.results.length,114);
+  }finally{await rm(directory,{recursive:true,force:true});}
+});

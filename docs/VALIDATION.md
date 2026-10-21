@@ -1186,7 +1186,7 @@ viewport. Rechecked the affected behaviors.
   keys`c70de50e215f7e6d37192771a45d6e1d54dae9422498e76a823c43291cc41800`,
   after`14b9d235f5efd0dc144554d23f116447922f300fad8745d29115ed7df71759f0`.
   [Performance usage](BOT_PERFORMANCE.md) records commands and all sweep times.
-- Verification:261Vitest+85Node+20CPU Python tests (366), Svelte0errors/0warnings,
+- Verification:261Vitest+86Node+20CPU Python tests (367), Svelte0errors/0warnings,
   production/offline and worker smoke builds passed. Public cache version
   `f13c630eb2ad2fd9`. Chrome production checks passed separate opening rolls,
   combined6+2move, Undo, turn handover/automatic next dice and reset. All six
@@ -1195,3 +1195,14 @@ viewport. Rechecked the affected behaviors.
   watchdog/retry, worker-error/retry and disposal. These do not replace actual
   iPhone checks. Single player remains in development; next is the fresh-seed
   frozen-budget strength comparison. Forced-turn bypass remains deferred.
+- Independent read-only review ran143relevant tests and recomputed every frozen
+  root's complete-turn/greedy/search expectations from archived original source.
+  It verified corpus provenance, totals, hashes and all timing reports. No
+  Critical/Important findings. One minor was fixed: supported even repetition
+  counts now report the arithmetic mean of the two middle sweeps. The real CLI
+  regression failed before the fix and passed in the full261Vitest/86Node run;
+  the original three-sweep evidence is unaffected.
+- Review scope: malformed boards outside the valid-state contract remain
+  unsupported; strength/iPhone qualification remains later work; the reviewer
+  inspected browser evidence but did not repeat those UI checks. Author-run
+  Chrome and complete local test/build evidence support this checkpoint.
