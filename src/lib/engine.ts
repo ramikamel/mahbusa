@@ -1,4 +1,5 @@
 import type { TurnInput, TurnPlan } from './bot/types';
+import {turnKey as key} from './state.ts';
 export type Player = 0 | 1;
 export type Pair = [number, number];
 export type OpeningDice = [number | null, number | null];
@@ -108,9 +109,6 @@ function step(position: Position, player: Player, move: Move): { position: Posit
   return { position: next, outcome };
 }
 type Evaluation = { length: number; winning: boolean; moves: Move[] };
-function key(position: Position, dice: number[]) {
-  return position.points.map(p => `${p.count[0]},${p.count[1]},${p.top ?? '-'}`).join(';') + '|' + position.off.join(',') + '|' + [...dice].sort().join(',');
-}
 // One analysis context can serve every branch of a complete-turn traversal.
 // Existing callers still get a fresh context through legalMoves().
 function legalMoveGenerator(player: Player) {

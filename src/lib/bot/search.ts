@@ -1,4 +1,5 @@
 import {generateTurns} from '../engine.ts';
+import {preRollKey} from '../state.ts';
 import type {Pair} from '../engine';
 import {continuationAfterTurn} from './continuation.ts';
 import {strategyEvaluator,validatePreRollState} from './strategy.ts';
@@ -50,7 +51,7 @@ export function searchTurns(input:TurnInput & {score:Pair},options:SearchOptions
   }
   function preRoll(state:PreRollState,depth:number):number{
     check();
-    const key=JSON.stringify([state.position.points.map(p=>[...p.count,p.top]),state.position.off,state.active,state.score,depth]);
+    const key=preRollKey(state,depth);
     const hit=cache.get(key);
     if(hit!==undefined){stats.cacheHits++;return hit;}
     if(stats.nodes>=maxNodes)throw new BudgetReached('nodes');
