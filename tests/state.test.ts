@@ -1,7 +1,7 @@
 import {describe,expect,it} from 'vitest';
-import {emptyPosition} from '../src/lib/engine';
+import {emptyPosition,initialPosition} from '../src/lib/engine';
 import type {Player} from '../src/lib/engine';
-import {positionKey,turnKey,preRollKey} from '../src/lib/state';
+import {positionKey,turnKey,preRollKey,copyPreRollState} from '../src/lib/state';
 
 describe('collision-free keys for valid Mahbusa states',()=>{
   it('distinguishes point location, both checker counts, and the top color',()=>{
@@ -46,5 +46,20 @@ describe('collision-free keys for valid Mahbusa states',()=>{
     expect(keys.size).toBe(90);
     const changed=emptyPosition();changed.off=[1,0];
     expect(preRollKey({position,active:0,score:[0,0]},0)).not.toBe(preRollKey({position:changed,active:0,score:[0,0]},0));
+  });
+});
+
+describe('owned evaluator inputs',()=>{
+  it('preserves every state field and isolates every mutable board/score field',()=>{
+    const position=initialPosition();position.points[0].count[1]--;position.points[23].count[0]--;
+    position.points[5]={count:[1,1],top:1};
+    const input={position,active:1 as const,score:[1,2] as [number,number]},before=structuredClone(input);
+    const copied=copyPreRollState(input);
+    expect(copied).toEqual(before);
+    copied.score[0]=99;copied.position.off[0]=99;
+    copied.position.points[5].count[0]=99;copied.position.points[5].top=0;
+    copied.position.points[0]={count:[0,0],top:null};
+    copied.position.points.push({count:[0,0],top:null});
+    expect(input).toEqual(before);
   });
 });

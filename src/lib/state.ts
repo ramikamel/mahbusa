@@ -21,3 +21,11 @@ export function turnKey(position:Position,dice:number[]):string {
 export function preRollKey(state:PreRollState,depth:number):string {
   return positionKey(state.position)+String.fromCharCode(state.active,state.score[0],state.score[1],depth);
 }
+
+/** Give evaluators their own schema-defined state, including every nested array
+ * and point record. They may mutate it without changing search or caller data. */
+export function copyPreRollState(state:PreRollState):PreRollState {
+  return {position:{off:[...state.position.off],
+    points:state.position.points.map(point=>({count:[...point.count],top:point.top}))},
+    active:state.active,score:[...state.score]};
+}

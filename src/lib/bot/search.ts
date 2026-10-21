@@ -1,5 +1,5 @@
 import {generateTurns} from '../engine.ts';
-import {preRollKey} from '../state.ts';
+import {preRollKey,copyPreRollState} from '../state.ts';
 import type {Pair} from '../engine';
 import {continuationAfterTurn} from './continuation.ts';
 import {strategyEvaluator,validatePreRollState} from './strategy.ts';
@@ -38,7 +38,7 @@ export function searchTurns(input:TurnInput & {score:Pair},options:SearchOptions
   function elapsed(){const ms=now()-started;if(!Number.isFinite(ms))throw new Error('Invalid search clock.');return Math.max(0,ms);}
   function check(){if(options.budgetMs!==undefined&&elapsed()>=options.budgetMs)throw new BudgetReached('time');}
   function evaluate(state:PreRollState){
-    const value=evaluator.evaluate(structuredClone(state)).value;
+    const value=evaluator.evaluate(copyPreRollState(state)).value;
     if(!Number.isFinite(value)||value < -1||value > 1)throw new Error('Invalid evaluator value.');
     return value;
   }
