@@ -1246,3 +1246,13 @@ viewport. Rechecked the affected behaviors.
   checks in this checkpoint. Single player remains in development.
 - Next: unchanged larger search against greedy on fresh seeds under a frozen
   single-decision protocol; promotion remains a separate qualification gate.
+- Independent read-only review passed seven targeted CLI tests, then regenerated
+  all100pair identities/seeds/color mappings, report hashes, integer counters,
+  percentages, clocks and the paired interval. All103run artifact files and
+  the frozen wrapper matched across both checkouts. No Critical/Important or
+  unresolved Minor findings. The wrapper's duplicate-worker limitation is
+  documented for future hardening; exactly one process per partition ran here.
+- Review scope: no full tournament replay or new broad engine audit; accepted
+  author-observed worker exits and full-suite evidence, alongside the independently
+  checked records and pre-run orchestration smoke. Device/equal-runtime timing,
+  experienced-human strength and public readiness remain outside this result.
