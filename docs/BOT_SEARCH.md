@@ -77,5 +77,11 @@ See the [investigation and next tasks](BOT_SEARCH_INVESTIGATION.md).
 The October21 fixed 100-pair budget comparison favored 20000 over 1000 nodes:
 131–69, paired95% interval [51.92%,79.08%], no cutoffs. This supports additional
 search against that smaller search control, not superiority to greedy or public
-qualification. Defaults remain unchanged. Next is a fresh-seed larger-search
-versus greedy comparison; [full protocol and results](BOT_BUDGET_COMPARISON.md).
+qualification. Defaults remain unchanged; [full result](BOT_BUDGET_COMPARISON.md).
+
+The October21–22 larger-search versus greedy follow-up finished125–75,
+paired95% interval[48.92%,76.08%], no cutoffs. It is inconclusive under the
+frozen rule. Mother losses were13versus24; search completed depth1 on84.58% of
+multi-choice turns. Next is automatic losing-history diagnosis and isolated
+profiling of slow positions, not an extension of the unchanged tournament.
+See [protocol, results and concrete next tasks](BOT_GREEDY_COMPARISON.md).

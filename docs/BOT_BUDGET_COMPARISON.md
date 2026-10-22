@@ -82,11 +82,12 @@ run took 1895.678s wall time. Summed decision clocks were 6510189.708ms and
 639005.392ms; maxima were 5104.314ms and 282.304ms. These contended desktop clocks
 are diagnostic only, not phone latency or an equal-runtime comparison.
 
-Next: freeze a fresh-seed 100-pair comparison of the unchanged larger search
-against greedy strategy, with the same no-clock deterministic controls and one
-prespecified decision. Keep promotion separate: equal-runtime comparisons,
-tactical regressions and actual iPhone timing still remain. Do not retune on
-these seeds or restart outcome-only neural training based on this result.
+The fresh-seed 100-pair comparison of unchanged larger search against greedy
+is now complete:125–75, paired95% interval[48.92%,76.08%], no cutoffs. It is
+inconclusive; [follow-up result and next tasks](BOT_GREEDY_COMPARISON.md).
+Promotion remains separate: equal-runtime comparisons, tactical regressions
+and actual iPhone timing still remain. Do not retune on these seeds or restart
+outcome-only neural training based on this result.
 
 ## Reproduction and integrity
 

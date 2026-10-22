@@ -147,11 +147,16 @@ checked round-separated shards, trains and exports experimental weights.
     no cutoffs. Multi-choice depth1 completion was85.20%versus21.48%; mother
     losses11versus30. This supports larger search against that smaller control,
     not superiority to greedy or equal-runtime/device qualification.
-    [Protocol and result](BOT_BUDGET_COMPARISON.md). Next: freeze unchanged
-    larger search versus greedy on100fresh color-swapped pairs, with a single
-    prespecified decision and no clock cutoff. Then use actual evidence to
-    select confirmation/equal-runtime work or diagnose losing lines. Do not
-    retune on completed seeds or enable single player before qualification.
+    [Protocol and result](BOT_BUDGET_COMPARISON.md). The unchanged larger search
+    versus greedy follow-up is now complete:125–75 on100fresh color-swapped
+    pairs, paired95% interval[48.92%,76.08%], no cutoffs. It is inconclusive;
+    mother losses13versus24 do not override the fixed decision rule.
+    [Full result and next tasks](BOT_GREEDY_COMPARISON.md). Next: freeze the
+    first three search mother-loss histories and cases from the two worst-timed
+    rounds, then diagnose earlier choices and isolated runtime in parallel.
+    Only afterward make a single evidenced change with regressions and a fresh
+    seed protocol. Do not extend this tournament, retune on its seeds, restart
+    blind neural batches or enable single player before qualification.
 11. Automated strength qualification: fixed tactical regressions, held-out
     positions/round seeds and fresh-seed matches against frozen champions.
 12. Development-only bot UI: human color, automatic bot opening/turns, visible

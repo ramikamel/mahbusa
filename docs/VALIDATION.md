@@ -1256,3 +1256,45 @@ viewport. Rechecked the affected behaviors.
   author-observed worker exits and full-suite evidence, alongside the independently
   checked records and pre-run orchestration smoke. Device/equal-runtime timing,
   experienced-human strength and public readiness remain outside this result.
+
+### October 21–22: larger search versus greedy
+
+- Frozen clean source`9ba932bc821f1bff374c7cc7d51fa943cead42f9`, Node26.11.1,
+  seed`strategy-greedy-control-2026-10-21`,100color-swappedpairs/200first-to-three
+  rounds, max2000turns/round, no clock cutoff. Search depth1/20000nodes/cache10000
+  versus unchanged`strategy-v1-greedy`. Only the protocol was tracked in this
+  checkpoint before matches; production app/rules/search/evaluator code is unchanged.
+- New local wrapper uses exclusive partition locks, unique temporary publication
+  and non-replacing links. Pre-run261Vitest+8realCLItests passed. Independent
+  pre-run review reproduced instrumented-versus-factory two-pair/eight-turn
+  non-clock/dice/trace equality, duplicate-lock rejection/reacquisition and
+  immutable publication/temporary cleanup. No material findings.
+- User paused at53complete pairs on October21. Verified all old processes stopped,
+  removed only their matching stale locks, and preserved/backed up those records.
+  October22resume passed source/script/Node identities and ran missing pairs only.
+  All four resumed workers exited0;100unique pairs are complete. No intermediate
+  win totals were inspected and no result-dependent stopping/extension occurred.
+- Result:125–75 (62.5%), paired95% Hoeffding interval[48.91898%,76.08102%],
+  zero cutoffs; points494–341, mother losses13–24. It is inconclusive under the
+  frozen rule. No search/model/public promotion.53530turns,551games,3124passes.
+- Search:26796decisions,4246changed from baseline (15.85%),23342completed depth1
+  (87.11%);18379/21729multi-choice turns completed (84.58%).3329node stops,
+  125immediate round wins,170545907uncached visits,16108212cache hits. Greedy
+  made26734decisions. Counters describe encountered positions, not identical roots.
+- Decision-clock maxima13536.880ms versus70.384ms are contended desktop diagnostics,
+  not isolated latency/equal-runtime/phone evidence. Manifest elapsed80948317ms
+  includes the overnight pause and aborted unfinished work, not active compute.
+  A brief local process sample during slower pairs showed active computation;
+  no thermal warning was reported. Exact bottlenecks still require isolated replay.
+- Separate verification regenerated all metrics without the benchmark summary
+  helper, canonical indices/seeds/color mappings, raw hashes and all counters.
+  Additional checks passed all200completed terminal-score invariants. All103run
+  artifacts and frozen scripts match byte-for-byte across both local checkouts.
+  Report SHA-256`e20e5266e3fadbf9fcf6505dbd0ceb549d8f3290130c9da17992c61528bf818d`;
+  summary`00ede146e76bfb39f11d01112028ac6f4a1340610424a3817be35125eb6d44cd`.
+  [Full result](BOT_GREEDY_COMPARISON.md) records manifest/wrapper hashes and
+  limits. Local artifacts are excluded from app/Git; no new browser/UI checks.
+- Next: freeze three automatic mother-loss histories and positions from two
+  slowest recorded rounds. Tactical diagnosis and isolated profiling can run in
+  parallel after freezing cases; an evidenced fix and fresh-seed comparison
+  follow sequentially. No annotations or another unchanged large tournament.
